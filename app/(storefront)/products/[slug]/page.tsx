@@ -24,6 +24,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { BreadcrumbJsonLd } from "@/components/shared/BreadcrumbJsonLd";
 
 export async function generateMetadata({
   params,
@@ -88,6 +89,13 @@ export default async function ProductPage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", path: "/" },
+          { name: product.category.name, path: `/categories/${product.category.slug}` },
+          { name: product.name, path: `/products/${product.slug}` },
+        ]}
       />
       <RecordView slug={product.slug} />
 

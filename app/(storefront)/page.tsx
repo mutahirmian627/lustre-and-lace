@@ -8,6 +8,7 @@ import { WeddingCollectionBanner } from "@/features/home/components/WeddingColle
 import { ReviewsCarousel } from "@/features/home/components/ReviewsCarousel";
 import { InstagramGallery } from "@/features/home/components/InstagramGallery";
 import { ProductCardSkeleton } from "@/components/shared/skeletons";
+import { OrganizationJsonLd } from "@/components/shared/OrganizationJsonLd";
 
 function ProductRowSkeleton() {
   return (
@@ -22,6 +23,7 @@ function ProductRowSkeleton() {
 export default function HomePage() {
   return (
     <div>
+      <OrganizationJsonLd />
       <HeroBanner />
       <FeaturedCategories />
       <Suspense fallback={<ProductRowSkeleton />}>
