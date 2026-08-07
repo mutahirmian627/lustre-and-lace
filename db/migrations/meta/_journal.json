@@ -1,0 +1,20 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1786041739773,
+      "tag": "0000_faulty_deathbird",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1786041782879,
+      "tag": "0001_search_vector_and_order_ref_sequence",
+      "breakpoints": true
+    }
+  ]
+}
