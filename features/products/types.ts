@@ -15,6 +15,7 @@ export type ReviewFormInput = z.infer<typeof reviewFormSchema>;
 export type ProductAttributeKey = keyof typeof PRODUCT_ATTRIBUTES;
 
 export type SortOption =
+  | "relevance"
   | "newest"
   | "price_asc"
   | "price_desc"
@@ -28,6 +29,9 @@ export const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: "best_selling", label: "Best Selling" },
   { value: "top_rated", label: "Top Rated" },
 ];
+
+/** Relevance only makes sense when there's a query to rank against — the search page prepends this itself. */
+export const RELEVANCE_SORT_OPTION = { value: "relevance" as const, label: "Relevance" };
 
 export const PAGE_SIZE = 12;
 
@@ -72,14 +76,26 @@ function toArray(value: string | string[] | undefined): string[] {
   return Array.isArray(value) ? value : [value];
 }
 
-/** Shared by /products and /categories/[slug] — URL query params are the source of truth (specs/06). */
+const ALL_SORT_VALUES: SortOption[] = [
+  RELEVANCE_SORT_OPTION.value,
+  ...SORT_OPTIONS.map((o) => o.value),
+];
+
+/**
+ * Shared by /products, /categories/[slug], and /search — URL query params
+ * are the source of truth (specs/06, specs/07). `defaultSort` lets the
+ * search page default to "relevance" while listing pages default to
+ * "newest".
+ */
 export function parseProductFilters(
   searchParams: RawSearchParams,
-  categorySlug?: string
+  categorySlug?: string,
+  defaultSort: SortOption = "newest"
 ): ProductFilters {
-  const sortValues = SORT_OPTIONS.map((o) => o.value);
   const rawSort = Array.isArray(searchParams.sort) ? searchParams.sort[0] : searchParams.sort;
-  const sort = sortValues.includes(rawSort as SortOption) ? (rawSort as SortOption) : "newest";
+  const sort = ALL_SORT_VALUES.includes(rawSort as SortOption)
+    ? (rawSort as SortOption)
+    : defaultSort;
 
   const rawPage = Array.isArray(searchParams.page) ? searchParams.page[0] : searchParams.page;
   const page = Math.max(1, Number(rawPage) || 1);
@@ -88,8 +104,11 @@ export function parseProductFilters(
   const maxPrice = searchParams.maxPrice ? Number(searchParams.maxPrice) : undefined;
   const minRating = searchParams.minRating ? Number(searchParams.minRating) : undefined;
 
+  const rawQuery = Array.isArray(searchParams.q) ? searchParams.q[0] : searchParams.q;
+
   return {
     categorySlug,
+    search: rawQuery?.trim() || undefined,
     plating: toArray(searchParams.plating),
     color: toArray(searchParams.color),
     size: toArray(searchParams.size),

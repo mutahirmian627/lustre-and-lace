@@ -37,6 +37,17 @@ export const ANNOUNCEMENT_BAR_TEXT =
  */
 export const INSTAGRAM_GALLERY: { imageUrl: string; postUrl?: string }[] = [];
 
+/**
+ * Curated, hardcoded — not derived from real search-query analytics
+ * (specs/07: no search-analytics feature for v1).
+ */
+export const POPULAR_SEARCHES = [
+  "Wedding Necklace Sets",
+  "Rose Gold Earrings",
+  "Everyday Bangles",
+  "Statement Rings",
+] as const;
+
 export const SOCIAL_LINKS = {
   instagram: "https://instagram.com/lustreandlace",
 } as const;

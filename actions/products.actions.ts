@@ -92,14 +92,13 @@ async function attachPrimaryImages(
   }));
 }
 
-export async function getProducts(
-  filters: ProductFilters
-): Promise<{ items: ProductListItem[]; total: number; totalPages: number }> {
+/** Every filter except full-text search — shared by getProducts and searchProducts. */
+async function buildFilterConditions(filters: ProductFilters) {
   const conditions = [eq(products.isActive, true)];
 
   if (filters.categorySlug) {
     const categoryIds = await resolveCategoryIds(filters.categorySlug);
-    if (!categoryIds) return { items: [], total: 0, totalPages: 0 };
+    if (!categoryIds) return null;
     conditions.push(inArray(products.categoryId, categoryIds));
   }
 
@@ -125,29 +124,41 @@ export async function getProducts(
     conditions.push(inStockVariantExists());
   }
 
+  return conditions;
+}
+
+const LISTING_COLUMNS = {
+  id: products.id,
+  name: products.name,
+  slug: products.slug,
+  basePrice: products.basePrice,
+  compareAtPrice: products.compareAtPrice,
+  ratingAverage: products.ratingAverage,
+  ratingCount: products.ratingCount,
+  isTrending: products.isTrending,
+};
+
+const SORT_ORDER_BY = {
+  newest: [desc(products.createdAt)],
+  price_asc: [asc(products.basePrice)],
+  price_desc: [desc(products.basePrice)],
+  best_selling: [desc(products.salesCount)],
+  top_rated: [desc(products.ratingAverage)],
+};
+
+export async function getProducts(
+  filters: ProductFilters
+): Promise<{ items: ProductListItem[]; total: number; totalPages: number }> {
+  const conditions = await buildFilterConditions(filters);
+  if (!conditions) return { items: [], total: 0, totalPages: 0 };
+
   const where = and(...conditions);
   const page = Math.max(1, filters.page ?? 1);
-
-  const orderBy = {
-    newest: [desc(products.createdAt)],
-    price_asc: [asc(products.basePrice)],
-    price_desc: [desc(products.basePrice)],
-    best_selling: [desc(products.salesCount)],
-    top_rated: [desc(products.ratingAverage)],
-  }[filters.sort ?? "newest"];
+  const orderBy = SORT_ORDER_BY[filters.sort as keyof typeof SORT_ORDER_BY] ?? SORT_ORDER_BY.newest;
 
   const [rows, [{ count }]] = await Promise.all([
     db
-      .select({
-        id: products.id,
-        name: products.name,
-        slug: products.slug,
-        basePrice: products.basePrice,
-        compareAtPrice: products.compareAtPrice,
-        ratingAverage: products.ratingAverage,
-        ratingCount: products.ratingCount,
-        isTrending: products.isTrending,
-      })
+      .select(LISTING_COLUMNS)
       .from(products)
       .where(where)
       .orderBy(...orderBy)
@@ -162,6 +173,64 @@ export async function getProducts(
   const items = await attachPrimaryImages(rows);
 
   return { items, total: count, totalPages: Math.max(1, Math.ceil(count / PAGE_SIZE)) };
+}
+
+/**
+ * Postgres full-text search over the searchVector column (specs/07) — not
+ * modeled in db/schema/products.ts (see db/migrations/0001), so it's
+ * referenced here via a raw sql fragment rather than a typed column.
+ * websearch_to_tsquery tolerates natural typed-in phrasing better than a
+ * strict to_tsquery would.
+ */
+export async function searchProducts(
+  query: string,
+  filters: ProductFilters
+): Promise<{ items: ProductListItem[]; total: number; totalPages: number }> {
+  const conditions = await buildFilterConditions(filters);
+  if (!conditions) return { items: [], total: 0, totalPages: 0 };
+
+  const tsQuery = sql`websearch_to_tsquery('english', ${query})`;
+  conditions.push(sql`"products"."search_vector" @@ ${tsQuery}`);
+  const where = and(...conditions);
+
+  const page = Math.max(1, filters.page ?? 1);
+  const orderBy =
+    filters.sort && filters.sort !== "relevance"
+      ? SORT_ORDER_BY[filters.sort as keyof typeof SORT_ORDER_BY] ?? SORT_ORDER_BY.newest
+      : [desc(sql`ts_rank("products"."search_vector", ${tsQuery})`)];
+
+  const [rows, [{ count }]] = await Promise.all([
+    db
+      .select(LISTING_COLUMNS)
+      .from(products)
+      .where(where)
+      .orderBy(...orderBy)
+      .limit(PAGE_SIZE)
+      .offset((page - 1) * PAGE_SIZE),
+    db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(products)
+      .where(where),
+  ]);
+
+  const items = await attachPrimaryImages(rows);
+
+  return { items, total: count, totalPages: Math.max(1, Math.ceil(count / PAGE_SIZE)) };
+}
+
+/** Live suggestions for the search overlay — top 5 matches, ranked by relevance. */
+export async function getSearchSuggestions(query: string, limit = 5) {
+  if (!query.trim()) return [];
+
+  const tsQuery = sql`websearch_to_tsquery('english', ${query})`;
+  const rows = await db
+    .select(LISTING_COLUMNS)
+    .from(products)
+    .where(and(eq(products.isActive, true), sql`"products"."search_vector" @@ ${tsQuery}`))
+    .orderBy(desc(sql`ts_rank("products"."search_vector", ${tsQuery})`))
+    .limit(limit);
+
+  return attachPrimaryImages(rows);
 }
 
 /** Facet bounds/options scoped to a category, so filter UIs never show a dead checkbox (specs/06). */
@@ -236,16 +305,7 @@ export async function getRelatedProducts(
   limit = 8
 ) {
   const rows = await db
-    .select({
-      id: products.id,
-      name: products.name,
-      slug: products.slug,
-      basePrice: products.basePrice,
-      compareAtPrice: products.compareAtPrice,
-      ratingAverage: products.ratingAverage,
-      ratingCount: products.ratingCount,
-      isTrending: products.isTrending,
-    })
+    .select(LISTING_COLUMNS)
     .from(products)
     .where(
       and(
@@ -263,16 +323,7 @@ export async function getProductsBySlugs(slugs: string[]) {
   if (slugs.length === 0) return [];
 
   const rows = await db
-    .select({
-      id: products.id,
-      name: products.name,
-      slug: products.slug,
-      basePrice: products.basePrice,
-      compareAtPrice: products.compareAtPrice,
-      ratingAverage: products.ratingAverage,
-      ratingCount: products.ratingCount,
-      isTrending: products.isTrending,
-    })
+    .select(LISTING_COLUMNS)
     .from(products)
     .where(and(inArray(products.slug, slugs), eq(products.isActive, true)));
 

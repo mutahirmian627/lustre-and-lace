@@ -8,13 +8,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SORT_OPTIONS } from "@/features/products/types";
+import { RELEVANCE_SORT_OPTION, SORT_OPTIONS } from "@/features/products/types";
 
-export function SortDropdown() {
+export function SortDropdown({ includeRelevance = false }: { includeRelevance?: boolean }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const current = searchParams.get("sort") ?? "newest";
+  const current = searchParams.get("sort") ?? (includeRelevance ? "relevance" : "newest");
+  const options = includeRelevance ? [RELEVANCE_SORT_OPTION, ...SORT_OPTIONS] : SORT_OPTIONS;
 
   function handleChange(value: string | null) {
     if (!value) return;
@@ -30,7 +31,7 @@ export function SortDropdown() {
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        {SORT_OPTIONS.map((option) => (
+        {options.map((option) => (
           <SelectItem key={option.value} value={option.value}>
             {option.label}
           </SelectItem>

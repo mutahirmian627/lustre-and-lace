@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Search, Heart, User, ShoppingBag, X } from "lucide-react";
+import { Heart, User, ShoppingBag, X } from "lucide-react";
+import { SearchOverlay } from "@/features/products/components/SearchOverlay";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -105,9 +106,7 @@ export function HeaderClient({
           </nav>
 
           <div className="flex items-center gap-1">
-            <Button variant="ghost" size="icon" aria-label="Search" render={<Link href="/search" />}>
-              <Search className="size-5" />
-            </Button>
+            <SearchOverlay />
             <Button
               variant="ghost"
               size="icon"
