@@ -16,6 +16,7 @@ import type { ShippingAddressSnapshot } from "@/db/schema/orders";
 import { auth } from "@/lib/auth";
 import { getExistingCartId } from "@/lib/cart-session";
 import { getSetting } from "@/lib/settings";
+import { checkCouponEligibility, calculateDiscountAmount } from "@/lib/coupon";
 import { SETTINGS_KEYS } from "@/constants/settings-keys";
 import { generateOrderReference } from "@/utils/generate-order-reference";
 import { buildWhatsAppLink } from "@/services/whatsapp.service";
@@ -72,27 +73,11 @@ export async function placeOrder(input: CheckoutInput) {
       where: eq(coupons.code, data.couponCode.trim().toUpperCase()),
     });
     if (!coupon) return { error: "The applied coupon is no longer valid." };
-    if (!coupon.isActive) return { error: "The applied coupon is no longer active." };
 
-    const now = new Date();
-    if (coupon.startsAt && now < coupon.startsAt) return { error: "The applied coupon isn't active yet." };
-    if (coupon.expiresAt && now > coupon.expiresAt) return { error: "The applied coupon has expired." };
-    if (coupon.usageLimit != null && coupon.usageCount >= coupon.usageLimit) {
-      return { error: "The applied coupon has reached its usage limit." };
-    }
-    if (coupon.minOrderAmount != null && subtotal < Number(coupon.minOrderAmount)) {
-      return { error: `The applied coupon requires a minimum order of ${coupon.minOrderAmount}.` };
-    }
+    const eligibilityError = checkCouponEligibility(coupon, subtotal, new Date());
+    if (eligibilityError) return { error: `The applied coupon ${eligibilityError.detail}.` };
 
-    const rawDiscount =
-      coupon.type === "percentage" ? (subtotal * Number(coupon.value)) / 100 : Number(coupon.value);
-    discountAmount = Math.max(
-      0,
-      Math.min(
-        coupon.maxDiscountAmount != null ? Math.min(rawDiscount, Number(coupon.maxDiscountAmount)) : rawDiscount,
-        subtotal
-      )
-    );
+    discountAmount = calculateDiscountAmount(coupon, subtotal);
     couponRow = coupon;
   }
 

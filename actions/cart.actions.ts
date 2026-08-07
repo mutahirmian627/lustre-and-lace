@@ -9,6 +9,9 @@ import { carts, cartItems, productVariants, productImages, coupons } from "@/db/
 import { auth } from "@/lib/auth";
 import { getOrCreateCartId, getExistingCartId, GUEST_CART_COOKIE } from "@/lib/cart-session";
 import { getFlatShippingRate } from "@/lib/settings";
+import { checkCouponEligibility, calculateDiscountAmount } from "@/lib/coupon";
+import { mergeCartItems, type MergeableCartItem } from "@/lib/cart-merge";
+import { capQuantityToStock } from "@/utils/stock";
 import type { CartLineItem, CartSummary } from "@/features/cart/types";
 
 async function buildCartSummary(cartId: string | null): Promise<CartSummary> {
@@ -113,7 +116,7 @@ export async function addToCart(
     where: and(eq(cartItems.cartId, cartId), eq(cartItems.variantId, parsed.data.variantId)),
   });
 
-  const nextQuantity = Math.min(
+  const nextQuantity = capQuantityToStock(
     (existingItem?.quantity ?? 0) + parsed.data.quantity,
     variant.stockQuantity
   );
@@ -152,7 +155,7 @@ export async function updateCartItemQuantity(
   });
   if (!item) return { error: "This item is no longer in your cart." };
 
-  const cappedQuantity = Math.min(quantity, item.variant?.stockQuantity ?? 0);
+  const cappedQuantity = capQuantityToStock(quantity, item.variant?.stockQuantity ?? 0);
   await db.update(cartItems).set({ quantity: cappedQuantity }).where(eq(cartItems.id, itemId));
 
   revalidatePath("/", "layout");
@@ -171,14 +174,7 @@ export async function removeCartItem(
   return { success: true, cart: await buildCartSummary(cartId) };
 }
 
-const COUPON_ERROR = {
-  notFound: "This code isn't valid.",
-  inactive: "This code is no longer active.",
-  notStarted: "This code isn't active yet.",
-  expired: "This code has expired.",
-  usageLimitReached: "This code has reached its usage limit.",
-  minOrderNotMet: (min: string) => `This code requires a minimum order of ${min}.`,
-} as const;
+const COUPON_NOT_FOUND_ERROR = "This code isn't valid.";
 
 /**
  * Re-validates a coupon against live rules at the moment it matters
@@ -189,32 +185,16 @@ export async function validateCoupon(code: string, subtotal: number) {
   const coupon = await db.query.coupons.findFirst({
     where: eq(coupons.code, code.trim().toUpperCase()),
   });
+  if (!coupon) return { error: COUPON_NOT_FOUND_ERROR };
 
-  if (!coupon) return { error: COUPON_ERROR.notFound };
-  if (!coupon.isActive) return { error: COUPON_ERROR.inactive };
-
-  const now = new Date();
-  if (coupon.startsAt && now < coupon.startsAt) return { error: COUPON_ERROR.notStarted };
-  if (coupon.expiresAt && now > coupon.expiresAt) return { error: COUPON_ERROR.expired };
-  if (coupon.usageLimit != null && coupon.usageCount >= coupon.usageLimit) {
-    return { error: COUPON_ERROR.usageLimitReached };
-  }
-  if (coupon.minOrderAmount != null && subtotal < Number(coupon.minOrderAmount)) {
-    return { error: COUPON_ERROR.minOrderNotMet(coupon.minOrderAmount) };
-  }
-
-  const rawDiscount =
-    coupon.type === "percentage" ? (subtotal * Number(coupon.value)) / 100 : Number(coupon.value);
-  const discountAmount = Math.min(
-    coupon.maxDiscountAmount != null ? Math.min(rawDiscount, Number(coupon.maxDiscountAmount)) : rawDiscount,
-    subtotal
-  );
+  const eligibilityError = checkCouponEligibility(coupon, subtotal, new Date());
+  if (eligibilityError) return { error: `This code ${eligibilityError.detail}.` };
 
   return {
     success: true as const,
     code: coupon.code,
     type: coupon.type,
-    discountAmount: Math.max(0, discountAmount),
+    discountAmount: calculateDiscountAmount(coupon, subtotal),
   };
 }
 
@@ -242,23 +222,29 @@ export async function mergeGuestCart() {
 
   if (guestItems.length > 0) {
     const userCartId = await getOrCreateCartId();
+    const userItems = await db.query.cartItems.findMany({ where: eq(cartItems.cartId, userCartId) });
 
-    for (const item of guestItems) {
-      if (!item.variantId) continue;
+    const toMergeable = (item: { variantId: string | null; productId: string; quantity: number; priceAtAdd: string }): MergeableCartItem | null =>
+      item.variantId ? { variantId: item.variantId, productId: item.productId, quantity: item.quantity, priceAtAdd: item.priceAtAdd } : null;
 
-      const existing = await db.query.cartItems.findFirst({
-        where: and(eq(cartItems.cartId, userCartId), eq(cartItems.variantId, item.variantId)),
-      });
+    const guestMergeable = guestItems.map(toMergeable).filter((i): i is MergeableCartItem => i !== null);
+    const userMergeable = userItems.map(toMergeable).filter((i): i is MergeableCartItem => i !== null);
 
-      if (existing) {
-        const variant = await db.query.productVariants.findFirst({
-          where: eq(productVariants.id, item.variantId),
-        });
-        const cappedQuantity = Math.min(
-          existing.quantity + item.quantity,
-          variant?.stockQuantity ?? 0
-        );
-        await db.update(cartItems).set({ quantity: cappedQuantity }).where(eq(cartItems.id, existing.id));
+    const variantIds = [...new Set(guestMergeable.map((i) => i.variantId))];
+    const variants = variantIds.length
+      ? await db.query.productVariants.findMany({ where: inArray(productVariants.id, variantIds) })
+      : [];
+    const stockByVariantId = new Map(variants.map((v) => [v.id, v.stockQuantity]));
+
+    const merged = mergeCartItems(guestMergeable, userMergeable, stockByVariantId);
+    const existingUserVariantIds = new Set(userMergeable.map((i) => i.variantId));
+
+    for (const item of merged) {
+      if (existingUserVariantIds.has(item.variantId)) {
+        await db
+          .update(cartItems)
+          .set({ quantity: item.quantity })
+          .where(and(eq(cartItems.cartId, userCartId), eq(cartItems.variantId, item.variantId)));
       } else {
         await db.insert(cartItems).values({
           cartId: userCartId,

@@ -1,6 +1,9 @@
 import { eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { orders, productVariants, products, coupons } from "@/db/schema";
+import { computeCancellationEffects, type CancellationEffects } from "@/lib/cancellation-effects";
+
+export { computeCancellationEffects, type CancellationEffects };
 
 interface CancellableOrder {
   id: string;
@@ -11,40 +14,36 @@ interface CancellableOrder {
 
 /**
  * Shared by customer self-cancellation and the auto-cancel cron job
- * (specs/11) — restocks every line item, reverses coupon usage, and moves
- * paymentStatus to failed/refunded depending on whether payment had already
- * been confirmed. All in one db.batch() so the reversal is atomic, mirroring
+ * (specs/11). All in one db.batch() so the reversal is atomic, mirroring
  * the same neon-http workaround placeOrder uses (specs/10).
  */
 export async function applyCancellationSideEffects(order: CancellableOrder) {
-  const newPaymentStatus = order.paymentStatus === "paid" ? "refunded" : "failed";
+  const effects = computeCancellationEffects(order);
 
   const writes = [
     db
       .update(orders)
-      .set({ status: "cancelled", paymentStatus: newPaymentStatus, updatedAt: new Date() })
+      .set({ status: "cancelled", paymentStatus: effects.newPaymentStatus, updatedAt: new Date() })
       .where(eq(orders.id, order.id)),
-    ...order.items
-      .filter((item) => item.variantId)
-      .map((item) =>
-        db
-          .update(productVariants)
-          .set({ stockQuantity: sql`${productVariants.stockQuantity} + ${item.quantity}` })
-          .where(eq(productVariants.id, item.variantId!))
-      ),
-    // The sale didn't actually happen — reverse the salesCount increment
-    // from placeOrder so the admin dashboard's Top Selling Products chart
-    // (specs/13) doesn't keep counting a cancelled order.
-    ...order.items
-      .filter((item) => item.productId)
-      .map((item) =>
-        db
-          .update(products)
-          .set({ salesCount: sql`${products.salesCount} - ${item.quantity}` })
-          .where(eq(products.id, item.productId!))
-      ),
-    ...(order.couponId
-      ? [db.update(coupons).set({ usageCount: sql`${coupons.usageCount} - 1` }).where(eq(coupons.id, order.couponId))]
+    ...effects.stockDeltas.map(({ variantId, delta }) =>
+      db
+        .update(productVariants)
+        .set({ stockQuantity: sql`${productVariants.stockQuantity} + ${delta}` })
+        .where(eq(productVariants.id, variantId))
+    ),
+    ...effects.salesCountDeltas.map(({ productId, delta }) =>
+      db
+        .update(products)
+        .set({ salesCount: sql`${products.salesCount} + ${delta}` })
+        .where(eq(products.id, productId))
+    ),
+    ...(order.couponId && effects.couponUsageDelta !== 0
+      ? [
+          db
+            .update(coupons)
+            .set({ usageCount: sql`${coupons.usageCount} + ${effects.couponUsageDelta}` })
+            .where(eq(coupons.id, order.couponId)),
+        ]
       : []),
   ] as const;
 

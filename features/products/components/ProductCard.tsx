@@ -14,7 +14,7 @@ export function ProductCard({ product }: { product: ProductListItem }) {
         {/* WishlistHeartButton is a sibling, not nested in the Link below —
             a <button> inside an <a> is invalid HTML and unreliable to click. */}
         <div className="relative aspect-square overflow-hidden rounded-lg bg-muted">
-          <Link href={`/products/${product.slug}`} className="block size-full">
+          <Link href={`/products/${product.slug}`} className="relative block size-full">
             {product.imageUrl ? (
               <Image
                 src={product.imageUrl}
