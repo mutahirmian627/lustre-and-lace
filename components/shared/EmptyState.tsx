@@ -10,6 +10,7 @@ export function EmptyState({
   actionLabel,
   actionHref,
   className,
+  children,
 }: {
   icon: LucideIcon;
   title: string;
@@ -17,6 +18,8 @@ export function EmptyState({
   actionLabel?: string;
   actionHref?: string;
   className?: string;
+  /** Alternative to actionLabel/actionHref for CTAs that aren't a plain navigation link (e.g. a dialog trigger). */
+  children?: React.ReactNode;
 }) {
   return (
     <div
@@ -39,6 +42,7 @@ export function EmptyState({
           {actionLabel}
         </Link>
       )}
+      {children}
     </div>
   );
 }
