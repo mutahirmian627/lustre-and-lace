@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export function ExportCsvButton<Arg extends string>({
+export function ExportCsvButton<Arg>({
   filename,
   arg,
   fetchCsv,

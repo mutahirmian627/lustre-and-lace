@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte } from "drizzle-orm";
+import { and, asc, desc, eq, gte, isNull } from "drizzle-orm";
 import { db } from "@/db";
 import { products, reviews, categories, productImages } from "@/db/schema";
 import type { ProductListItem } from "@/features/products/types";
@@ -74,7 +74,7 @@ export async function getFeaturedCategories(limit = 8) {
 /** Curated for homepage positivity (rating >= 4); PDPs still show the full unfiltered set (specs/05). */
 export async function getHomepageReviews(limit = 8) {
   return db.query.reviews.findMany({
-    where: and(eq(reviews.isApproved, true), gte(reviews.rating, 4)),
+    where: and(eq(reviews.isApproved, true), gte(reviews.rating, 4), isNull(reviews.deletedAt)),
     orderBy: [desc(reviews.createdAt)],
     limit,
     with: { user: { columns: { name: true } }, product: { columns: { name: true, slug: true } } },

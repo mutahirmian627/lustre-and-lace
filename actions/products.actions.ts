@@ -290,8 +290,8 @@ export async function getProductBySlug(slug: string) {
   if (!product) return null;
 
   const reviews = await db.query.reviews.findMany({
-    where: (reviews, { eq, and }) =>
-      and(eq(reviews.productId, product.id), eq(reviews.isApproved, true)),
+    where: (reviews, { eq, and, isNull }) =>
+      and(eq(reviews.productId, product.id), eq(reviews.isApproved, true), isNull(reviews.deletedAt)),
     orderBy: (reviews, { desc }) => [desc(reviews.createdAt)],
     with: { user: { columns: { name: true } } },
   });
