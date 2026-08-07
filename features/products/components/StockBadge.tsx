@@ -1,6 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-
-const LOW_STOCK_THRESHOLD = 5;
+import { LOW_STOCK_THRESHOLD } from "@/constants/inventory";
 
 /** Never shows the exact count publicly — that's an admin-only detail (specs/06). */
 export function StockBadge({ stockQuantity }: { stockQuantity: number }) {

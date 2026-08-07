@@ -26,7 +26,11 @@ export function SortDropdown({ includeRelevance = false }: { includeRelevance?: 
   }
 
   return (
-    <Select value={current} onValueChange={handleChange}>
+    <Select
+      items={options.map((o) => ({ label: o.label, value: o.value }))}
+      value={current}
+      onValueChange={handleChange}
+    >
       <SelectTrigger className="w-48" aria-label="Sort products">
         <SelectValue />
       </SelectTrigger>

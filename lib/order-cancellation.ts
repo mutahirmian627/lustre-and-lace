@@ -1,12 +1,12 @@
 import { eq, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { orders, productVariants, coupons } from "@/db/schema";
+import { orders, productVariants, products, coupons } from "@/db/schema";
 
 interface CancellableOrder {
   id: string;
   paymentStatus: string;
   couponId: string | null;
-  items: { variantId: string | null; quantity: number }[];
+  items: { productId: string | null; variantId: string | null; quantity: number }[];
 }
 
 /**
@@ -31,6 +31,17 @@ export async function applyCancellationSideEffects(order: CancellableOrder) {
           .update(productVariants)
           .set({ stockQuantity: sql`${productVariants.stockQuantity} + ${item.quantity}` })
           .where(eq(productVariants.id, item.variantId!))
+      ),
+    // The sale didn't actually happen — reverse the salesCount increment
+    // from placeOrder so the admin dashboard's Top Selling Products chart
+    // (specs/13) doesn't keep counting a cancelled order.
+    ...order.items
+      .filter((item) => item.productId)
+      .map((item) =>
+        db
+          .update(products)
+          .set({ salesCount: sql`${products.salesCount} - ${item.quantity}` })
+          .where(eq(products.id, item.productId!))
       ),
     ...(order.couponId
       ? [db.update(coupons).set({ usageCount: sql`${coupons.usageCount} - 1` }).where(eq(coupons.id, order.couponId))]

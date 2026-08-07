@@ -9,6 +9,7 @@ import {
   cartItems,
   carts,
   productVariants,
+  products,
   coupons,
 } from "@/db/schema";
 import type { ShippingAddressSnapshot } from "@/db/schema/orders";
@@ -152,6 +153,15 @@ export async function placeOrder(input: CheckoutInput) {
         .update(productVariants)
         .set({ stockQuantity: sql`${productVariants.stockQuantity} - ${item.quantity}` })
         .where(eq(productVariants.id, item.variantId!))
+    ),
+    // Feeds the admin dashboard's Top Selling Products chart (specs/13) —
+    // without this, salesCount would stay frozen at whatever seed data set
+    // it and never reflect real orders.
+    ...items.map((item) =>
+      db
+        .update(products)
+        .set({ salesCount: sql`${products.salesCount} + ${item.quantity}` })
+        .where(eq(products.id, item.productId))
     ),
     ...(couponRow
       ? [db.update(coupons).set({ usageCount: sql`${coupons.usageCount} + 1` }).where(eq(coupons.id, couponRow.id))]
