@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { signIn } from "@/lib/auth-client";
+import { mergeGuestCart } from "@/actions/cart.actions";
 import { loginSchema, type LoginInput } from "@/features/auth/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,6 +39,7 @@ export function LoginForm() {
       setFormError(error.message ?? "Invalid email or password.");
       return;
     }
+    await mergeGuestCart();
     router.push(searchParams.get("redirect") || "/");
   };
 

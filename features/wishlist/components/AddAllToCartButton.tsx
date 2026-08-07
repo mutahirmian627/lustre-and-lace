@@ -4,13 +4,16 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { addAllWishlistToCart } from "@/actions/wishlist.actions";
+import { useCart } from "@/features/cart/context/CartProvider";
 
 export function AddAllToCartButton() {
+  const { refreshCart } = useCart();
   const [isAdding, setIsAdding] = useState(false);
 
   async function handleClick() {
     setIsAdding(true);
     const { added, skipped } = await addAllWishlistToCart();
+    if (added > 0) await refreshCart();
     setIsAdding(false);
 
     if (added === 0 && skipped === 0) return;

@@ -5,7 +5,7 @@ import { db } from "@/db";
 import { carts } from "@/db/schema";
 import { auth } from "@/lib/auth";
 
-const GUEST_CART_COOKIE = "guest_cart_token";
+export const GUEST_CART_COOKIE = "guest_cart_token";
 
 /**
  * Resolves the current cart id — by userId when logged in, by a guest

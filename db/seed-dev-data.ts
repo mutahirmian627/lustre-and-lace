@@ -7,6 +7,7 @@ import {
   productImages,
   reviews,
   user,
+  coupons,
 } from "./schema";
 import { auth } from "@/lib/auth";
 
@@ -227,6 +228,26 @@ async function main() {
     // matching manual update — normally Milestone 11's approve action does this.
     await db.update(products).set({ ratingAverage: "5.00", ratingCount: 1 }).where(eq(products.id, necklace1.id));
     await db.update(products).set({ ratingAverage: "4.00", ratingCount: 1 }).where(eq(products.id, ring1.id));
+  }
+
+  const existingCoupon = await db.query.coupons.findFirst({ where: eq(coupons.code, "WELCOME10") });
+  if (!existingCoupon) {
+    await db.insert(coupons).values([
+      {
+        code: "WELCOME10",
+        type: "percentage",
+        value: "10.00",
+        maxDiscountAmount: "1000.00",
+        isActive: true,
+      },
+      {
+        code: "FLAT500",
+        type: "fixed",
+        value: "500.00",
+        minOrderAmount: "3000.00",
+        isActive: true,
+      },
+    ]);
   }
 
   console.log("Dev sample data seeded.");

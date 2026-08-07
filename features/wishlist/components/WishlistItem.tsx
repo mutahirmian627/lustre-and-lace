@@ -3,13 +3,12 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { toast } from "sonner";
 import { HoverLift } from "@/components/shared/HoverLift";
 import { PriceDisplay } from "@/components/shared/PriceDisplay";
 import { Button } from "@/components/ui/button";
 import { WishlistHeartButton } from "@/features/wishlist/components/WishlistHeartButton";
 import { StockBadge } from "@/features/products/components/StockBadge";
-import { addToCart } from "@/actions/cart.actions";
+import { useCart } from "@/features/cart/context/CartProvider";
 import type { ProductVariant, ProductImage } from "@/features/products/types";
 
 interface WishlistItemProduct {
@@ -23,6 +22,7 @@ interface WishlistItemProduct {
 }
 
 export function WishlistItem({ product }: { product: WishlistItemProduct }) {
+  const { addItem } = useCart();
   const [isAdding, setIsAdding] = useState(false);
   const defaultVariant =
     product.variants.find((v) => v.isDefault) ?? product.variants[0];
@@ -33,18 +33,8 @@ export function WishlistItem({ product }: { product: WishlistItemProduct }) {
   async function handleAddToCart() {
     if (!defaultVariant) return;
     setIsAdding(true);
-    const result = await addToCart({
-      productId: product.id,
-      variantId: defaultVariant.id,
-      quantity: 1,
-    });
+    await addItem({ productId: product.id, variantId: defaultVariant.id, quantity: 1 });
     setIsAdding(false);
-
-    if (result.error) {
-      toast.error(result.error);
-      return;
-    }
-    toast.success(`${product.name} added to your cart.`);
   }
 
   return (

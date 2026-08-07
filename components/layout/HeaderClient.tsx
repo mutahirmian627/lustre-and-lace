@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Heart, User, ShoppingBag, X } from "lucide-react";
 import { SearchOverlay } from "@/features/products/components/SearchOverlay";
 import { useWishlist } from "@/features/wishlist/context/WishlistProvider";
+import { useCart } from "@/features/cart/context/CartProvider";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,13 +24,12 @@ type CategoryTree = Awaited<ReturnType<typeof getCategoryTree>>;
 export function HeaderClient({
   categories,
   isLoggedIn,
-  cartCount,
 }: {
   categories: CategoryTree;
   isLoggedIn: boolean;
-  cartCount: number;
 }) {
   const { count: wishlistCount } = useWishlist();
+  const { cart, openDrawer } = useCart();
   const [shrunk, setShrunk] = useState(false);
   const [announcementDismissed, setAnnouncementDismissed] = useState(false);
 
@@ -131,13 +131,12 @@ export function HeaderClient({
             <Button
               variant="ghost"
               size="icon"
-              nativeButton={false}
               aria-label="Cart"
               className="relative"
-              render={<Link href="/cart" />}
+              onClick={openDrawer}
             >
               <ShoppingBag className="size-5" />
-              {cartCount > 0 && <IconBadge count={cartCount} />}
+              {cart.itemCount > 0 && <IconBadge count={cart.itemCount} />}
             </Button>
           </div>
         </div>

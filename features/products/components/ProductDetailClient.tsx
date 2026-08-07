@@ -2,15 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Minus, Plus } from "lucide-react";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { PriceDisplay } from "@/components/shared/PriceDisplay";
+import { QuantityStepper } from "@/components/shared/QuantityStepper";
 import { Gallery } from "@/features/products/components/Gallery";
 import { VariantSelector } from "@/features/products/components/VariantSelector";
 import { StockBadge } from "@/features/products/components/StockBadge";
 import { useVariantSelection } from "@/features/products/hooks/useVariantSelection";
-import { addToCart } from "@/actions/cart.actions";
+import { useCart } from "@/features/cart/context/CartProvider";
 import { WishlistHeartButton } from "@/features/wishlist/components/WishlistHeartButton";
 import { cn } from "@/lib/utils";
 import type { ProductImage, ProductVariant } from "@/features/products/types";
@@ -27,6 +26,7 @@ export function ProductDetailClient({
   variants: ProductVariant[];
 }) {
   const searchParams = useSearchParams();
+  const { addItem } = useCart();
   const { attributeKeys, selected, selectedVariant, isValueAvailable, selectAttribute } =
     useVariantSelection(variants, searchParams.get("variant") ?? undefined);
   const [quantity, setQuantity] = useState(1);
@@ -58,19 +58,9 @@ export function ProductDetailClient({
   async function handleAddToCart() {
     if (!selectedVariant) return;
     setIsAdding(true);
-    const result = await addToCart({
-      productId,
-      variantId: selectedVariant.id,
-      quantity,
-    });
+    const ok = await addItem({ productId, variantId: selectedVariant.id, quantity });
     setIsAdding(false);
-
-    if (result.error) {
-      toast.error(result.error);
-      return;
-    }
-    toast.success(`${productName} added to your cart.`);
-    setQuantity(1);
+    if (ok) setQuantity(1);
   }
 
   return (
@@ -98,31 +88,12 @@ export function ProductDetailClient({
         />
 
         <div ref={ctaRef} className="flex items-center gap-4">
-          <div className="flex items-center rounded-md border border-border">
-            <button
-              type="button"
-              aria-label="Decrease quantity"
-              onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-              disabled={outOfStock || quantity <= 1}
-              className="p-2 disabled:opacity-40"
-            >
-              <Minus className="size-4" />
-            </button>
-            <span className="w-8 text-center text-sm">{quantity}</span>
-            <button
-              type="button"
-              aria-label="Increase quantity"
-              onClick={() =>
-                setQuantity((q) =>
-                  Math.min(selectedVariant?.stockQuantity ?? 1, q + 1)
-                )
-              }
-              disabled={outOfStock || quantity >= (selectedVariant?.stockQuantity ?? 1)}
-              className="p-2 disabled:opacity-40"
-            >
-              <Plus className="size-4" />
-            </button>
-          </div>
+          <QuantityStepper
+            value={quantity}
+            onChange={setQuantity}
+            max={selectedVariant?.stockQuantity ?? 1}
+            disabled={outOfStock}
+          />
 
           <Button
             className="flex-1"

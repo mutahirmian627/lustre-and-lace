@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { signUp } from "@/lib/auth-client";
+import { mergeGuestCart } from "@/actions/cart.actions";
 import { registerSchema, type RegisterInput } from "@/features/auth/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,8 +41,9 @@ export function RegisterForm() {
       setFormError(error.message ?? "Couldn't create your account.");
       return;
     }
-    // Cart milestone (specs/09) wires mergeGuestCart(guestToken) here so a
-    // guest's cart survives into the new account instead of being dropped.
+    // autoSignIn defaults to true, so a session already exists here — the
+    // guest's cart can merge into the new account instead of being dropped.
+    await mergeGuestCart();
     router.push("/verify-email?pending=1");
   };
 

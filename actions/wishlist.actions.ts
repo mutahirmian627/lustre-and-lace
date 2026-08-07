@@ -82,8 +82,8 @@ export async function addAllWishlistToCart() {
       continue;
     }
     const result = await addToCart({ productId: item.product.id, variantId: variant.id, quantity: 1 });
-    if (result.success) added++;
-    else skipped++;
+    if ("error" in result) skipped++;
+    else added++;
   }
 
   return { added, skipped };
