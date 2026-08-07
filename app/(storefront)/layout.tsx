@@ -1,8 +1,16 @@
+import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
+
 export default function StorefrontLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // Header/Footer land in the Homepage & Navigation milestone (specs/05).
-  return <>{children}</>;
+  return (
+    <>
+      <Header />
+      <main>{children}</main>
+      <Footer />
+    </>
+  );
 }

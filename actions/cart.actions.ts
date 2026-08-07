@@ -5,7 +5,8 @@ import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db } from "@/db";
 import { cartItems, productVariants } from "@/db/schema";
-import { getOrCreateCartId } from "@/lib/cart-session";
+import { getOrCreateCartId, getExistingCartId } from "@/lib/cart-session";
+import { sql } from "drizzle-orm";
 
 const addToCartSchema = z.object({
   productId: z.string().uuid(),
@@ -67,4 +68,16 @@ export async function addToCart(input: z.infer<typeof addToCartSchema>) {
 
   revalidatePath("/", "layout");
   return { success: true as const, quantity: nextQuantity };
+}
+
+/** Header badge count. Reads only — never creates a cart just to display a "0". */
+export async function getCartItemCount() {
+  const cartId = await getExistingCartId();
+  if (!cartId) return 0;
+
+  const [{ total }] = await db
+    .select({ total: sql<number>`coalesce(sum(${cartItems.quantity}), 0)::int` })
+    .from(cartItems)
+    .where(eq(cartItems.cartId, cartId));
+  return total;
 }

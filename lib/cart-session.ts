@@ -56,3 +56,24 @@ export async function getOrCreateCartId(): Promise<string> {
 
   return created.id;
 }
+
+/** Read-only lookup for display purposes (e.g. the header badge) — never creates a cart. */
+export async function getExistingCartId(): Promise<string | null> {
+  const session = await auth.api.getSession({ headers: await headers() });
+
+  if (session?.user) {
+    const existing = await db.query.carts.findFirst({
+      where: eq(carts.userId, session.user.id),
+    });
+    return existing?.id ?? null;
+  }
+
+  const cookieStore = await cookies();
+  const token = cookieStore.get(GUEST_CART_COOKIE)?.value;
+  if (!token) return null;
+
+  const existing = await db.query.carts.findFirst({
+    where: eq(carts.guestToken, token),
+  });
+  return existing?.id ?? null;
+}
