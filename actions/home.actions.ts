@@ -1,8 +1,6 @@
-import { and, asc, desc, eq, gte, sql } from "drizzle-orm";
-import { headers } from "next/headers";
+import { and, asc, desc, eq, gte } from "drizzle-orm";
 import { db } from "@/db";
-import { products, reviews, wishlists, categories, productImages } from "@/db/schema";
-import { auth } from "@/lib/auth";
+import { products, reviews, categories, productImages } from "@/db/schema";
 import type { ProductListItem } from "@/features/products/types";
 
 async function withPrimaryImages(
@@ -81,15 +79,4 @@ export async function getHomepageReviews(limit = 8) {
     limit,
     with: { user: { columns: { name: true } }, product: { columns: { name: true, slug: true } } },
   });
-}
-
-export async function getWishlistCount() {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session?.user) return 0;
-
-  const [{ count }] = await db
-    .select({ count: sql<number>`count(*)::int` })
-    .from(wishlists)
-    .where(eq(wishlists.userId, session.user.id));
-  return count;
 }

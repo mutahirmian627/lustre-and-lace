@@ -37,7 +37,12 @@ export function HeroBanner() {
           {HERO_BANNER.headline}
         </h1>
         <p className="mt-4 text-lg text-muted-foreground">{HERO_BANNER.subtext}</p>
-        <Button render={<Link href={HERO_BANNER.ctaHref} />} className="mt-8" size="lg">
+        <Button
+          nativeButton={false}
+          render={<Link href={HERO_BANNER.ctaHref} />}
+          className="mt-8"
+          size="lg"
+        >
           {HERO_BANNER.ctaLabel}
         </Button>
       </motion.div>

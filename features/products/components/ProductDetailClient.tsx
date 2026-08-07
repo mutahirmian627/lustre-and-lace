@@ -11,6 +11,7 @@ import { VariantSelector } from "@/features/products/components/VariantSelector"
 import { StockBadge } from "@/features/products/components/StockBadge";
 import { useVariantSelection } from "@/features/products/hooks/useVariantSelection";
 import { addToCart } from "@/actions/cart.actions";
+import { WishlistHeartButton } from "@/features/wishlist/components/WishlistHeartButton";
 import { cn } from "@/lib/utils";
 import type { ProductImage, ProductVariant } from "@/features/products/types";
 
@@ -130,6 +131,11 @@ export function ProductDetailClient({
           >
             {outOfStock ? "Out of Stock" : isAdding ? "Adding..." : "Add to Cart"}
           </Button>
+
+          <WishlistHeartButton
+            productId={productId}
+            className="border border-border"
+          />
         </div>
       </div>
 

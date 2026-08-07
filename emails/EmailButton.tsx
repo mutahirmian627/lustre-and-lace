@@ -1,5 +1,6 @@
-import { Button } from "@react-email/components";
 import type { ReactNode } from "react";
+import React from "react";
+import { Button } from "@react-email/components";
 
 export function EmailButton({
   href,

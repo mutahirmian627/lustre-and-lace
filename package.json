@@ -10,9 +10,10 @@
     "typecheck": "tsc --noEmit",
     "db:generate": "dotenv -e .env.local -- drizzle-kit generate",
     "db:generate:custom": "dotenv -e .env.local -- drizzle-kit generate --custom",
-    "db:migrate": "dotenv -e .env.local -- drizzle-kit migrate",
+    "db:migrate": "dotenv -e .env.local -- tsx db/migrate.ts",
     "db:studio": "dotenv -e .env.local -- drizzle-kit studio",
     "db:seed": "dotenv -e .env.local -- tsx db/seed.ts",
+    "db:seed:dev": "dotenv -e .env.local -- tsx db/seed-dev-data.ts",
     "email:dev": "email dev --dir emails"
   },
   "dependencies": {

@@ -1,3 +1,9 @@
+import type { ReactNode } from "react";
+// Explicit React import: this file (and Better Auth's email-sending
+// background task) sometimes runs through tsx/esbuild directly (db/seed.ts)
+// rather than through Next's own bundler, which defaults to the classic JSX
+// transform there and needs `React` in scope.
+import React from "react";
 import {
   Body,
   Container,
@@ -9,7 +15,6 @@ import {
   Section,
   Text,
 } from "@react-email/components";
-import type { ReactNode } from "react";
 import { BRAND } from "@/constants/brand";
 
 /**

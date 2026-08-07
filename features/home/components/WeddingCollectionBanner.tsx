@@ -24,6 +24,7 @@ export function WeddingCollectionBanner() {
             {WEDDING_COLLECTION_BANNER.subtext}
           </p>
           <Button
+            nativeButton={false}
             render={<Link href={WEDDING_COLLECTION_BANNER.ctaHref} />}
             className="mt-6"
             size="lg"

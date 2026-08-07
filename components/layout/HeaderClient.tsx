@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Heart, User, ShoppingBag, X } from "lucide-react";
 import { SearchOverlay } from "@/features/products/components/SearchOverlay";
+import { useWishlist } from "@/features/wishlist/context/WishlistProvider";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,14 +23,13 @@ type CategoryTree = Awaited<ReturnType<typeof getCategoryTree>>;
 export function HeaderClient({
   categories,
   isLoggedIn,
-  wishlistCount,
   cartCount,
 }: {
   categories: CategoryTree;
   isLoggedIn: boolean;
-  wishlistCount: number;
   cartCount: number;
 }) {
+  const { count: wishlistCount } = useWishlist();
   const [shrunk, setShrunk] = useState(false);
   const [announcementDismissed, setAnnouncementDismissed] = useState(false);
 
@@ -110,6 +110,7 @@ export function HeaderClient({
             <Button
               variant="ghost"
               size="icon"
+              nativeButton={false}
               aria-label="Wishlist"
               className="hidden md:inline-flex relative"
               render={<Link href="/wishlist" />}
@@ -120,6 +121,7 @@ export function HeaderClient({
             <Button
               variant="ghost"
               size="icon"
+              nativeButton={false}
               aria-label={isLoggedIn ? "Account" : "Sign in"}
               className="hidden md:inline-flex"
               render={<Link href={isLoggedIn ? "/account" : "/login"} />}
@@ -129,6 +131,7 @@ export function HeaderClient({
             <Button
               variant="ghost"
               size="icon"
+              nativeButton={false}
               aria-label="Cart"
               className="relative"
               render={<Link href="/cart" />}
