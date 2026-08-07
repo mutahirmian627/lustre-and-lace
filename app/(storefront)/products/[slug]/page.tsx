@@ -46,10 +46,13 @@ export async function generateMetadata({
 
 export default async function ProductPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ orderId?: string }>;
 }) {
   const { slug } = await params;
+  const { orderId } = await searchParams;
   const product = await getProductBySlug(slug);
   if (!product) notFound();
 
@@ -114,7 +117,10 @@ export default async function ProductPage({
         variants={product.variants}
       />
 
-      <Accordion defaultValue={["description"]} className="mt-12 max-w-3xl">
+      <Accordion
+        defaultValue={orderId ? ["description", "reviews"] : ["description"]}
+        className="mt-12 max-w-3xl"
+      >
         <AccordionItem value="description">
           <AccordionTrigger className="font-heading text-lg">Description</AccordionTrigger>
           <AccordionContent>
@@ -133,7 +139,7 @@ export default async function ProductPage({
             {SITE_POLICIES.returns}
           </AccordionContent>
         </AccordionItem>
-        <AccordionItem value="reviews">
+        <AccordionItem value="reviews" id="reviews">
           <AccordionTrigger className="font-heading text-lg">
             Reviews ({product.reviews.length})
           </AccordionTrigger>
@@ -141,6 +147,7 @@ export default async function ProductPage({
             <ReviewsTab
               productId={product.id}
               productSlug={product.slug}
+              orderId={orderId}
               reviews={product.reviews}
             />
           </AccordionContent>

@@ -14,10 +14,12 @@ interface ReviewWithUser {
 export function ReviewsTab({
   productId,
   productSlug,
+  orderId,
   reviews,
 }: {
   productId: string;
   productSlug: string;
+  orderId?: string;
   reviews: ReviewWithUser[];
 }) {
   return (
@@ -26,7 +28,7 @@ export function ReviewsTab({
         <RatingBreakdown reviews={reviews} />
         <div>
           <h4 className="mb-3 font-medium text-foreground">Write a Review</h4>
-          <ReviewForm productId={productId} productSlug={productSlug} />
+          <ReviewForm productId={productId} productSlug={productSlug} orderId={orderId} />
         </div>
       </div>
 

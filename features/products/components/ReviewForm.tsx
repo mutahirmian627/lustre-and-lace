@@ -18,9 +18,11 @@ import { cn } from "@/lib/utils";
 export function ReviewForm({
   productId,
   productSlug,
+  orderId,
 }: {
   productId: string;
   productSlug: string;
+  orderId?: string;
 }) {
   const { data: session, isPending } = useSession();
   const [submitted, setSubmitted] = useState(false);
@@ -65,7 +67,7 @@ export function ReviewForm({
   }
 
   const onSubmit = async (data: ReviewFormInput) => {
-    const result = await submitReview({ productId, productSlug, ...data });
+    const result = await submitReview({ productId, productSlug, orderId, ...data });
     if (result.error) {
       toast.error(result.error);
       return;
