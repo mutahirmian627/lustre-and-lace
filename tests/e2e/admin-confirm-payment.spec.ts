@@ -8,13 +8,11 @@ import { test, expect } from "@playwright/test";
 test("admin can confirm a manual-transfer order's payment", async ({ page }) => {
   await page.goto("/products/everyday-stud-earrings");
   await page.getByRole("button", { name: "Add to Cart" }).click();
-  // Wait for the add to actually land before navigating straight to
-  // checkout — going through the mini cart drawer's own "Checkout" link
-  // proved flaky under the full suite's sequential load.
-  await expect(page.getByRole("heading", { name: "Everyday Stud Earrings" })).toBeVisible({
-    timeout: 45_000,
-  });
-  await page.goto("/checkout");
+
+  // The mini cart drawer opens once the add-to-cart Server Action actually
+  // resolves — this click's built-in auto-wait is the real sync point.
+  await page.getByRole("button", { name: "Checkout" }).click();
+  await expect(page).toHaveURL(/\/checkout$/);
 
   const timestamp = Date.now();
   await page.getByLabel("Full name").first().fill("E2E Admin Confirm");
@@ -28,7 +26,7 @@ test("admin can confirm a manual-transfer order's payment", async ({ page }) => 
   await page.getByRole("button", { name: "Place Order" }).click();
 
   await expect(page).toHaveURL(/\/checkout\/confirmation\//, { timeout: 45_000 });
-  const referenceLocator = page.getByText(/^LL-\d{4}-\d{5}$/);
+  const referenceLocator = page.getByText(/^LL-\d{4}-\d{5}$/).first();
   await expect(referenceLocator).toBeVisible();
   const orderReference = (await referenceLocator.textContent())?.trim();
   expect(orderReference).toBeTruthy();

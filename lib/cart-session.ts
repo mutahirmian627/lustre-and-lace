@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { carts } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import { IS_SECURE_CONTEXT } from "@/lib/is-secure-context";
 
 export const GUEST_CART_COOKIE = "guest_cart_token";
 
@@ -49,7 +50,7 @@ export async function getOrCreateCartId(): Promise<string> {
   cookieStore.set(GUEST_CART_COOKIE, newToken, {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: IS_SECURE_CONTEXT,
     maxAge: 60 * 60 * 24 * 30,
     path: "/",
   });

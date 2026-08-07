@@ -9,14 +9,14 @@ import { test, expect } from "@playwright/test";
 test("guest can complete a COD checkout", async ({ page }) => {
   await page.goto("/products/pearl-drop-earrings");
   await page.getByRole("button", { name: "Add to Cart" }).click();
-  // Wait for the add to actually land (a Server Action round trip against
-  // Neon here has been observed taking several seconds) before navigating
-  // straight to checkout — going through the mini cart drawer's own
-  // "Checkout" link proved flaky under the full suite's sequential load.
-  await expect(page.getByRole("heading", { name: "Pearl Drop Earrings" })).toBeVisible({
-    timeout: 45_000,
-  });
-  await page.goto("/checkout");
+
+  // The mini cart drawer opens once the add-to-cart Server Action actually
+  // resolves — a Neon round trip here has been observed taking several
+  // seconds, so this click's built-in auto-wait is the real sync point
+  // (unlike waiting for the PDP heading, which is visible before the click
+  // and proves nothing about the mutation completing).
+  await page.getByRole("button", { name: "Checkout" }).click();
+  await expect(page).toHaveURL(/\/checkout$/);
 
   const timestamp = Date.now();
   await page.getByLabel("Full name").first().fill("E2E Test Customer");

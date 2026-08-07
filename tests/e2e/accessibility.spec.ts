@@ -13,9 +13,9 @@ for (const { name, path, needsCartItem } of PAGES) {
     if (needsCartItem) {
       await page.goto("/products/pearl-drop-earrings");
       await page.getByRole("button", { name: "Add to Cart" }).click();
-      await expect(page.getByRole("heading", { name: "Pearl Drop Earrings" })).toBeVisible({
-        timeout: 45_000,
-      });
+      // The mini cart drawer opening is the real signal that the
+      // add-to-cart Server Action resolved.
+      await expect(page.getByRole("button", { name: "Checkout" })).toBeVisible({ timeout: 45_000 });
     }
 
     await page.goto(path);

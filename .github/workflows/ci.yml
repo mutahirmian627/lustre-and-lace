@@ -1,0 +1,119 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  NODE_VERSION: "20"
+
+jobs:
+  # Fast, DB-free checks — run on every push/PR with no secrets required.
+  static-checks:
+    name: Typecheck, lint, unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm typecheck
+
+      - run: pnpm lint
+
+      - run: pnpm test:unit
+
+  # Build + E2E need a real database — `db/index.ts` uses the Neon
+  # serverless HTTP driver, which only speaks to an actual Neon endpoint,
+  # not a generic `postgres:` service container. This job provisions a
+  # throwaway Neon branch per run (specs/16's stated "dedicated test
+  # branch" decision) and deletes it when done, so CI never touches the
+  # shared dev database that local manual testing uses.
+  #
+  # Requires repo secrets: NEON_API_KEY, NEON_PROJECT_ID, BETTER_AUTH_SECRET.
+  # If Neon branch-per-run isn't set up, point DATABASE_URL at a static
+  # test database instead and delete the two `neondatabase/*-branch-action`
+  # steps below.
+  build-and-e2e:
+    name: Build and Playwright E2E
+    runs-on: ubuntu-latest
+    needs: static-checks
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Create Neon branch
+        id: neon-branch
+        uses: neondatabase/create-branch-action@v6
+        with:
+          project_id: ${{ secrets.NEON_PROJECT_ID }}
+          api_key: ${{ secrets.NEON_API_KEY }}
+          branch_name: ci-${{ github.run_id }}
+
+      - name: Run migrations and seed
+        # Calling tsx directly, not the `db:*` package.json scripts — those
+        # wrap every command in `dotenv -e .env.local`, and that file only
+        # exists for local development, not in CI.
+        env:
+          DATABASE_URL: ${{ steps.neon-branch.outputs.db_url }}
+        run: |
+          pnpm exec tsx db/migrate.ts
+          pnpm exec tsx db/seed.ts
+          pnpm exec tsx db/seed-dev-data.ts
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - run: pnpm exec playwright install --with-deps chromium
+
+      - name: Build and run E2E suite
+        env:
+          DATABASE_URL: ${{ steps.neon-branch.outputs.db_url }}
+          BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
+          # lib/resend.ts and lib/cloudinary.ts both throw at import time if
+          # their respective env vars are missing, and `next build` imports
+          # enough of the module graph to hit that — EMAIL_TEST_MODE avoids
+          # needing a real RESEND_API_KEY, and these Cloudinary values just
+          # need to be present (E2E never uploads a real image).
+          EMAIL_TEST_MODE: "true"
+          CLOUDINARY_CLOUD_NAME: ci-placeholder
+          CLOUDINARY_API_KEY: ci-placeholder
+          CLOUDINARY_API_SECRET: ci-placeholder
+        run: pnpm exec playwright test
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+      - name: Delete Neon branch
+        if: always()
+        uses: neondatabase/delete-branch-action@v3
+        with:
+          project_id: ${{ secrets.NEON_PROJECT_ID }}
+          api_key: ${{ secrets.NEON_API_KEY }}
+          branch: ${{ steps.neon-branch.outputs.branch_id }}

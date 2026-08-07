@@ -20,7 +20,7 @@ test("register, verify via captured email, then log in", async ({ page, request,
   await page.getByRole("button", { name: "Create account" }).click();
 
   await expect(page).toHaveURL(/\/verify-email/, { timeout: 45_000 });
-  await expect(page.getByText("Check your email")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Check your email" })).toBeVisible();
 
   const emailResponse = await request.get(`${baseURL}/api/test/last-email`);
   expect(emailResponse.ok()).toBeTruthy();
@@ -30,7 +30,10 @@ test("register, verify via captured email, then log in", async ({ page, request,
 
   const hrefMatch = captured.html.match(/href="([^"]+)"/);
   expect(hrefMatch).not.toBeNull();
-  const verifyUrl = hrefMatch[1] as string;
+  // The email HTML entity-escapes the href (correct for HTML) — undo that
+  // before treating it as a literal URL, or "&amp;callbackURL=..." becomes
+  // part of the token value instead of a separate query param.
+  const verifyUrl = (hrefMatch[1] as string).replace(/&amp;/g, "&");
 
   await page.goto(verifyUrl);
   await expect(page.getByText("Email verified")).toBeVisible({ timeout: 45_000 });

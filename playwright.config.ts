@@ -6,8 +6,11 @@ const BASE_URL = `http://localhost:${PORT}`;
 /**
  * Runs against a production build on its own port (specs/16), not the
  * manually-managed dev server on 3000 — both so EMAIL_TEST_MODE can be
- * forced on for this process only, and to avoid `next dev`'s on-demand
- * compilation adding to the per-action latency measured below.
+ * forced on for this process only, and because a long-lived `next dev`
+ * instance measurably degrades (Server Actions that normally resolve in a
+ * few seconds started taking 45s+ after a couple dozen requests during
+ * manual debugging of this suite) in a way a fresh production build does
+ * not.
  *
  * Uses the same database as the rest of this project, not a separate Neon
  * test branch — specs/16's stated decision is a dedicated branch, but
@@ -40,7 +43,9 @@ export default defineConfig({
     command: `npx next build && npx next start -p ${PORT}`,
     url: BASE_URL,
     reuseExistingServer: false,
-    timeout: 180_000,
+    // A from-scratch build alone was measured taking 25s-75s depending on
+    // cache warmth, before `next start` even begins — 180s cut this close.
+    timeout: 300_000,
     env: {
       EMAIL_TEST_MODE: "true",
       NEXT_DIST_DIR: ".next-e2e",

@@ -8,9 +8,10 @@ import { test, expect } from "@playwright/test";
 test("guest cart merges into the account on registration", async ({ page }) => {
   await page.goto("/products/pearl-drop-earrings");
   await page.getByRole("button", { name: "Add to Cart" }).click();
-  await expect(page.getByRole("heading", { name: "Pearl Drop Earrings" })).toBeVisible({
-    timeout: 45_000,
-  });
+  // The mini cart drawer opening is the real signal that the add-to-cart
+  // Server Action resolved — the PDP heading is visible before the click
+  // and proves nothing about the mutation completing.
+  await expect(page.getByRole("button", { name: "Checkout" })).toBeVisible({ timeout: 45_000 });
 
   const timestamp = Date.now();
   await page.goto("/register");
@@ -23,5 +24,5 @@ test("guest cart merges into the account on registration", async ({ page }) => {
   await expect(page).toHaveURL(/\/verify-email/, { timeout: 45_000 });
 
   await page.goto("/cart");
-  await expect(page.getByRole("link", { name: "Pearl Drop Earrings" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Pearl Drop Earrings" }).first()).toBeVisible();
 });

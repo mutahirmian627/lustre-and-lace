@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getCookieCache } from "better-auth/cookies";
+import { IS_SECURE_CONTEXT } from "@/lib/is-secure-context";
 
 /**
  * Single enforcement point for /account/* and /admin/* (specs/03). Reads the
@@ -12,6 +13,7 @@ export async function middleware(request: NextRequest) {
 
   const cache = await getCookieCache(request, {
     secret: process.env.BETTER_AUTH_SECRET,
+    isSecure: IS_SECURE_CONTEXT,
   });
 
   if (pathname.startsWith("/admin")) {
