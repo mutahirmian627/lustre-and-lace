@@ -36,7 +36,7 @@ export function ProductRow({
         {products.map((product) => (
           <div
             key={product.id}
-            className="w-40 shrink-0 snap-start sm:w-auto"
+            className="w-44 shrink-0 snap-start sm:w-auto"
           >
             <ProductCard product={product} />
           </div>

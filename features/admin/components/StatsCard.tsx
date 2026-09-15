@@ -18,12 +18,12 @@ export function StatsCard({
   tone?: "default" | "warning" | "destructive";
 }) {
   const content = (
-    <div className="flex items-start justify-between rounded-lg border border-border p-4">
-      <div>
-        <p className="text-sm text-muted-foreground">{label}</p>
+    <div className="flex h-full min-h-28 items-start justify-between gap-3 rounded-lg border border-border bg-card p-4">
+      <div className="min-w-0 flex-1">
+        <p className="text-sm leading-tight text-muted-foreground">{label}</p>
         <p
           className={cn(
-            "font-heading text-2xl",
+            "mt-1 truncate font-heading text-2xl tabular-nums",
             tone === "warning" && "text-amber-600 dark:text-amber-400",
             tone === "destructive" && "text-destructive",
             tone === "default" && "text-foreground"
@@ -31,15 +31,16 @@ export function StatsCard({
         >
           {value}
         </p>
-        {subtext && <p className="text-xs text-muted-foreground">{subtext}</p>}
+        {/* Always rendered so cards with and without a subtext stay the same height. */}
+        <p className="mt-1 min-h-4 truncate text-xs text-muted-foreground">{subtext ?? " "}</p>
       </div>
-      <Icon className="size-6 text-muted-foreground" />
+      <Icon className="size-6 shrink-0 text-muted-foreground" />
     </div>
   );
 
   if (href) {
     return (
-      <Link href={href} className="transition-opacity hover:opacity-80">
+      <Link href={href} className="block h-full transition-opacity hover:opacity-80">
         {content}
       </Link>
     );

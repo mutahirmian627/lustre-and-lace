@@ -142,3 +142,37 @@
     @apply font-heading tracking-wide;
   }
 }
+
+/* Hero entrance motion — CSS-only so the headline (LCP) is visible in the first paint. */
+@keyframes hero-rise {
+  from {
+    transform: translateY(12px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes hero-zoom {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.08);
+  }
+}
+
+.hero-rise {
+  animation: hero-rise 0.6s ease-out both;
+}
+
+.hero-zoom {
+  animation: hero-zoom 20s linear both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-rise,
+  .hero-zoom {
+    animation: none;
+  }
+}

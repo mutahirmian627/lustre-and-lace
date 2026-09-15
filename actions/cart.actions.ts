@@ -15,19 +15,21 @@ import { capQuantityToStock } from "@/utils/stock";
 import type { CartLineItem, CartSummary } from "@/features/cart/types";
 
 async function buildCartSummary(cartId: string | null): Promise<CartSummary> {
-  const shippingRate = await getFlatShippingRate();
   if (!cartId) {
-    return { items: [], subtotal: 0, itemCount: 0, shippingRate };
+    return { items: [], subtotal: 0, itemCount: 0, shippingRate: await getFlatShippingRate() };
   }
 
-  const rows = await db.query.cartItems.findMany({
-    where: eq(cartItems.cartId, cartId),
-    orderBy: [asc(cartItems.createdAt)],
-    with: {
-      product: { columns: { name: true, slug: true } },
-      variant: true,
-    },
-  });
+  const [shippingRate, rows] = await Promise.all([
+    getFlatShippingRate(),
+    db.query.cartItems.findMany({
+      where: eq(cartItems.cartId, cartId),
+      orderBy: [asc(cartItems.createdAt)],
+      with: {
+        product: { columns: { name: true, slug: true } },
+        variant: true,
+      },
+    }),
+  ]);
 
   const productIds = rows.map((r) => r.productId);
   const images = productIds.length
