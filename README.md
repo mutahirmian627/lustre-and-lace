@@ -97,3 +97,7 @@ Open [http://localhost:3000](http://localhost:3000).
 Deployed on Vercel with a Neon Postgres production branch. The auto-cancel-unpaid-orders route is registered as an hourly Vercel Cron job in [`vercel.json`](vercel.json).
 
 Before going live, complete the pre-launch checklist in [`specs/17-deployment.md`](specs/17-deployment.md) — verifying the Resend sending domain, seeding `platformSettings` with real values, changing the bootstrap admin password, and a manual smoke test of both checkout paths.
+
+## Deploying
+
+Pushes to `master` deploy to Vercel automatically (project `lustre-and-lace`). Database changes are not applied by a deploy: run `db:migrate` against the production database first when a change adds or alters tables.
