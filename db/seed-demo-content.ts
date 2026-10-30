@@ -178,7 +178,13 @@ async function ensureCategories() {
   const bySlug = new Map<string, string>();
   for (const c of await db.select({ id: categories.id, slug: categories.slug }).from(categories)) bySlug.set(c.slug, c.id);
   for (const c of NEW_CATEGORIES) {
-    if (bySlug.has(c.slug)) continue;
+    if (bySlug.has(c.slug)) {
+      // Repair rows left parentless by an earlier partial run.
+      if (c.parent && bySlug.get(c.parent)) {
+        await db.update(categories).set({ parentId: bySlug.get(c.parent) }).where(eq(categories.slug, c.slug));
+      }
+      continue;
+    }
     const [created] = await db
       .insert(categories)
       .values({ name: c.name, slug: c.slug, parentId: c.parent ? bySlug.get(c.parent) : null, displayOrder: c.order })

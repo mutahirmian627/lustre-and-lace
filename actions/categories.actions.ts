@@ -25,7 +25,7 @@ const getActiveCategoryRows = unstable_cache(
       .from(categories)
       .where(eq(categories.isActive, true))
       .orderBy(asc(categories.displayOrder)),
-  ["active-category-rows"],
+  ["active-category-rows-v2"],
   { tags: [CATEGORIES_CACHE_TAG], revalidate: 3600 }
 );
 
