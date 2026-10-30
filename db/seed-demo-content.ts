@@ -107,10 +107,18 @@ const EXISTING_KINDS: Record<string, Kind> = {
   "bridal-choker-set": "set",
 };
 
+/** Every category the demo products use, parents first, so this also works on an empty database. */
 const NEW_CATEGORIES = [
+  { slug: "necklaces", name: "Necklaces", parent: null, order: 0 },
+  { slug: "earrings", name: "Earrings", parent: null, order: 1 },
+  { slug: "bangles", name: "Bangles", parent: null, order: 2 },
+  { slug: "rings", name: "Rings", parent: null, order: 3 },
+  { slug: "wedding-collection", name: "Wedding Collection", parent: null, order: 4 },
+  { slug: "jewellery-sets", name: "Jewellery Sets", parent: null, order: 5 },
+  { slug: "chokers", name: "Chokers", parent: "necklaces", order: 0 },
+  { slug: "pendant-necklaces", name: "Pendant Necklaces", parent: "necklaces", order: 1 },
   { slug: "jhumkas", name: "Jhumkas", parent: "earrings", order: 0 },
   { slug: "studs-hoops", name: "Studs & Hoops", parent: "earrings", order: 1 },
-  { slug: "jewellery-sets", name: "Jewellery Sets", parent: null, order: 5 },
 ];
 
 const REVIEWERS = ["Ayesha Malik", "Fatima Noor", "Hira Siddiqui", "Sana Ahmed", "Zainab Raza", "Mahnoor Ali", "Iqra Hussain", "Rabia Sheikh"];
