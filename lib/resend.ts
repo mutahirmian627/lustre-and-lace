@@ -1,11 +1,43 @@
 import type { ReactElement } from "react";
 import { Resend } from "resend";
+import nodemailer from "nodemailer";
+import { render } from "@react-email/render";
 import { testModeResend } from "@/lib/resend.test-mode";
 
 /** Narrowed to the one method every email template call site actually uses. */
 export interface EmailSender {
   emails: {
     send(params: { from: string; to: string | string[]; subject: string; react: ReactElement }): Promise<unknown>;
+  };
+}
+
+/**
+ * SMTP alternative for when there's no domain to verify with Resend: set SMTP_HOST (plus
+ * SMTP_PORT / SMTP_USER / SMTP_PASSWORD) and every email goes through that mailbox instead.
+ * A Gmail account with an app password works and can email anyone. Failures are returned the
+ * way Resend returns them (`{ error }`) rather than thrown, so callers behave the same.
+ */
+function createSmtpSender(): EmailSender {
+  const port = Number(process.env.SMTP_PORT ?? 587);
+  const transport = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port,
+    secure: port === 465,
+    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASSWORD },
+  });
+
+  return {
+    emails: {
+      async send({ from, to, subject, react }) {
+        try {
+          const [html, text] = await Promise.all([render(react), render(react, { plainText: true })]);
+          const info = await transport.sendMail({ from, to, subject, html, text });
+          return { data: { id: info.messageId }, error: null };
+        } catch (error) {
+          return { data: null, error: { message: error instanceof Error ? error.message : "SMTP send failed" } };
+        }
+      },
+    },
   };
 }
 
@@ -18,12 +50,14 @@ export interface EmailSender {
 export const resend: EmailSender =
   process.env.EMAIL_TEST_MODE === "true"
     ? testModeResend
-    : (() => {
-        if (!process.env.RESEND_API_KEY) {
-          throw new Error("RESEND_API_KEY environment variable is not set");
-        }
-        return new Resend(process.env.RESEND_API_KEY);
-      })();
+    : process.env.SMTP_HOST
+      ? createSmtpSender()
+      : (() => {
+          if (!process.env.RESEND_API_KEY) {
+            throw new Error("RESEND_API_KEY environment variable is not set");
+          }
+          return new Resend(process.env.RESEND_API_KEY);
+        })();
 
 // Must be a domain verified in the Resend dashboard before launch — see
 // specs/17-deployment.md pre-launch checklist.

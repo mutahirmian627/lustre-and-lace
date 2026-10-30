@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { playfairDisplay, inter } from "@/styles/fonts";
+import { playfairDisplay, publicSans } from "@/styles/fonts";
 import { Toaster } from "@/components/ui/sonner";
 import { BRAND } from "@/constants/brand";
 import "./globals.css";
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#B76E79", // Rose Gold
+  themeColor: "#4E3844", // Plum
 };
 
 export default function RootLayout({
@@ -41,7 +41,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${playfairDisplay.variable} ${inter.variable}`}
+      className={`${playfairDisplay.variable} ${publicSans.variable}`}
     >
       <body className="antialiased">
         {children}

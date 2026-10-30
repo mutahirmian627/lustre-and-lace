@@ -65,19 +65,13 @@ export default async function CheckoutConfirmationPage({
         </div>
       </div>
 
-      {!order.userId && (
-        <div className="mt-6 rounded-lg bg-secondary p-4 text-center text-sm text-secondary-foreground">
-          <p>Create an account to track this order and future ones.</p>
-          <Link
-            href={`/register`}
-            className="mt-1 inline-block font-medium text-primary hover:underline"
-          >
-            Create an account
-          </Link>
-        </div>
-      )}
+      <div className="mt-6 flex flex-col items-center gap-2 text-center">
+        <Link href={`/account/orders/${order.id}`} className="text-sm font-medium text-primary hover:underline">
+          Track this order
+        </Link>
+      </div>
 
-      <div className="mt-6 text-center">
+      <div className="mt-4 text-center">
         <Link href="/products" className="text-sm text-primary hover:underline">
           Continue Shopping
         </Link>

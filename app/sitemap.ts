@@ -8,6 +8,7 @@ const SITE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://lustreandlace.com";
 const STATIC_ROUTES = [
   "",
   "/products",
+  "/sale",
   "/search",
   "/cart",
   "/wishlist",

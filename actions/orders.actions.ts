@@ -15,14 +15,18 @@ const ORDERS_PER_PAGE = 10;
 
 /**
  * Used by the checkout confirmation page right after placeOrder redirects
- * here — the UUID itself acts as an unguessable capability token, since a
- * guest has no session to check ownership against.
+ * here. Orders always belong to an account now, so only the owner can view it.
  */
 export async function getOrderById(orderId: string) {
-  return db.query.orders.findFirst({
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session?.user) return null;
+
+  const order = await db.query.orders.findFirst({
     where: eq(orders.id, orderId),
     with: { items: true },
   });
+  if (!order || order.userId !== session.user.id) return null;
+  return order;
 }
 
 /** Paginated order history for the logged-in customer (specs/11). */

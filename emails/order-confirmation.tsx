@@ -5,7 +5,7 @@ import { EmailButton } from "./EmailButton";
 import { OrderItemsSummary, type OrderEmailItem } from "./OrderItemsSummary";
 import { formatCurrency } from "@/utils/format-currency";
 
-const BODY_STYLE = { color: "#2F2F2F", fontSize: 15, lineHeight: "24px" };
+const BODY_STYLE = { color: "#221D1D", fontSize: 15, lineHeight: "24px" };
 
 export default function OrderConfirmation({
   customerName,
@@ -33,7 +33,7 @@ export default function OrderConfirmation({
   whatsappLink?: string;
 }) {
   return (
-    <EmailLayout previewText={`Order ${orderReference} confirmed`}>
+    <EmailLayout previewText={`Order ${orderReference} confirmed`} eyebrow="Your order" title="Thank you for your order">
       <Text style={BODY_STYLE}>Hi {customerName},</Text>
       <Text style={BODY_STYLE}>
         Thank you for your order! Here&apos;s a summary of{" "}
@@ -42,7 +42,7 @@ export default function OrderConfirmation({
 
       <OrderItemsSummary items={items} />
 
-      <Text style={{ ...BODY_STYLE, fontSize: 13, color: "#75706E" }}>
+      <Text style={{ ...BODY_STYLE, fontSize: 13, color: "#605858" }}>
         Subtotal: {formatCurrency(subtotal)}
         {Number(discountAmount) > 0 && <> · Discount: -{formatCurrency(discountAmount)}</>}
         {" "}· Shipping: {formatCurrency(shippingAmount)}
@@ -68,7 +68,7 @@ export default function OrderConfirmation({
           {whatsappLink && (
             <EmailButton href={whatsappLink}>Send Payment Screenshot on WhatsApp</EmailButton>
           )}
-          <Text style={{ ...BODY_STYLE, fontSize: 13, color: "#75706E" }}>
+          <Text style={{ ...BODY_STYLE, fontSize: 13, color: "#605858" }}>
             Your order will be processed once payment is verified.
           </Text>
         </>

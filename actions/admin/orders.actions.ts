@@ -9,13 +9,15 @@ import { auth } from "@/lib/auth";
 import { applyCancellationSideEffects } from "@/lib/order-cancellation";
 import { toCsv } from "@/utils/csv";
 import { formatCurrency } from "@/utils/format-currency";
+import { isAdminRole } from "@/lib/roles";
+import { requireAdminUser } from "@/lib/require-admin";
 
 const PAGE_SIZE = 20;
 const FORWARD_STATUSES = ["pending", "processing", "shipped", "delivered"] as const;
 
 async function requireAdmin() {
   const session = await auth.api.getSession({ headers: await headers() });
-  if (!session?.user || session.user.role !== "admin") {
+  if (!session?.user || !isAdminRole(session.user.role)) {
     throw new Error("Admin access required.");
   }
 }
@@ -36,6 +38,7 @@ function whereForTab(tab: OrdersTab) {
 }
 
 export async function getAdminOrders({ tab = "all", page = 1 }: { tab?: OrdersTab; page?: number }) {
+  await requireAdminUser();
   const where = whereForTab(tab);
   const offset = (page - 1) * PAGE_SIZE;
 
@@ -54,6 +57,7 @@ export async function getAdminOrders({ tab = "all", page = 1 }: { tab?: OrdersTa
 }
 
 export async function getAwaitingPaymentCount() {
+  await requireAdminUser();
   const [{ count }] = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(orders)
@@ -62,6 +66,7 @@ export async function getAwaitingPaymentCount() {
 }
 
 export async function getAdminOrderById(id: string) {
+  await requireAdminUser();
   return db.query.orders.findFirst({
     where: eq(orders.id, id),
     with: { items: { with: { product: { columns: { slug: true } } } }, user: { columns: { name: true, email: true } } },

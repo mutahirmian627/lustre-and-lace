@@ -26,6 +26,12 @@
   --color-chart-2: var(--chart-2);
   --color-chart-1: var(--chart-1);
   --color-ring: var(--ring);
+  --color-plum: var(--plum);
+  --color-plum-foreground: var(--plum-foreground);
+  --color-gold: var(--gold);
+  --color-gold-dark: var(--gold-dark);
+  --color-champagne: var(--champagne);
+  --color-blush-light: var(--blush-light);
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
@@ -51,79 +57,91 @@
 }
 
 :root {
-  /* Lustre & Lace brand palette — specs/00-brand-and-tech-stack.md */
+  /* Lustre & Lace palette, refined: warm ink, blush, plum and raspberry with champagne-gold accents. */
   --background: #ffffff;
-  --foreground: #2f2f2f;
+  --foreground: #221d1d; /* warm near-black */
   --card: #ffffff;
-  --card-foreground: #2f2f2f;
+  --card-foreground: #221d1d;
   --popover: #ffffff;
-  --popover-foreground: #2f2f2f;
-  --primary: #b76e79; /* Rose Gold — CTAs, active states, price highlights */
-  --primary-foreground: #fff8f4;
-  --secondary: #f8d7e6; /* Blush Pink */
-  --secondary-foreground: #2f2f2f;
-  --muted: #f7f1ee;
-  --muted-foreground: #75706e;
-  --accent: #fff8f4; /* Cream */
-  --accent-foreground: #2f2f2f;
-  --success: #6e9c82; /* Soft Emerald */
+  --popover-foreground: #221d1d;
+  --primary: #af5071; /* Raspberry: CTAs, links, prices, active states */
+  --primary-foreground: #ffffff;
+  --secondary: #f4c6cf; /* Blush */
+  --secondary-foreground: #4e3844;
+  --muted: #f9f8f9;
+  --muted-foreground: #605858;
+  --accent: #fff7f7; /* Blush-white surface */
+  --accent-foreground: #4e3844;
+  --success: #3f7d56;
   --success-foreground: #ffffff;
-  --destructive: #c4534b;
+  --destructive: #ce2b21;
   --destructive-foreground: #ffffff;
-  --border: #ece2df;
-  --input: #ece2df;
-  --ring: #b76e79;
-  --chart-1: #b76e79;
-  --chart-2: #f8d7e6;
-  --chart-3: #2f2f2f;
-  --chart-4: #6e9c82;
-  --chart-5: #d4a5ae;
+  --border: #efecea;
+  --input: #e0dad5;
+  --ring: #af5071;
+  --plum: #4e3844; /* Deep plum: announcement bar, footer, dark sections */
+  --plum-foreground: #ffffff;
+  --gold: #b58b45; /* Champagne gold accent (icons, and text on plum) */
+  --gold-dark: #8a6a2e; /* Same gold, dark enough for small text on light surfaces */
+  --champagne: #ede4d3;
+  --blush-light: #f9e2e7;
+  --chart-1: #af5071;
+  --chart-2: #d8abbb;
+  --chart-3: #4e3844;
+  --chart-4: #b58b45;
+  --chart-5: #f4c6cf;
   --radius: 0.75rem;
-  --sidebar: #fff8f4;
-  --sidebar-foreground: #2f2f2f;
-  --sidebar-primary: #b76e79;
-  --sidebar-primary-foreground: #fff8f4;
-  --sidebar-accent: #f8d7e6;
-  --sidebar-accent-foreground: #2f2f2f;
-  --sidebar-border: #ece2df;
-  --sidebar-ring: #b76e79;
+  --sidebar: #fff7f7;
+  --sidebar-foreground: #221d1d;
+  --sidebar-primary: #af5071;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f4c6cf;
+  --sidebar-accent-foreground: #4e3844;
+  --sidebar-border: #efecea;
+  --sidebar-ring: #af5071;
 }
 
 .dark {
-  --background: #201c1b;
+  --background: #1c1718;
   --foreground: #f5efec;
-  --card: #2a2422;
+  --card: #261f21;
   --card-foreground: #f5efec;
-  --popover: #2a2422;
+  --popover: #261f21;
   --popover-foreground: #f5efec;
-  --primary: #c98d96;
-  --primary-foreground: #201c1b;
-  --secondary: #4a3a3f;
-  --secondary-foreground: #f5efec;
-  --muted: #332b29;
+  --primary: #d8abbb;
+  --primary-foreground: #221d1d;
+  --secondary: #4e3844;
+  --secondary-foreground: #f4c6cf;
+  --muted: #2a2224;
   --muted-foreground: #b3a9a5;
-  --accent: #332b29;
+  --accent: #2a2224;
   --accent-foreground: #f5efec;
   --success: #7fb096;
-  --success-foreground: #201c1b;
-  --destructive: #d97873;
-  --destructive-foreground: #201c1b;
-  --border: #3d3532;
-  --input: #3d3532;
-  --ring: #c98d96;
-  --chart-1: #c98d96;
-  --chart-2: #4a3a3f;
+  --success-foreground: #221d1d;
+  --destructive: #e0645b;
+  --destructive-foreground: #221d1d;
+  --border: #3b3234;
+  --input: #3b3234;
+  --ring: #d8abbb;
+  --plum: #2e2229;
+  --plum-foreground: #f5efec;
+  --gold: #d4b073;
+  --gold-dark: #d4b073;
+  --champagne: #3a3128;
+  --blush-light: #3a2a30;
+  --chart-1: #d8abbb;
+  --chart-2: #af5071;
   --chart-3: #f5efec;
-  --chart-4: #7fb096;
+  --chart-4: #d4b073;
   --chart-5: #a8747e;
-  --sidebar: #2a2422;
+  --sidebar: #261f21;
   --sidebar-foreground: #f5efec;
-  --sidebar-primary: #c98d96;
-  --sidebar-primary-foreground: #201c1b;
-  --sidebar-accent: #4a3a3f;
-  --sidebar-accent-foreground: #f5efec;
-  --sidebar-border: #3d3532;
-  --sidebar-ring: #c98d96;
+  --sidebar-primary: #d8abbb;
+  --sidebar-primary-foreground: #221d1d;
+  --sidebar-accent: #4e3844;
+  --sidebar-accent-foreground: #f4c6cf;
+  --sidebar-border: #3b3234;
+  --sidebar-ring: #d8abbb;
 }
 
 @layer base {
@@ -140,5 +158,99 @@
   h2,
   h3 {
     @apply font-heading tracking-wide;
+  }
+}
+
+/* Hero entrance motion — CSS-only so the headline (LCP) is visible in the first paint. */
+@keyframes hero-rise {
+  from {
+    transform: translateY(12px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes hero-zoom {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.08);
+  }
+}
+
+.hero-rise {
+  animation: hero-rise 0.6s ease-out both;
+}
+
+.hero-zoom {
+  animation: hero-zoom 20s linear both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-rise,
+  .hero-zoom {
+    animation: none;
+  }
+}
+
+
+/* Scroll-driven fade-in for homepage sections (FadeInSection). Unsupported browsers just show the content. */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@supports (animation-timeline: view()) {
+  .fade-in-section {
+    animation: fade-in-up linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 35%;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fade-in-section {
+      animation: none;
+    }
+  }
+}
+
+
+/* Tailwind's preflight resets buttons to the default arrow; make everything interactive show a pointer. */
+@layer base {
+  button:not(:disabled),
+  a[href],
+  summary,
+  select:not(:disabled),
+  label[for],
+  [role="button"]:not([aria-disabled="true"]),
+  [role="tab"],
+  [role="menuitem"],
+  [role="menuitemcheckbox"],
+  [role="menuitemradio"],
+  [role="option"],
+  [role="switch"],
+  [role="checkbox"],
+  [role="radio"],
+  [role="combobox"],
+  [data-slot="slider-thumb"],
+  input[type="checkbox"]:not(:disabled),
+  input[type="radio"]:not(:disabled),
+  input[type="range"]:not(:disabled),
+  input[type="file"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  :disabled,
+  [aria-disabled="true"],
+  [data-disabled] {
+    cursor: not-allowed;
   }
 }

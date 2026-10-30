@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { signUp } from "@/lib/auth-client";
-import { mergeGuestCart } from "@/actions/cart.actions";
 import { registerSchema, type RegisterInput } from "@/features/auth/types";
+import { getSafeRedirect, isCheckoutRedirect } from "@/utils/safe-redirect";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -20,6 +20,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = getSafeRedirect(searchParams.get("redirect"));
   const [formError, setFormError] = useState<string | null>(null);
 
   const {
@@ -41,10 +43,11 @@ export function RegisterForm() {
       setFormError(error.message ?? "Couldn't create your account.");
       return;
     }
-    // autoSignIn defaults to true, so a session already exists here — the
-    // guest's cart can merge into the new account instead of being dropped.
-    await mergeGuestCart();
-    router.push("/verify-email?pending=1");
+    // No session yet: the account only works once the emailed link is clicked.
+    // The guest cart merges when they sign in after verifying.
+    const params = new URLSearchParams({ pending: "1", email: data.email });
+    if (redirect) params.set("redirect", redirect);
+    router.push(`/verify-email?${params.toString()}`);
   };
 
   return (
@@ -57,6 +60,14 @@ export function RegisterForm() {
           Join Lustre &amp; Lace for a faster checkout and order history
         </p>
       </div>
+
+      {isCheckoutRedirect(redirect) && (
+        <Alert>
+          <AlertDescription>
+            You need an account to place an order. Create one below — your cart will be waiting.
+          </AlertDescription>
+        </Alert>
+      )}
 
       {formError && (
         <Alert variant="destructive">
@@ -123,7 +134,10 @@ export function RegisterForm() {
 
       <p className="text-center text-sm text-muted-foreground">
         Already have an account?{" "}
-        <Link href="/login" className="text-primary hover:underline">
+        <Link
+          href={redirect ? `/login?redirect=${encodeURIComponent(redirect)}` : "/login"}
+          className="text-primary underline underline-offset-4 hover:no-underline"
+        >
           Sign in
         </Link>
       </p>

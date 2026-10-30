@@ -153,6 +153,7 @@ export async function setDefaultAddress(addressId: string) {
 export async function requestAccountDeletion() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) return { error: "You must be signed in." };
+  if (session.user.role === "super_admin") return { error: "The super admin account can't be deleted." };
 
   const token = crypto.randomUUID();
   await db.insert(verification).values({
@@ -196,6 +197,7 @@ export async function isAccountDeletionTokenValid(token: string) {
 export async function confirmAccountDeletion(token: string) {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) return { error: "You must be signed in to confirm this." };
+  if (session.user.role === "super_admin") return { error: "The super admin account can't be deleted." };
 
   const identifier = `${ACCOUNT_DELETION_IDENTIFIER_PREFIX}${session.user.id}`;
   const row = await db.query.verification.findFirst({

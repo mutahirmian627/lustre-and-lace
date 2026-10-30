@@ -1,7 +1,8 @@
 import { test, expect } from "@playwright/test";
+import { createAccountFromCheckoutGate } from "./helpers/account";
 
 /**
- * A guest places a manual-transfer order (lands in "awaiting_confirmation")
+ * A new account places a manual-transfer order (lands in "awaiting_confirmation")
  * -> admin logs in, finds it on the default Orders tab, confirms payment ->
  * the order's payment status flips to "Paid" (specs/13, specs/16).
  */
@@ -11,12 +12,13 @@ test("admin can confirm a manual-transfer order's payment", async ({ page }) => 
 
   // The mini cart drawer opens once the add-to-cart Server Action actually
   // resolves — this click's built-in auto-wait is the real sync point.
-  await page.getByRole("button", { name: "Checkout" }).click();
-  await expect(page).toHaveURL(/\/checkout$/);
+  const email = await createAccountFromCheckoutGate(page, {
+    name: "E2E Admin Confirm",
+    emailPrefix: "e2e-confirm",
+  });
 
-  const timestamp = Date.now();
   await page.getByLabel("Full name").first().fill("E2E Admin Confirm");
-  await page.getByLabel("Email").fill(`e2e-confirm-${timestamp}@example.com`);
+  await page.getByLabel("Email").fill(email);
   await page.getByLabel("Phone").first().fill("03331234567");
   await page.getByLabel("Full name").nth(1).fill("E2E Admin Confirm");
   await page.getByLabel("Phone").nth(1).fill("03331234567");

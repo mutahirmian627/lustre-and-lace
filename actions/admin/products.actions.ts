@@ -7,12 +7,14 @@ import { db } from "@/db";
 import { products, productVariants, productImages, categories } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { productFormSchema, type ProductFormInput } from "@/features/admin/types";
+import { isAdminRole } from "@/lib/roles";
+import { requireAdminUser } from "@/lib/require-admin";
 
 const PAGE_SIZE = 20;
 
 async function requireAdmin() {
   const session = await auth.api.getSession({ headers: await headers() });
-  if (!session?.user || session.user.role !== "admin") {
+  if (!session?.user || !isAdminRole(session.user.role)) {
     throw new Error("Admin access required.");
   }
   return session.user;
@@ -29,6 +31,7 @@ export async function getAdminProducts({
   status?: "active" | "inactive";
   page?: number;
 }) {
+  await requireAdminUser();
   const conditions = [sql`${products.deletedAt} is null`];
   if (search) {
     conditions.push(
@@ -60,6 +63,7 @@ export async function getAdminProducts({
 }
 
 export async function getProductForEdit(id: string) {
+  await requireAdminUser();
   return db.query.products.findFirst({
     where: eq(products.id, id),
     with: {
@@ -353,6 +357,7 @@ export async function toggleProductFlag(
 }
 
 export async function getAllCategoriesForSelect() {
+  await requireAdminUser();
   return db.query.categories.findMany({
     where: eq(categories.isActive, true),
     orderBy: [asc(categories.displayOrder)],

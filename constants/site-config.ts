@@ -28,7 +28,7 @@ export const WEDDING_COLLECTION_BANNER = {
 
 /** Dismissible-for-the-session announcement bar copy (specs/05). */
 export const ANNOUNCEMENT_BAR_TEXT =
-  "Free shipping notice coming soon — Cash on Delivery available nationwide.";
+  "Cash on Delivery available nationwide  |  Delivery in 3-5 business days";
 
 /**
  * Manually curated Instagram images — no live Graph API integration

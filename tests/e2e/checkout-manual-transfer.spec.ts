@@ -1,22 +1,25 @@
 import { test, expect } from "@playwright/test";
+import { createAccountFromCheckoutGate } from "./helpers/account";
 
 /**
- * Guest browses -> adds to cart -> checks out with manual transfer ->
+ * Shopper browses -> adds to cart -> creates an account at the checkout
+ * gate -> checks out with manual transfer ->
  * confirmation shows the EasyPaisa/JazzCash numbers and a working
  * wa.me deep link (specs/16).
  */
-test("guest can complete a manual-transfer checkout", async ({ page }) => {
+test("a new account can complete a manual-transfer checkout", async ({ page }) => {
   await page.goto("/products/everyday-stud-earrings");
   await page.getByRole("button", { name: "Add to Cart" }).click();
 
   // The mini cart drawer opens once the add-to-cart Server Action actually
   // resolves — this click's built-in auto-wait is the real sync point.
-  await page.getByRole("button", { name: "Checkout" }).click();
-  await expect(page).toHaveURL(/\/checkout$/);
+  const email = await createAccountFromCheckoutGate(page, {
+    name: "E2E Manual Transfer",
+    emailPrefix: "e2e-manual",
+  });
 
-  const timestamp = Date.now();
   await page.getByLabel("Full name").first().fill("E2E Manual Transfer");
-  await page.getByLabel("Email").fill(`e2e-manual-${timestamp}@example.com`);
+  await page.getByLabel("Email").fill(email);
   await page.getByLabel("Phone").first().fill("03211234567");
 
   await page.getByLabel("Full name").nth(1).fill("E2E Manual Transfer");

@@ -34,7 +34,7 @@ export default async function AdminDashboardPage() {
     <div className="space-y-8">
       <h2 className="font-heading text-2xl text-foreground">Dashboard</h2>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid auto-rows-fr gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <StatsCard
           label="Total Orders"
           value={stats.totalOrders}

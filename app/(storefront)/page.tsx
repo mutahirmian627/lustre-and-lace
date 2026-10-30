@@ -1,6 +1,8 @@
 import { Suspense } from "react";
 import { HeroBanner } from "@/features/home/components/HeroBanner";
+import { TrustStrip } from "@/features/home/components/TrustStrip";
 import { FeaturedCategories } from "@/features/home/components/FeaturedCategories";
+import { SaleSection } from "@/features/home/components/SaleSection";
 import { NewArrivalsSection } from "@/features/home/components/NewArrivalsSection";
 import { TrendingSection } from "@/features/home/components/TrendingSection";
 import { BestSellersSection } from "@/features/home/components/BestSellersSection";
@@ -25,24 +27,32 @@ export default function HomePage() {
     <div>
       <OrganizationJsonLd />
       <HeroBanner />
-      <FeaturedCategories />
+      <TrustStrip />
+      <Suspense fallback={<div className="min-h-[28rem]" aria-hidden="true" />}>
+        <FeaturedCategories />
+      </Suspense>
+      <Suspense fallback={null}>
+        <SaleSection />
+      </Suspense>
       <Suspense fallback={<ProductRowSkeleton />}>
-        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 py-16 empty:hidden sm:px-6 lg:px-8">
           <NewArrivalsSection />
         </div>
       </Suspense>
       <Suspense fallback={<ProductRowSkeleton />}>
-        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 py-16 empty:hidden sm:px-6 lg:px-8">
           <TrendingSection />
         </div>
       </Suspense>
       <Suspense fallback={<ProductRowSkeleton />}>
-        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 py-16 empty:hidden sm:px-6 lg:px-8">
           <BestSellersSection />
         </div>
       </Suspense>
       <WeddingCollectionBanner />
-      <ReviewsCarousel />
+      <Suspense fallback={null}>
+        <ReviewsCarousel />
+      </Suspense>
       <InstagramGallery />
     </div>
   );

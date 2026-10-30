@@ -2,20 +2,24 @@
 
 import { headers } from "next/headers";
 import { asc, eq, isNull, sql } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { db } from "@/db";
 import { categories, products } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import { CATEGORIES_CACHE_TAG } from "@/actions/categories.actions";
 import { categoryFormSchema, type CategoryFormInput } from "@/features/admin/types";
+import { isAdminRole } from "@/lib/roles";
+import { requireAdminUser } from "@/lib/require-admin";
 
 async function requireAdmin() {
   const session = await auth.api.getSession({ headers: await headers() });
-  if (!session?.user || session.user.role !== "admin") {
+  if (!session?.user || !isAdminRole(session.user.role)) {
     throw new Error("Admin access required.");
   }
 }
 
 export async function getAdminCategories() {
+  await requireAdminUser();
   const all = await db.query.categories.findMany({
     orderBy: [asc(categories.displayOrder)],
   });
@@ -23,6 +27,7 @@ export async function getAdminCategories() {
 }
 
 export async function getTopLevelCategoriesForSelect() {
+  await requireAdminUser();
   return db.query.categories.findMany({
     where: isNull(categories.parentId),
     orderBy: [asc(categories.displayOrder)],
@@ -46,6 +51,7 @@ export async function createCategory(input: CategoryFormInput) {
     isActive: data.isActive ?? true,
   });
 
+  revalidateTag(CATEGORIES_CACHE_TAG);
   revalidatePath("/admin/categories");
   revalidatePath("/");
   return { success: true as const };
@@ -75,6 +81,7 @@ export async function updateCategory(id: string, input: CategoryFormInput) {
     })
     .where(eq(categories.id, id));
 
+  revalidateTag(CATEGORIES_CACHE_TAG);
   revalidatePath("/admin/categories");
   revalidatePath("/");
   return { success: true as const };
@@ -105,6 +112,7 @@ export async function deleteCategory(id: string): Promise<{ error: string } | { 
     throw error;
   }
 
+  revalidateTag(CATEGORIES_CACHE_TAG);
   revalidatePath("/admin/categories");
   revalidatePath("/");
   return { success: true as const };
@@ -134,6 +142,7 @@ export async function moveCategory(id: string, direction: "up" | "down") {
       .where(eq(categories.id, swapWith.id)),
   ]);
 
+  revalidateTag(CATEGORIES_CACHE_TAG);
   revalidatePath("/admin/categories");
   return { success: true as const };
 }

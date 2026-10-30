@@ -6,12 +6,14 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/db";
 import { reviews, products } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import { isAdminRole } from "@/lib/roles";
+import { requireAdminUser } from "@/lib/require-admin";
 
 const PAGE_SIZE = 20;
 
 async function requireAdmin() {
   const session = await auth.api.getSession({ headers: await headers() });
-  if (!session?.user || session.user.role !== "admin") {
+  if (!session?.user || !isAdminRole(session.user.role)) {
     throw new Error("Admin access required.");
   }
 }
@@ -29,6 +31,7 @@ export async function getAdminReviews({
   productId?: string;
   page?: number;
 }) {
+  await requireAdminUser();
   const conditions = [isNull(reviews.deletedAt), eq(reviews.isApproved, status === "approved")];
   if (rating) conditions.push(eq(reviews.rating, rating));
   if (productId) conditions.push(eq(reviews.productId, productId));
@@ -53,6 +56,7 @@ export async function getAdminReviews({
 }
 
 export async function getAllProductsForSelect() {
+  await requireAdminUser();
   return db.query.products.findMany({
     where: isNull(products.deletedAt),
     orderBy: [asc(products.name)],

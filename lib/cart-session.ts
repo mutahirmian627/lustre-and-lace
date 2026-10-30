@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { carts } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/session";
 import { IS_SECURE_CONTEXT } from "@/lib/is-secure-context";
 
 export const GUEST_CART_COOKIE = "guest_cart_token";
@@ -60,7 +61,7 @@ export async function getOrCreateCartId(): Promise<string> {
 
 /** Read-only lookup for display purposes (e.g. the header badge) — never creates a cart. */
 export async function getExistingCartId(): Promise<string | null> {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getSession();
 
   if (session?.user) {
     const existing = await db.query.carts.findFirst({

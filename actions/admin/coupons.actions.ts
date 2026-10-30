@@ -7,15 +7,18 @@ import { db } from "@/db";
 import { coupons } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { couponFormSchema, type CouponFormInput } from "@/features/admin/types";
+import { isAdminRole } from "@/lib/roles";
+import { requireAdminUser } from "@/lib/require-admin";
 
 async function requireAdmin() {
   const session = await auth.api.getSession({ headers: await headers() });
-  if (!session?.user || session.user.role !== "admin") {
+  if (!session?.user || !isAdminRole(session.user.role)) {
     throw new Error("Admin access required.");
   }
 }
 
 export async function getAdminCoupons() {
+  await requireAdminUser();
   return db.query.coupons.findMany({ orderBy: [desc(coupons.createdAt)] });
 }
 

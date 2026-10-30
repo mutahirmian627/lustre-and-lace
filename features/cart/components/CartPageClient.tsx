@@ -23,14 +23,16 @@ export function CartPageClient() {
         />
       ) : (
         <div className="grid gap-8 md:grid-cols-[1fr_320px]">
-          <div className="space-y-6 divide-y divide-border">
+          <div className="divide-y divide-border rounded-xl border border-border bg-card px-4 sm:px-6">
             {cart.items.map((item) => (
-              <div key={item.id} className="pt-6 first:pt-0">
+              <div key={item.id} className="py-5">
                 <CartLineItem item={item} />
               </div>
             ))}
           </div>
-          <CartSummary />
+          <div className="md:sticky md:top-28 md:self-start">
+            <CartSummary />
+          </div>
         </div>
       )}
     </div>

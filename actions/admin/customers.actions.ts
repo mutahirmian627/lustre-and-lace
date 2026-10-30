@@ -1,21 +1,11 @@
 "use server";
 
-import { headers } from "next/headers";
 import { desc, eq, ilike, or, sql } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
 import { db } from "@/db";
 import { user, orders, addresses } from "@/db/schema";
-import { auth } from "@/lib/auth";
+import { requireAdminUser } from "@/lib/require-admin";
 
 const PAGE_SIZE = 20;
-
-async function requireAdmin() {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session?.user || session.user.role !== "admin") {
-    throw new Error("Admin access required.");
-  }
-  return session.user;
-}
 
 export interface AdminCustomerRow {
   [key: string]: unknown;
@@ -23,7 +13,7 @@ export interface AdminCustomerRow {
   name: string;
   email: string;
   phone: string | null;
-  role: "customer" | "admin";
+  role: "customer" | "admin" | "super_admin";
   emailVerified: boolean;
   // db.execute() bypasses drizzle's relational-query type mapping and
   // returns the raw driver value — timestamps come back as strings here,
@@ -39,6 +29,7 @@ export interface AdminCustomerRow {
  * Confirmed Revenue (specs/13): paid orders, plus delivered COD orders.
  */
 export async function getAdminCustomers({ search, page = 1 }: { search?: string; page?: number }) {
+  await requireAdminUser();
   const offset = (page - 1) * PAGE_SIZE;
   const searchClause = search
     ? sql`where (${ilike(user.name, `%${search}%`)} or ${ilike(user.email, `%${search}%`)})`
@@ -73,6 +64,7 @@ export async function getAdminCustomers({ search, page = 1 }: { search?: string;
 }
 
 export async function getCustomerDetail(userId: string) {
+  await requireAdminUser();
   const [customerRow, customerOrders, customerAddresses] = await Promise.all([
     db.query.user.findFirst({ where: eq(user.id, userId) }),
     db.query.orders.findMany({
@@ -85,24 +77,4 @@ export async function getCustomerDetail(userId: string) {
 
   if (!customerRow) return null;
   return { user: customerRow, orders: customerOrders, addresses: customerAddresses };
-}
-
-/** The intended path for admin #2, #3, etc. — public sign-up can never self-assign admin (specs/03), this action is how every subsequent admin is created. */
-export async function promoteToAdmin(userId: string): Promise<{ error: string } | { success: true }> {
-  await requireAdmin();
-  await db.update(user).set({ role: "admin", updatedAt: new Date() }).where(eq(user.id, userId));
-  revalidatePath("/admin/customers");
-  revalidatePath(`/admin/customers/${userId}`);
-  return { success: true as const };
-}
-
-export async function demoteToCustomer(userId: string): Promise<{ error: string } | { success: true }> {
-  const currentAdmin = await requireAdmin();
-  if (currentAdmin.id === userId) {
-    return { error: "You can't demote your own account." };
-  }
-  await db.update(user).set({ role: "customer", updatedAt: new Date() }).where(eq(user.id, userId));
-  revalidatePath("/admin/customers");
-  revalidatePath(`/admin/customers/${userId}`);
-  return { success: true as const };
 }

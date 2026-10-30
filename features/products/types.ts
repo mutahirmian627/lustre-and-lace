@@ -44,6 +44,8 @@ export interface ProductFilters {
   maxPrice?: number;
   minRating?: number;
   inStockOnly?: boolean;
+  /** Only products whose compare-at price is above their selling price. */
+  onSale?: boolean;
   sort?: SortOption;
   page?: number;
   search?: string;

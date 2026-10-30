@@ -1,7 +1,5 @@
-"use client";
-
-import { motion } from "framer-motion";
 import type { ReactNode } from "react";
+import { cn } from "@/lib/utils";
 
 /** Subtle scale-down on press, wraps primary buttons for tactile feedback. */
 export function ScaleOnTap({
@@ -12,14 +10,13 @@ export function ScaleOnTap({
   className?: string;
 }) {
   return (
-    <motion.div
-      className={className}
-      style={{ display: "inline-block" }}
-      whileTap={{ scale: 0.97 }}
-      whileHover={{ scale: 1.02 }}
-      transition={{ duration: 0.15, ease: "easeOut" }}
+    <div
+      className={cn(
+        "inline-block transition-transform duration-150 ease-out hover:scale-[1.02] active:scale-[0.97] motion-reduce:transition-none motion-reduce:hover:scale-100 motion-reduce:active:scale-100",
+        className
+      )}
     >
       {children}
-    </motion.div>
+    </div>
   );
 }

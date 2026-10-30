@@ -4,6 +4,7 @@ import { X } from "lucide-react";
 import { PriceDisplay } from "@/components/shared/PriceDisplay";
 import { QuantityStepper } from "@/components/shared/QuantityStepper";
 import { useCart } from "@/features/cart/context/CartProvider";
+import { cn } from "@/lib/utils";
 import type { CartLineItem as CartLineItemType } from "@/features/cart/types";
 
 export function CartLineItem({
@@ -25,16 +26,19 @@ export function CartLineItem({
     <div className="flex gap-3">
       <Link
         href={`/products/${item.productSlug}`}
-        className="relative size-16 shrink-0 overflow-hidden rounded-md bg-muted"
+        className={cn(
+          "relative shrink-0 overflow-hidden rounded-md bg-muted",
+          compact ? "size-16" : "size-20 sm:size-24"
+        )}
       >
         {item.imageUrl && (
-          <Image src={item.imageUrl} alt={item.productName} fill sizes="64px" className="object-cover" />
+          <Image src={item.imageUrl} alt={item.productName} fill sizes={compact ? "64px" : "96px"} className="object-cover" />
         )}
       </Link>
 
       <div className="flex flex-1 flex-col gap-1">
         <div className="flex items-start justify-between gap-2">
-          <Link href={`/products/${item.productSlug}`} className="text-sm font-medium text-foreground">
+          <Link href={`/products/${item.productSlug}`} className={cn("font-medium text-foreground", compact ? "text-sm" : "font-heading text-base")}>
             {item.productName}
           </Link>
           <button

@@ -1,6 +1,5 @@
 "use server";
 
-import { headers } from "next/headers";
 import { eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import {
@@ -13,7 +12,7 @@ import {
   coupons,
 } from "@/db/schema";
 import type { ShippingAddressSnapshot } from "@/db/schema/orders";
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/session";
 import { getExistingCartId } from "@/lib/cart-session";
 import { getSetting } from "@/lib/settings";
 import { checkCouponEligibility, calculateDiscountAmount } from "@/lib/coupon";
@@ -33,6 +32,13 @@ import { saveAddressFromCheckout } from "@/actions/addresses.actions";
  * succeed together or none do.
  */
 export async function placeOrder(input: CheckoutInput) {
+  // Ordering requires an account. Checked here, not just in middleware, because
+  // server actions can be invoked directly without ever loading /checkout.
+  const session = await getSession();
+  if (!session?.user) {
+    return { error: "Please sign in or create an account to place your order." };
+  }
+
   const parsed = checkoutSchema.safeParse(input);
   if (!parsed.success) {
     return { error: "Please check the form for errors." };
@@ -87,8 +93,6 @@ export async function placeOrder(input: CheckoutInput) {
   const orderReference = await generateOrderReference();
   const orderId = crypto.randomUUID();
 
-  const session = await auth.api.getSession({ headers: await headers() });
-
   const shippingAddress: ShippingAddressSnapshot = {
     fullName: data.fullName,
     phone: data.phone,
@@ -107,7 +111,7 @@ export async function placeOrder(input: CheckoutInput) {
     db.insert(orders).values({
       id: orderId,
       orderReference,
-      userId: session?.user?.id,
+      userId: session.user.id,
       status: "pending",
       paymentMethod: data.paymentMethod,
       paymentStatus,
@@ -157,7 +161,7 @@ export async function placeOrder(input: CheckoutInput) {
 
   await db.batch(writes as unknown as Parameters<typeof db.batch>[0]);
 
-  if (data.saveAddress && session?.user) {
+  if (data.saveAddress) {
     await saveAddressFromCheckout({
       fullName: data.fullName,
       phone: data.phone,

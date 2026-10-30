@@ -2,11 +2,12 @@ import { NextResponse, type NextRequest } from "next/server";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { cloudinary } from "@/lib/cloudinary";
+import { isAdminRole } from "@/lib/roles";
 
 /** Product image uploads for the admin ProductForm's ImageUploader (specs/13). */
 export async function POST(request: NextRequest) {
   const session = await auth.api.getSession({ headers: await headers() });
-  if (!session?.user || session.user.role !== "admin") {
+  if (!session?.user || !isAdminRole(session.user.role)) {
     return NextResponse.json({ error: "Admin access required." }, { status: 403 });
   }
 

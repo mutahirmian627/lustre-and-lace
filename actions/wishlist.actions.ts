@@ -1,15 +1,14 @@
 "use server";
 
-import { headers } from "next/headers";
 import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db } from "@/db";
 import { wishlists } from "@/db/schema";
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/session";
 import { addToCart } from "@/actions/cart.actions";
 
 async function requireSession() {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getSession();
   return session?.user ?? null;
 }
 

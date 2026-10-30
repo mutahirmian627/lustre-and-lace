@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import React from "react";
-import { Button } from "@react-email/components";
+import { Section, Button } from "@react-email/components";
 
 export function EmailButton({
   href,
@@ -10,21 +10,24 @@ export function EmailButton({
   children: ReactNode;
 }) {
   return (
-    <Button
-      href={href}
-      style={{
-        backgroundColor: "#B76E79",
-        color: "#FFF8F4",
-        borderRadius: 8,
-        fontSize: 15,
-        fontWeight: 600,
-        textDecoration: "none",
-        textAlign: "center",
-        display: "block",
-        padding: "12px 24px",
-      }}
-    >
-      {children}
-    </Button>
+    <Section style={{ textAlign: "center", margin: "26px 0" }}>
+      <Button
+        href={href}
+        style={{
+          backgroundColor: "#AF5071",
+          color: "#FFFFFF",
+          borderRadius: 999,
+          fontSize: 14,
+          fontWeight: 600,
+          letterSpacing: "0.06em",
+          textDecoration: "none",
+          textAlign: "center",
+          display: "inline-block",
+          padding: "14px 34px",
+        }}
+      >
+        {children}
+      </Button>
+    </Section>
   );
 }

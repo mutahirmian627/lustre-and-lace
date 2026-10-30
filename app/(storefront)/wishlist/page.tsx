@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { headers } from "next/headers";
 import { Heart } from "lucide-react";
 import { auth } from "@/lib/auth";
@@ -7,8 +6,6 @@ import { getWishlist } from "@/actions/wishlist.actions";
 import { WishlistItem } from "@/features/wishlist/components/WishlistItem";
 import { AddAllToCartButton } from "@/features/wishlist/components/AddAllToCartButton";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Wishlist" };
 
@@ -17,17 +14,15 @@ export default async function WishlistPage() {
 
   if (!session?.user) {
     return (
-      <div className="mx-auto max-w-3xl px-4 py-16 text-center sm:px-6 lg:px-8">
-        <h1 className="font-heading text-3xl text-foreground">Wishlist</h1>
-        <p className="mt-2 text-muted-foreground">
-          Sign in to see the items you&apos;ve saved.
-        </p>
-        <Link
-          href={`/login?redirect=${encodeURIComponent("/wishlist")}`}
-          className={cn(buttonVariants(), "mt-6")}
-        >
-          Sign in
-        </Link>
+      <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
+        <h1 className="text-center font-heading text-3xl text-foreground">Wishlist</h1>
+        <EmptyState
+          icon={Heart}
+          title="Sign in to see your saved items"
+          description="Your wishlist is tied to your account, so it follows you on any device."
+          actionLabel="Sign in"
+          actionHref={`/login?redirect=${encodeURIComponent("/wishlist")}`}
+        />
       </div>
     );
   }

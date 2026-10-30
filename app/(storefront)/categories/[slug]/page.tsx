@@ -42,16 +42,17 @@ export default async function CategoryPage({
   searchParams: Promise<RawSearchParams>;
 }) {
   const { slug } = await params;
-  const category = await getCategoryBySlug(slug);
-  if (!category) notFound();
-
   const rawParams = await searchParams;
   const filters = parseProductFilters(rawParams, slug);
 
-  const [{ items, total, totalPages }, facets] = await Promise.all([
+  // Started together: getProducts/getFilterFacets already return empty results
+  // for an unknown slug, so there's no need to wait on the category lookup first.
+  const [category, { items, total, totalPages }, facets] = await Promise.all([
+    getCategoryBySlug(slug),
     getProducts(filters),
     getFilterFacets(slug),
   ]);
+  if (!category) notFound();
 
   const jsonLd = {
     "@context": "https://schema.org",

@@ -40,14 +40,16 @@ cp .env.example .env.local
 | `DATABASE_URL` | Yes | Neon Postgres connection string |
 | `BETTER_AUTH_SECRET` | Yes | Session/token signing secret — generate with `openssl rand -base64 32` |
 | `BETTER_AUTH_URL` | Yes | Base URL Better Auth uses for callbacks (`http://localhost:3000` in dev) |
-| `RESEND_API_KEY` | Yes | Transactional email sending (order confirmations, cancellations, etc.) |
-| `FROM_EMAIL` | Yes | Sending address — must be on a domain verified in Resend before production use |
+| `RESEND_API_KEY` | Yes | Transactional email: sign-up verification, password reset, order emails. New accounts can't sign in until they click the emailed link, so this must be a real key |
+| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASSWORD` | No | Send email through a regular mailbox (e.g. Gmail + app password) when you have no domain for Resend. If `SMTP_HOST` is set it replaces Resend |
+| `FROM_EMAIL` | Yes | Sending address — must be on a domain verified in Resend before production use. For local testing use `Lustre & Lace <onboarding@resend.dev>`, which only delivers to the email you registered with Resend |
 | `CLOUDINARY_CLOUD_NAME` | Yes | Product image hosting/optimization |
 | `CLOUDINARY_API_KEY` | Yes | Product image hosting/optimization |
 | `CLOUDINARY_API_SECRET` | Yes | Product image hosting/optimization |
 | `CRON_SECRET` | Yes | Verifies Vercel Cron requests to the auto-cancel-unpaid-orders route — generate with `openssl rand -base64 32` |
 | `NEXT_PUBLIC_APP_URL` | Yes | Absolute base URL used in emails and the WhatsApp `wa.me` deep link |
 | `ADMIN_EMAIL` / `ADMIN_PASSWORD` | Yes (for seeding) | Bootstrap admin account created by `db:seed` — change the password after first login |
+| `SUPER_ADMIN_EMAIL` / `SUPER_ADMIN_PASSWORD` | Yes (for seeding) | The single super admin (12+ character password). Only this account can promote or remove admins, in `/super-admin`. A database trigger prevents a second one |
 
 **Not env variables:** the EasyPaisa number, JazzCash number, WhatsApp business number, shipping rate, and auto-cancel threshold are stored in the `platformSettings` table and edited from the Admin Settings page, not `.env`. Seed real values before launch (see [`specs/17-deployment.md`](specs/17-deployment.md)).
 

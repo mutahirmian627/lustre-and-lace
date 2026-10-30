@@ -2,12 +2,13 @@
 
 import { headers, cookies } from "next/headers";
 import { z } from "zod";
-import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, sql, type SQL } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db } from "@/db";
 import { carts, cartItems, productVariants, productImages, coupons } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { getOrCreateCartId, getExistingCartId, GUEST_CART_COOKIE } from "@/lib/cart-session";
+import { getSession } from "@/lib/session";
 import { getFlatShippingRate } from "@/lib/settings";
 import { checkCouponEligibility, calculateDiscountAmount } from "@/lib/coupon";
 import { mergeCartItems, type MergeableCartItem } from "@/lib/cart-merge";
@@ -15,19 +16,26 @@ import { capQuantityToStock } from "@/utils/stock";
 import type { CartLineItem, CartSummary } from "@/features/cart/types";
 
 async function buildCartSummary(cartId: string | null): Promise<CartSummary> {
-  const shippingRate = await getFlatShippingRate();
-  if (!cartId) {
-    return { items: [], subtotal: 0, itemCount: 0, shippingRate };
+  return summarizeCart(cartId ? eq(cartItems.cartId, cartId) : null);
+}
+
+/** `cartFilter` selects the cart's items directly, so callers don't need a separate lookup for the cart id first. */
+async function summarizeCart(cartFilter: SQL | null): Promise<CartSummary> {
+  if (!cartFilter) {
+    return { items: [], subtotal: 0, itemCount: 0, shippingRate: await getFlatShippingRate() };
   }
 
-  const rows = await db.query.cartItems.findMany({
-    where: eq(cartItems.cartId, cartId),
-    orderBy: [asc(cartItems.createdAt)],
-    with: {
-      product: { columns: { name: true, slug: true } },
-      variant: true,
-    },
-  });
+  const [shippingRate, rows] = await Promise.all([
+    getFlatShippingRate(),
+    db.query.cartItems.findMany({
+      where: cartFilter,
+      orderBy: [asc(cartItems.createdAt)],
+      with: {
+        product: { columns: { name: true, slug: true } },
+        variant: true,
+      },
+    }),
+  ]);
 
   const productIds = rows.map((r) => r.productId);
   const images = productIds.length
@@ -64,9 +72,19 @@ async function buildCartSummary(cartId: string | null): Promise<CartSummary> {
   return { items, subtotal, itemCount, shippingRate };
 }
 
+/**
+ * Runs on every page (header badge + drawer), so it goes from session/cookie to the cart's
+ * items in one query instead of looking up the cart id first.
+ */
 export async function getCart(): Promise<CartSummary> {
-  const cartId = await getExistingCartId();
-  return buildCartSummary(cartId);
+  const session = await getSession();
+  if (session?.user) {
+    return summarizeCart(inArray(cartItems.cartId, sql`(select id from carts where user_id = ${session.user.id})`));
+  }
+
+  const token = (await cookies()).get(GUEST_CART_COOKIE)?.value;
+  if (!token) return summarizeCart(null);
+  return summarizeCart(inArray(cartItems.cartId, sql`(select id from carts where guest_token = ${token})`));
 }
 
 /** Header badge count. Reads only — never creates a cart just to display a "0". */

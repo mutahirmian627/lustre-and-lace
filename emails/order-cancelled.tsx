@@ -4,7 +4,7 @@ import { EmailLayout } from "./EmailLayout";
 import { OrderItemsSummary, type OrderEmailItem } from "./OrderItemsSummary";
 import { formatCurrency } from "@/utils/format-currency";
 
-const BODY_STYLE = { color: "#2F2F2F", fontSize: 15, lineHeight: "24px" };
+const BODY_STYLE = { color: "#221D1D", fontSize: 15, lineHeight: "24px" };
 
 export default function OrderCancelled({
   customerName,
@@ -20,7 +20,7 @@ export default function OrderCancelled({
   wasRefunded: boolean;
 }) {
   return (
-    <EmailLayout previewText={`Order ${orderReference} cancelled`}>
+    <EmailLayout previewText={`Order ${orderReference} cancelled`} eyebrow="Your order" title="Order cancelled">
       <Text style={BODY_STYLE}>Hi {customerName},</Text>
       <Text style={BODY_STYLE}>
         Your order <strong>{orderReference}</strong> has been cancelled.

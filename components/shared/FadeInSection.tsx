@@ -1,9 +1,11 @@
-"use client";
-
-import { motion } from "framer-motion";
 import type { ReactNode } from "react";
+import { cn } from "@/lib/utils";
 
-/** Fades + slides a homepage section up slightly as it enters the viewport. */
+/**
+ * Fades + slides a homepage section up slightly as it enters the viewport.
+ * Pure CSS (scroll-driven animation, see globals.css): no client JS, and
+ * browsers without support simply show the section with no animation.
+ */
 export function FadeInSection({
   children,
   className,
@@ -11,15 +13,5 @@ export function FadeInSection({
   children: ReactNode;
   className?: string;
 }) {
-  return (
-    <motion.div
-      className={className}
-      initial={{ opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-80px" }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
-    >
-      {children}
-    </motion.div>
-  );
+  return <div className={cn("fade-in-section", className)}>{children}</div>;
 }

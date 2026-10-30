@@ -52,7 +52,7 @@ export function GuestOrderLookupForm() {
 
   return (
     <div className="space-y-8">
-      <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 sm:grid-cols-[1fr_1fr_auto]">
+      <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 sm:grid-cols-2">
         <Field data-invalid={!!errors.reference}>
           <FieldLabel htmlFor="reference">Order Reference</FieldLabel>
           <Input id="reference" placeholder="LL-2026-00001" {...register("reference")} />
@@ -63,7 +63,7 @@ export function GuestOrderLookupForm() {
           <Input id="email" type="email" {...register("email")} />
           <FieldError errors={[errors.email]} />
         </Field>
-        <Button type="submit" disabled={isSubmitting} className="self-end">
+        <Button type="submit" disabled={isSubmitting} className="sm:col-span-2" size="lg">
           {isSubmitting ? "Searching..." : "Track Order"}
         </Button>
       </form>

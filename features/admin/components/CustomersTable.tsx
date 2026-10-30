@@ -1,37 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { DataTable } from "@/features/admin/components/DataTable";
-import { promoteToAdmin, demoteToCustomer, type AdminCustomerRow } from "@/actions/admin/customers.actions";
+import type { AdminCustomerRow } from "@/actions/admin/customers.actions";
+import { RoleBadge } from "@/features/admin/components/RoleBadge";
 import { formatCurrency } from "@/utils/format-currency";
 
 export function CustomersTable({ customers }: { customers: AdminCustomerRow[] }) {
-  const router = useRouter();
-
-  async function handlePromote(id: string) {
-    const result = await promoteToAdmin(id);
-    if ("error" in result) {
-      toast.error(result.error);
-      return;
-    }
-    toast.success("Promoted to admin.");
-    router.refresh();
-  }
-
-  async function handleDemote(id: string) {
-    const result = await demoteToCustomer(id);
-    if ("error" in result) {
-      toast.error(result.error);
-      return;
-    }
-    toast.success("Demoted to customer.");
-    router.refresh();
-  }
-
   return (
     <DataTable
       rows={customers}
@@ -50,9 +26,7 @@ export function CustomersTable({ customers }: { customers: AdminCustomerRow[] })
         { header: "Phone", cell: (c) => c.phone ?? "—" },
         {
           header: "Role",
-          cell: (c) => (
-            <Badge variant={c.role === "admin" ? "default" : "outline"}>{c.role}</Badge>
-          ),
+          cell: (c) => <RoleBadge role={c.role} />,
         },
         {
           header: "Joined",
@@ -69,19 +43,6 @@ export function CustomersTable({ customers }: { customers: AdminCustomerRow[] })
               </Badge>
             ) : (
               <Badge variant="secondary">Unverified</Badge>
-            ),
-        },
-        {
-          header: "Actions",
-          cell: (c) =>
-            c.role === "admin" ? (
-              <Button variant="outline" size="sm" onClick={() => handleDemote(c.id)}>
-                Demote to Customer
-              </Button>
-            ) : (
-              <Button variant="outline" size="sm" onClick={() => handlePromote(c.id)}>
-                Promote to Admin
-              </Button>
             ),
         },
       ]}

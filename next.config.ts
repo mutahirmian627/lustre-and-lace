@@ -7,6 +7,10 @@ const nextConfig: NextConfig = {
   // Windows, so the E2E process gets its own build directory.
   distDir: process.env.NEXT_DIST_DIR || ".next",
   images: {
+    // Default is 60s, so optimized images were being re-fetched and re-encoded
+    // from the origin almost every visit. Cloudinary URLs change when an image
+    // is replaced, so a long TTL is safe.
+    minimumCacheTTL: 60 * 60 * 24 * 30,
     remotePatterns: [
       {
         protocol: "https",

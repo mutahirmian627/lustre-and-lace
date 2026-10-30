@@ -1,12 +1,13 @@
 import { test, expect } from "@playwright/test";
+import { createAccountFromCheckoutGate } from "./helpers/account";
 
 /**
- * Guest browses -> adds to cart -> checks out with COD -> lands on
- * confirmation with the correct order reference and COD messaging
+ * Shopper browses -> adds to cart -> creates an account at the checkout
+ * gate -> checks out with COD -> lands on confirmation with the correct order reference and COD messaging
  * (specs/16). Runs against the real dev database (see playwright.config.ts)
  * — the seed catalog's "Pearl Drop Earrings" is assumed present.
  */
-test("guest can complete a COD checkout", async ({ page }) => {
+test("a new account can complete a COD checkout", async ({ page }) => {
   await page.goto("/products/pearl-drop-earrings");
   await page.getByRole("button", { name: "Add to Cart" }).click();
 
@@ -15,12 +16,13 @@ test("guest can complete a COD checkout", async ({ page }) => {
   // seconds, so this click's built-in auto-wait is the real sync point
   // (unlike waiting for the PDP heading, which is visible before the click
   // and proves nothing about the mutation completing).
-  await page.getByRole("button", { name: "Checkout" }).click();
-  await expect(page).toHaveURL(/\/checkout$/);
+  const email = await createAccountFromCheckoutGate(page, {
+    name: "E2E Test Customer",
+    emailPrefix: "e2e-cod",
+  });
 
-  const timestamp = Date.now();
   await page.getByLabel("Full name").first().fill("E2E Test Customer");
-  await page.getByLabel("Email").fill(`e2e-cod-${timestamp}@example.com`);
+  await page.getByLabel("Email").fill(email);
   await page.getByLabel("Phone").first().fill("03001234567");
 
   await page.getByLabel("Full name").nth(1).fill("E2E Test Customer");

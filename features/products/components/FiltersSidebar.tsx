@@ -110,6 +110,7 @@ function FiltersContent({ facets }: { facets: FilterFacets }) {
             max={facets.maxPrice}
             step={50}
             value={[minPrice, maxPrice]}
+            thumbLabels={["Minimum price", "Maximum price"]}
             onValueChange={setPriceRange}
           />
           <div className="flex justify-between text-sm text-muted-foreground">

@@ -1,10 +1,10 @@
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/session";
 import { getWishlistProductIds } from "@/actions/wishlist.actions";
 import { getCart } from "@/actions/cart.actions";
 import { WishlistProvider } from "@/features/wishlist/context/WishlistProvider";
 import { CartProvider } from "@/features/cart/context/CartProvider";
 import { MiniCartDrawer } from "@/features/cart/components/MiniCartDrawer";
+import { SupportChatLauncher } from "@/features/support/components/SupportChatLauncher";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 
@@ -16,7 +16,7 @@ import { Footer } from "@/components/layout/Footer";
  * chrome-less centered-card layout has no cart/wishlist touchpoints).
  */
 export async function SiteShell({ children }: { children: React.ReactNode }) {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getSession();
   const isLoggedIn = !!session?.user;
   const [wishlistProductIds, cart] = await Promise.all([
     isLoggedIn ? getWishlistProductIds() : Promise.resolve([]),
@@ -30,6 +30,7 @@ export async function SiteShell({ children }: { children: React.ReactNode }) {
         <main>{children}</main>
         <Footer />
         <MiniCartDrawer />
+        <SupportChatLauncher isLoggedIn={isLoggedIn} />
       </CartProvider>
     </WishlistProvider>
   );

@@ -2,6 +2,7 @@ import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { orders, products, productVariants, user } from "@/db/schema";
 import { LOW_STOCK_THRESHOLD } from "@/constants/inventory";
+import { requireAdminUser } from "@/lib/require-admin";
 
 function startOfMonth() {
   const now = new Date();
@@ -16,6 +17,7 @@ function daysAgo(days: number) {
 }
 
 export async function getDashboardStats() {
+  await requireAdminUser();
   const monthStart = startOfMonth();
 
   const [
@@ -67,6 +69,7 @@ export async function getDashboardStats() {
 }
 
 export async function getOrdersLast30Days() {
+  await requireAdminUser();
   const since = daysAgo(29);
   const rows = await db
     .select({
@@ -87,6 +90,7 @@ export async function getOrdersLast30Days() {
 }
 
 export async function getTopSellingProducts(limit = 5) {
+  await requireAdminUser();
   return db.query.products.findMany({
     orderBy: [desc(products.salesCount)],
     limit,
@@ -95,6 +99,7 @@ export async function getTopSellingProducts(limit = 5) {
 }
 
 export async function getOrderStatusBreakdown() {
+  await requireAdminUser();
   const rows = await db
     .select({ status: orders.status, count: sql<number>`count(*)::int` })
     .from(orders)
@@ -103,6 +108,7 @@ export async function getOrderStatusBreakdown() {
 }
 
 export async function getRecentOrders(limit = 10) {
+  await requireAdminUser();
   return db.query.orders.findMany({
     orderBy: [desc(orders.createdAt)],
     limit,

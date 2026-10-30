@@ -12,10 +12,12 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { formatCurrency } from "@/utils/format-currency";
 import { useCart } from "@/features/cart/context/CartProvider";
+import { useWishlist } from "@/features/wishlist/context/WishlistProvider";
 import { CartLineItem } from "@/features/cart/components/CartLineItem";
 
 export function MiniCartDrawer() {
   const { cart, isDrawerOpen, closeDrawer } = useCart();
+  const { isLoggedIn } = useWishlist();
 
   return (
     <Sheet open={isDrawerOpen} onOpenChange={(open) => !open && closeDrawer()}>
@@ -60,9 +62,14 @@ export function MiniCartDrawer() {
                   className="flex-1"
                   onClick={closeDrawer}
                 >
-                  Checkout
+                  {isLoggedIn ? "Checkout" : "Sign in to Checkout"}
                 </Button>
               </div>
+              {!isLoggedIn && (
+                <p className="text-center text-xs text-muted-foreground">
+                  An account is required to place an order. Your cart is saved when you sign in.
+                </p>
+              )}
             </div>
           </>
         )}

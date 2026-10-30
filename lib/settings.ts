@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { platformSettings } from "@/db/schema";
@@ -11,7 +12,15 @@ export async function getSetting(key: SettingsKey): Promise<string> {
   return row?.value ?? SETTINGS_DEFAULTS[key];
 }
 
-export async function getFlatShippingRate(): Promise<number> {
-  const value = await getSetting(SETTINGS_KEYS.flatShippingRatePkr);
-  return Number(value);
-}
+export const SETTINGS_CACHE_TAG = "platform-settings";
+
+/**
+ * Display-only (the cart badge/summary on every page), so it's cached rather than costing a
+ * database round trip per visit. Checkout reads the live value with getSetting, and saving
+ * settings in the admin clears this cache.
+ */
+export const getFlatShippingRate = unstable_cache(
+  async (): Promise<number> => Number(await getSetting(SETTINGS_KEYS.flatShippingRatePkr)),
+  ["flat-shipping-rate"],
+  { tags: [SETTINGS_CACHE_TAG], revalidate: 300 }
+);

@@ -4,13 +4,16 @@ export const BRAND = {
   domain: "lustreandlace.com",
 } as const;
 
+/** Mirrors the CSS tokens in app/globals.css — the stylesheet is the source of truth for the UI. */
 export const BRAND_COLORS = {
-  primary: "#F8D7E6", // Blush Pink
-  secondary: "#B76E79", // Rose Gold
-  accent: "#FFF8F4", // Cream
+  primary: "#AF5071", // Raspberry
+  secondary: "#F4C6CF", // Blush
+  accent: "#FFF7F7", // Blush-white
+  plum: "#4E3844",
+  gold: "#B58B45",
   background: "#FFFFFF",
-  text: "#2F2F2F", // Dark Charcoal
-  success: "#6E9C82", // Soft Emerald
+  text: "#221D1D", // Warm ink
+  success: "#3F7D56",
 } as const;
 
 // EasyPaisa/JazzCash/WhatsApp numbers, shipping rate, and auto-cancel hours

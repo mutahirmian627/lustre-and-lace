@@ -11,13 +11,16 @@ import {
   Boxes,
   Ticket,
   Star,
+  MessageSquare,
   BarChart3,
   Settings,
   LogOut,
   ExternalLink,
+  ShieldCheck,
 } from "lucide-react";
 import { signOut } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
+import { useSupportUnread } from "@/features/admin/components/SupportUnreadProvider";
 
 const NAV_ITEMS = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -28,13 +31,15 @@ const NAV_ITEMS = [
   { label: "Inventory", href: "/admin/inventory", icon: Boxes },
   { label: "Coupons", href: "/admin/coupons", icon: Ticket },
   { label: "Reviews", href: "/admin/reviews", icon: Star },
+  { label: "Support", href: "/admin/support", icon: MessageSquare },
   { label: "Analytics", href: "/admin/analytics", icon: BarChart3 },
   { label: "Settings", href: "/admin/settings", icon: Settings },
 ] as const;
 
-export function AdminSidebar() {
+export function AdminSidebar({ isSuperAdmin = false }: { isSuperAdmin?: boolean }) {
   const pathname = usePathname();
   const router = useRouter();
+  const { count: supportUnread } = useSupportUnread();
 
   async function handleLogOut() {
     await signOut();
@@ -51,6 +56,15 @@ export function AdminSidebar() {
         <ExternalLink className="size-3.5" />
         Back to site
       </Link>
+      {isSuperAdmin && (
+        <Link
+          href="/super-admin"
+          className="mb-2 flex shrink-0 items-center gap-2 rounded-md px-3 py-2 text-sm font-medium whitespace-nowrap text-primary transition-colors hover:bg-muted"
+        >
+          <ShieldCheck className="size-4" />
+          Super admin
+        </Link>
+      )}
       {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
         const isActive = href === "/admin" ? pathname === href : pathname.startsWith(href);
         return (
@@ -66,6 +80,14 @@ export function AdminSidebar() {
           >
             <Icon className="size-4" />
             {label}
+            {href === "/admin/support" && supportUnread > 0 && (
+              <span
+                aria-label={`${supportUnread} unread message${supportUnread === 1 ? "" : "s"}`}
+                className="ml-auto flex min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-xs font-medium text-white"
+              >
+                {supportUnread > 99 ? "99+" : supportUnread}
+              </span>
+            )}
           </Link>
         );
       })}

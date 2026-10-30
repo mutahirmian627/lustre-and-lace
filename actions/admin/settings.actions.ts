@@ -1,21 +1,25 @@
 "use server";
 
 import { headers } from "next/headers";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { db } from "@/db";
 import { platformSettings } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { SETTINGS_KEYS, SETTINGS_DEFAULTS } from "@/constants/settings-keys";
 import { platformSettingsFormSchema, type PlatformSettingsFormInput } from "@/features/admin/types";
+import { isAdminRole } from "@/lib/roles";
+import { SETTINGS_CACHE_TAG } from "@/lib/settings";
+import { requireAdminUser } from "@/lib/require-admin";
 
 async function requireAdmin() {
   const session = await auth.api.getSession({ headers: await headers() });
-  if (!session?.user || session.user.role !== "admin") {
+  if (!session?.user || !isAdminRole(session.user.role)) {
     throw new Error("Admin access required.");
   }
 }
 
 export async function getPlatformSettingsForForm(): Promise<PlatformSettingsFormInput> {
+  await requireAdminUser();
   const rows = await db.query.platformSettings.findMany();
   const byKey = new Map(rows.map((r) => [r.key, r.value]));
   const get = (key: string) => byKey.get(key) ?? SETTINGS_DEFAULTS[key as keyof typeof SETTINGS_DEFAULTS];
@@ -51,5 +55,6 @@ export async function updatePlatformSettings(input: PlatformSettingsFormInput): 
   }
 
   revalidatePath("/admin/settings");
+  revalidateTag(SETTINGS_CACHE_TAG);
   return { success: true as const };
 }

@@ -30,7 +30,9 @@ export function EmptyState({
         className
       )}
     >
-      <Icon className="size-10 text-muted-foreground" aria-hidden="true" />
+      <span className="flex size-16 items-center justify-center rounded-full bg-secondary text-primary">
+        <Icon className="size-7" aria-hidden="true" />
+      </span>
       <h3 className="font-heading text-xl text-foreground">{title}</h3>
       {description && (
         <p className="max-w-sm text-sm text-muted-foreground">

@@ -16,11 +16,11 @@ import {
 } from "recharts";
 
 const STATUS_COLORS: Record<string, string> = {
-  pending: "#B76E79",
-  processing: "#D8A7B1",
-  shipped: "#8B7355",
-  delivered: "#6E9C82",
-  cancelled: "#B0413E",
+  pending: "#AF5071",
+  processing: "#D8ABBB",
+  shipped: "#B58B45",
+  delivered: "#5E9475",
+  cancelled: "#CE2B21",
 };
 
 export function OrdersOverTimeChart({ data }: { data: { date: string; count: number }[] }) {
@@ -36,7 +36,7 @@ export function OrdersOverTimeChart({ data }: { data: { date: string; count: num
         />
         <YAxis allowDecimals={false} fontSize={12} width={30} />
         <Tooltip />
-        <Line type="monotone" dataKey="count" stroke="#B76E79" strokeWidth={2} dot={false} />
+        <Line type="monotone" dataKey="count" stroke="#AF5071" strokeWidth={2} dot={false} />
       </LineChart>
     </ResponsiveContainer>
   );
@@ -50,7 +50,7 @@ export function TopProductsChart({ data }: { data: { name: string; salesCount: n
         <XAxis type="number" allowDecimals={false} fontSize={12} />
         <YAxis type="category" dataKey="name" width={120} fontSize={12} />
         <Tooltip />
-        <Bar dataKey="salesCount" fill="#B76E79" radius={4} />
+        <Bar dataKey="salesCount" fill="#AF5071" radius={4} />
       </BarChart>
     </ResponsiveContainer>
   );

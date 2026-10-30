@@ -7,10 +7,12 @@ import { db } from "@/db";
 import { productVariants, products } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { LOW_STOCK_THRESHOLD } from "@/constants/inventory";
+import { isAdminRole } from "@/lib/roles";
+import { requireAdminUser } from "@/lib/require-admin";
 
 async function requireAdmin() {
   const session = await auth.api.getSession({ headers: await headers() });
-  if (!session?.user || session.user.role !== "admin") {
+  if (!session?.user || !isAdminRole(session.user.role)) {
     throw new Error("Admin access required.");
   }
 }
@@ -18,6 +20,7 @@ async function requireAdmin() {
 export type InventoryFilter = "all" | "low_stock" | "out_of_stock";
 
 export async function getInventory(filter: InventoryFilter = "all") {
+  await requireAdminUser();
   // Soft-deleted products disappear from every customer-facing query
   // (specs/06) — inventory management is admin-only, but a deleted
   // product's stock isn't manageable anymore either, so exclude it here

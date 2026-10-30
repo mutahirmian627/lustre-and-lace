@@ -66,6 +66,14 @@ export function MobileNav({
             </div>
           ))}
 
+          <Link
+            href="/sale"
+            onClick={() => setOpen(false)}
+            className="py-2 font-semibold text-primary"
+          >
+            Sale
+          </Link>
+
           <div className="mt-4 flex flex-col gap-3 border-t border-border pt-4">
             <Link
               href="/wishlist"

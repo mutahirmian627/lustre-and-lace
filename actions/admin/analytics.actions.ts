@@ -7,10 +7,11 @@ import { orders } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { toCsv } from "@/utils/csv";
 import { formatCurrency } from "@/utils/format-currency";
+import { isAdminRole } from "@/lib/roles";
 
 async function requireAdmin() {
   const session = await auth.api.getSession({ headers: await headers() });
-  if (!session?.user || session.user.role !== "admin") {
+  if (!session?.user || !isAdminRole(session.user.role)) {
     throw new Error("Admin access required.");
   }
 }

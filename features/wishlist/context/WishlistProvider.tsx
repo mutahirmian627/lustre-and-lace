@@ -9,6 +9,8 @@ interface WishlistContextValue {
   isWishlisted: (productId: string) => boolean;
   count: number;
   toggle: (productId: string) => void;
+  /** Server-resolved at layout time, so UI keyed on it (e.g. checkout buttons) doesn't flicker on first paint. */
+  isLoggedIn: boolean;
 }
 
 const WishlistContext = createContext<WishlistContextValue | null>(null);
@@ -74,7 +76,7 @@ export function WishlistProvider({
   );
 
   return (
-    <WishlistContext.Provider value={{ isWishlisted, count: productIds.size, toggle }}>
+    <WishlistContext.Provider value={{ isWishlisted, count: productIds.size, toggle, isLoggedIn }}>
       {children}
     </WishlistContext.Provider>
   );

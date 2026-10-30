@@ -117,12 +117,16 @@ export default async function ProductPage({
         </BreadcrumbList>
       </Breadcrumb>
 
-      <h1 className="sr-only">{product.name}</h1>
       <ProductDetailClient
         productId={product.id}
         productName={product.name}
         productImages={product.images}
         variants={product.variants}
+        categoryName={product.category.name}
+        categorySlug={product.category.slug}
+        ratingAverage={product.ratingAverage}
+        reviewCount={product.reviews.length}
+        description={product.description}
       />
 
       <Accordion

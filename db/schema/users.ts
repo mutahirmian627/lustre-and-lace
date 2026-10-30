@@ -3,9 +3,10 @@ import { relations } from "drizzle-orm";
 
 /**
  * Roles supported by the platform.
- * Kept minimal now; extend here (e.g. "staff") if the admin team grows.
+ * `super_admin` is unique (a database trigger enforces it) and is the only role that can
+ * promote or demote admins.
  */
-export const roleEnum = pgEnum("role", ["customer", "admin"]);
+export const roleEnum = pgEnum("role", ["customer", "admin", "super_admin"]);
 
 /**
  * Core user table — shape is compatible with Better Auth's Drizzle adapter.

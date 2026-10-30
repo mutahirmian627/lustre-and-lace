@@ -3,7 +3,7 @@ import { Text } from "@react-email/components";
 import { EmailLayout } from "./EmailLayout";
 import { EmailButton } from "./EmailButton";
 
-const BODY_STYLE = { color: "#2F2F2F", fontSize: 15, lineHeight: "24px" };
+const BODY_STYLE = { color: "#221D1D", fontSize: 15, lineHeight: "24px" };
 
 export default function ConfirmAccountDeletion({
   name,
@@ -13,14 +13,18 @@ export default function ConfirmAccountDeletion({
   url: string;
 }) {
   return (
-    <EmailLayout previewText="Confirm you want to delete your Lustre & Lace account">
+    <EmailLayout
+      previewText="Confirm you want to delete your Lustre & Lace account"
+      eyebrow="Account"
+      title="Confirm account deletion"
+    >
       <Text style={BODY_STYLE}>Hi {name},</Text>
       <Text style={BODY_STYLE}>
         We received a request to permanently delete your Lustre &amp; Lace account. This will
         remove your saved addresses, wishlist, and cart — this can&apos;t be undone.
       </Text>
       <EmailButton href={url}>Confirm Account Deletion</EmailButton>
-      <Text style={{ ...BODY_STYLE, fontSize: 13, color: "#75706E" }}>
+      <Text style={{ ...BODY_STYLE, fontSize: 13, color: "#605858" }}>
         This link expires in 1 hour. If you didn&apos;t request this, you can safely ignore this
         email — your account will stay exactly as it is.
       </Text>

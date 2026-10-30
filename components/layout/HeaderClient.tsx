@@ -21,6 +21,9 @@ import type { getCategoryTree } from "@/actions/categories.actions";
 
 type CategoryTree = Awaited<ReturnType<typeof getCategoryTree>>;
 
+const NAV_LINK_CLASS =
+  "relative py-3 text-xs font-medium uppercase tracking-[0.16em] text-foreground transition-colors after:absolute after:inset-x-0 after:bottom-2 after:h-px after:origin-center after:scale-x-0 after:bg-primary after:transition-transform hover:text-primary hover:after:scale-x-100 motion-reduce:after:transition-none";
+
 export function HeaderClient({
   categories,
   isLoggedIn,
@@ -30,12 +33,12 @@ export function HeaderClient({
 }) {
   const { count: wishlistCount } = useWishlist();
   const { cart, openDrawer } = useCart();
-  const [shrunk, setShrunk] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const [announcementDismissed, setAnnouncementDismissed] = useState(false);
 
   useEffect(() => {
     function onScroll() {
-      setShrunk(window.scrollY > 48);
+      setScrolled(window.scrollY > 8);
     }
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -44,68 +47,54 @@ export function HeaderClient({
   return (
     <div className="sticky top-0 z-30">
       {!announcementDismissed && (
-        <div className="flex items-center justify-center gap-3 bg-secondary px-4 py-1.5 text-center text-xs text-secondary-foreground">
+        <div className="flex items-center justify-center gap-3 bg-plum px-4 py-2 text-center text-xs tracking-wide text-plum-foreground">
           <span>{ANNOUNCEMENT_BAR_TEXT}</span>
           <button
             type="button"
             onClick={() => setAnnouncementDismissed(true)}
             aria-label="Dismiss announcement"
+            className="text-plum-foreground/70 transition-colors hover:text-plum-foreground"
           >
             <X className="size-3.5" />
           </button>
         </div>
       )}
 
-      <header className="border-b border-border bg-background">
-        <div
-          className={cn(
-            "mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 transition-[padding] sm:px-6 lg:px-8",
-            shrunk ? "py-2.5" : "py-4"
-          )}
-        >
-          <div className="flex items-center gap-2 md:hidden">
-            <MobileNav
-              categories={categories}
-              isLoggedIn={isLoggedIn}
-              wishlistCount={wishlistCount}
-            />
+      {/* Only paint changes on scroll (never size): a height change would shift the page under
+          the scroll position and make the header flicker around the threshold. */}
+      <header
+        className={cn(
+          "border-b border-border bg-background transition-shadow",
+          scrolled && "shadow-[0_2px_12px_rgb(34_29_29/0.07)]"
+        )}
+      >
+        <div className="mx-auto grid max-w-7xl grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 py-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-2">
+            <div className="md:hidden">
+              <MobileNav
+                categories={categories}
+                isLoggedIn={isLoggedIn}
+                wishlistCount={wishlistCount}
+              />
+            </div>
+            <div className="hidden items-center gap-5 text-xs tracking-[0.08em] text-muted-foreground md:flex">
+              <Link href="/track-order" className="transition-colors hover:text-primary">
+                Track order
+              </Link>
+              <Link href="/contact" className="transition-colors hover:text-primary">
+                Contact
+              </Link>
+            </div>
           </div>
 
-          <Link href="/" className="font-heading text-2xl text-foreground">
+          <Link
+            href="/"
+            className="text-center font-heading text-2xl leading-none text-foreground sm:text-3xl"
+          >
             {BRAND.name}
           </Link>
 
-          <nav className="hidden items-center gap-6 md:flex">
-            {categories.map((category) =>
-              category.children.length > 0 ? (
-                <DropdownMenu key={category.id}>
-                  <DropdownMenuTrigger className="text-sm font-medium text-foreground hover:text-primary">
-                    {category.name}
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start">
-                    {category.children.map((child) => (
-                      <DropdownMenuItem
-                        key={child.id}
-                        render={
-                          <Link href={`/categories/${child.slug}`}>{child.name}</Link>
-                        }
-                      />
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                <Link
-                  key={category.id}
-                  href={`/categories/${category.slug}`}
-                  className="text-sm font-medium text-foreground hover:text-primary"
-                >
-                  {category.name}
-                </Link>
-              )
-            )}
-          </nav>
-
-          <div className="flex items-center gap-1">
+          <div className="flex items-center justify-end gap-1">
             <SearchOverlay />
             <Button
               variant="ghost"
@@ -140,6 +129,34 @@ export function HeaderClient({
             </Button>
           </div>
         </div>
+
+        <nav
+          aria-label="Shop by category"
+          className="hidden items-center justify-center gap-9 border-t border-border/70 px-4 md:flex"
+        >
+          {categories.map((category) =>
+            category.children.length > 0 ? (
+              <DropdownMenu key={category.id}>
+                <DropdownMenuTrigger className={NAV_LINK_CLASS}>{category.name}</DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                  {category.children.map((child) => (
+                    <DropdownMenuItem
+                      key={child.id}
+                      render={<Link href={`/categories/${child.slug}`}>{child.name}</Link>}
+                    />
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Link key={category.id} href={`/categories/${category.slug}`} className={NAV_LINK_CLASS}>
+                {category.name}
+              </Link>
+            )
+          )}
+          <Link href="/sale" className={cn(NAV_LINK_CLASS, "font-semibold text-primary")}>
+            Sale
+          </Link>
+        </nav>
       </header>
     </div>
   );

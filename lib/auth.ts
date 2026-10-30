@@ -2,7 +2,7 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
 import { db } from "@/db";
 import * as schema from "@/db/schema";
-import { resend, FROM_EMAIL } from "@/lib/resend";
+import { sendEmail } from "@/lib/send-email";
 import VerifyEmail from "@/emails/verify-email";
 import ResetPassword from "@/emails/reset-password";
 
@@ -28,7 +28,7 @@ export const auth = betterAuth({
       // is silently ignored on create/update payloads from the client, so
       // there's no request-body path to self-assign admin (specs/03).
       role: {
-        type: ["customer", "admin"],
+        type: ["customer", "admin", "super_admin"],
         input: false,
         defaultValue: "customer",
       },
@@ -41,29 +41,31 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 8,
-    // Guest checkout must keep working, so verification is not a sign-in
-    // gate — it's enforced separately at the /account/* and review-writing
-    // boundaries (middleware.ts, actions/reviews.actions.ts).
-    requireEmailVerification: false,
+    // A new account can't sign in until its email is confirmed, so every
+    // account (and every order) is tied to a mailbox that really exists.
+    requireEmailVerification: true,
     resetPasswordTokenExpiresIn: ONE_HOUR,
     sendResetPassword: async ({ user, url }) => {
-      await resend.emails.send({
-        from: FROM_EMAIL,
+      await sendEmail({
         to: user.email,
         subject: "Reset your Lustre & Lace password",
         react: ResetPassword({ name: user.name, url }),
+        localLink: url,
       });
     },
   },
   emailVerification: {
     sendOnSignUp: true,
     expiresIn: ONE_DAY,
+    // Sign-in stays a separate step after verifying, so the guest cart merges
+    // through the normal login flow.
+    autoSignInAfterVerification: false,
     sendVerificationEmail: async ({ user, url }) => {
-      await resend.emails.send({
-        from: FROM_EMAIL,
+      await sendEmail({
         to: user.email,
         subject: "Verify your email — Lustre & Lace",
         react: VerifyEmail({ name: user.name, url }),
+        localLink: url,
       });
     },
   },

@@ -16,7 +16,7 @@ import {
 } from "recharts";
 import { formatCurrency } from "@/utils/format-currency";
 
-const CATEGORY_COLORS = ["#B76E79", "#D8A7B1", "#8B7355", "#6E9C82", "#7A9CC6", "#C9A66B"];
+const CATEGORY_COLORS = ["#AF5071", "#D8ABBB", "#B58B45", "#5E9475", "#4E3844", "#D4B073"];
 
 export function RevenueOverTimeChart({ data }: { data: { date: string; revenue: number }[] }) {
   return (
@@ -26,7 +26,7 @@ export function RevenueOverTimeChart({ data }: { data: { date: string; revenue: 
         <XAxis dataKey="date" tickFormatter={(v: string) => v.slice(5)} fontSize={12} />
         <YAxis fontSize={12} width={60} tickFormatter={(v: number) => formatCurrency(v)} />
         <Tooltip formatter={(v) => formatCurrency(Number(v))} />
-        <Line type="monotone" dataKey="revenue" stroke="#B76E79" strokeWidth={2} dot={false} />
+        <Line type="monotone" dataKey="revenue" stroke="#AF5071" strokeWidth={2} dot={false} />
       </LineChart>
     </ResponsiveContainer>
   );
@@ -40,7 +40,7 @@ export function TopProductsRankingChart({ data }: { data: { name: string; quanti
         <XAxis type="number" allowDecimals={false} fontSize={12} />
         <YAxis type="category" dataKey="name" width={140} fontSize={11} />
         <Tooltip />
-        <Bar dataKey="quantity" fill="#B76E79" radius={4} />
+        <Bar dataKey="quantity" fill="#AF5071" radius={4} />
       </BarChart>
     </ResponsiveContainer>
   );

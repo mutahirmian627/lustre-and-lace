@@ -1,12 +1,40 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
-/** Matches ProductCard's aspect-square image + name/price stack (specs/06). */
+/** Matches ProductCard's bordered 4:5 image + name/rating/price body (specs/06). */
 export function ProductCardSkeleton() {
   return (
     <div className="flex flex-col gap-3" aria-hidden="true">
-      <Skeleton className="aspect-square w-full rounded-lg" />
+      <Skeleton className="aspect-[3/4] w-full rounded-md" />
       <Skeleton className="h-4 w-3/4" />
       <Skeleton className="h-4 w-1/3" />
+    </div>
+  );
+}
+
+/** Page chrome + a grid of card skeletons for /products, /categories/[slug], and /search. */
+export function ProductListingSkeleton() {
+  return (
+    <div
+      className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8"
+      aria-live="polite"
+      aria-busy="true"
+    >
+      <div className="mb-6 space-y-2">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-4 w-24" />
+      </div>
+      <div className="flex gap-8">
+        <div className="hidden w-64 shrink-0 space-y-4 md:block">
+          <Skeleton className="h-6 w-24" />
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-32 w-full" />
+        </div>
+        <div className="grid flex-1 grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-4">
+          {Array.from({ length: 8 }, (_, i) => (
+            <ProductCardSkeleton key={i} />
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

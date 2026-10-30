@@ -32,8 +32,9 @@ export function VariantSelector({
     <div className="space-y-4">
       {attributeKeys.map((key) => (
         <div key={key} className="space-y-2">
-          <span className="text-sm font-medium capitalize text-foreground">
-            {key}
+          <span className="text-sm text-muted-foreground">
+            <span className="font-medium capitalize text-foreground">{key}</span>
+            {selected[key] ? `: ${selected[key]}` : ""}
           </span>
           <div className="flex flex-wrap gap-2">
             {optionsFor(key, variants).map((value) => {
@@ -47,7 +48,7 @@ export function VariantSelector({
                   onClick={() => onSelect(key, value)}
                   aria-pressed={isSelected}
                   className={cn(
-                    "rounded-md border px-3 py-1.5 text-sm transition-colors",
+                    "rounded-full border px-4 py-2 text-sm transition-colors",
                     isSelected
                       ? "border-primary bg-primary text-primary-foreground"
                       : "border-border bg-background text-foreground hover:border-primary",
