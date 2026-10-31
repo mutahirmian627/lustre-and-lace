@@ -48,6 +48,7 @@ export function EmailLayout({
   previewText,
   eyebrow,
   title,
+  studio = false,
   children,
 }: {
   previewText: string;
@@ -55,6 +56,8 @@ export function EmailLayout({
   eyebrow?: string;
   /** Large title in the blush band under the header. */
   title?: string;
+  /** Footer for studio emails (enquiries) instead of the store's shop links. */
+  studio?: boolean;
   children: ReactNode;
 }) {
   const siteUrl = getSiteUrl();
@@ -175,19 +178,34 @@ export function EmailLayout({
           {/* Footer */}
           <Section style={{ backgroundColor: EMAIL_COLORS.plum, padding: "26px 24px", textAlign: "center" }}>
             <Text style={{ margin: "0 0 12px", fontSize: 13, color: EMAIL_COLORS.champagne }}>
-              <FooterLink href={`${siteUrl}/products`}>Shop</FooterLink>
-              <Dot />
-              <FooterLink href={`${siteUrl}/sale`}>Sale</FooterLink>
-              <Dot />
-              <FooterLink href={`${siteUrl}/track-order`}>Track order</FooterLink>
-              <Dot />
-              <FooterLink href={`${siteUrl}/contact`}>Contact</FooterLink>
+              {studio ? (
+                <>
+                  <FooterLink href={`${siteUrl}/services`}>Services</FooterLink>
+                  <Dot />
+                  <FooterLink href={`${siteUrl}/work`}>Our work</FooterLink>
+                  <Dot />
+                  <FooterLink href={`${siteUrl}/get-started`}>Start a project</FooterLink>
+                </>
+              ) : (
+                <>
+                  <FooterLink href={`${siteUrl}/products`}>Shop</FooterLink>
+                  <Dot />
+                  <FooterLink href={`${siteUrl}/sale`}>Sale</FooterLink>
+                  <Dot />
+                  <FooterLink href={`${siteUrl}/track-order`}>Track order</FooterLink>
+                  <Dot />
+                  <FooterLink href={`${siteUrl}/contact`}>Contact</FooterLink>
+                </>
+              )}
             </Text>
             <Text style={{ margin: 0, color: "#CDBFC6", fontSize: 12, lineHeight: "18px" }}>
-              {BRAND.tagline}
+              {studio ? BRAND.tagline : BRAND.storeTagline}
             </Text>
             <Text style={{ margin: "10px 0 0", color: "#CDBFC6", fontSize: 11 }}>
-              © {new Date().getFullYear()} {BRAND.name}. You&apos;re receiving this because of activity on your account.
+              © {new Date().getFullYear()} {BRAND.name}.{" "}
+              {studio
+                ? "You're receiving this because of a project enquiry."
+                : "You're receiving this because of activity on your account."}
             </Text>
           </Section>
         </Container>

@@ -92,7 +92,7 @@ export default async function ProductPage({
       />
       <BreadcrumbJsonLd
         items={[
-          { name: "Home", path: "/" },
+          { name: "Shop", path: "/shop" },
           { name: product.category.name, path: `/categories/${product.category.slug}` },
           { name: product.name, path: `/products/${product.slug}` },
         ]}
@@ -102,7 +102,7 @@ export default async function ProductPage({
       <Breadcrumb className="mb-6">
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink render={<Link href="/">Home</Link>} />
+            <BreadcrumbLink render={<Link href="/shop">Shop</Link>} />
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>

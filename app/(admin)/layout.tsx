@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { AdminSidebar } from "@/features/admin/components/AdminSidebar";
 import { SupportUnreadProvider } from "@/features/admin/components/SupportUnreadProvider";
 import { isAdminRole, isSuperAdminRole } from "@/lib/roles";
+import { getInquiryCounts } from "@/actions/admin/inquiries.actions";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -11,12 +12,21 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   // server component should never assume that guarantee blindly.
   if (!session?.user || !isAdminRole(session.user.role)) redirect("/login");
 
+  // The unread badge is a nicety: if the enquiries table isn't there yet (a deploy that got ahead of its
+  // migration), the rest of the admin must keep working rather than fail with it.
+  const newInquiries = await getInquiryCounts()
+    .then((counts) => counts.new)
+    .catch((error) => {
+      console.error("[admin] Could not load enquiry counts:", error instanceof Error ? error.message : error);
+      return 0;
+    });
+
   return (
     <SupportUnreadProvider>
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <h1 className="mb-6 font-heading text-xl text-foreground">Lustre &amp; Lace Admin</h1>
         <div className="flex flex-col gap-6 md:flex-row">
-          <AdminSidebar isSuperAdmin={isSuperAdminRole(session.user.role)} />
+          <AdminSidebar isSuperAdmin={isSuperAdminRole(session.user.role)} newInquiries={newInquiries} />
           <div className="min-w-0 flex-1">{children}</div>
         </div>
       </div>

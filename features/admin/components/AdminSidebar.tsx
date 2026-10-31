@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
+  Inbox,
   Package,
   FolderTree,
   ShoppingCart,
@@ -24,6 +25,7 @@ import { useSupportUnread } from "@/features/admin/components/SupportUnreadProvi
 
 const NAV_ITEMS = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
+  { label: "Enquiries", href: "/admin/inquiries", icon: Inbox },
   { label: "Products", href: "/admin/products", icon: Package },
   { label: "Categories", href: "/admin/categories", icon: FolderTree },
   { label: "Orders", href: "/admin/orders", icon: ShoppingCart },
@@ -36,7 +38,13 @@ const NAV_ITEMS = [
   { label: "Settings", href: "/admin/settings", icon: Settings },
 ] as const;
 
-export function AdminSidebar({ isSuperAdmin = false }: { isSuperAdmin?: boolean }) {
+export function AdminSidebar({
+  isSuperAdmin = false,
+  newInquiries = 0,
+}: {
+  isSuperAdmin?: boolean;
+  newInquiries?: number;
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const { count: supportUnread } = useSupportUnread();
@@ -80,6 +88,14 @@ export function AdminSidebar({ isSuperAdmin = false }: { isSuperAdmin?: boolean 
           >
             <Icon className="size-4" />
             {label}
+            {href === "/admin/inquiries" && newInquiries > 0 && (
+              <span
+                aria-label={`${newInquiries} new enquir${newInquiries === 1 ? "y" : "ies"}`}
+                className="ml-auto flex min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-medium text-primary-foreground"
+              >
+                {newInquiries > 99 ? "99+" : newInquiries}
+              </span>
+            )}
             {href === "/admin/support" && supportUnread > 0 && (
               <span
                 aria-label={`${supportUnread} unread message${supportUnread === 1 ? "" : "s"}`}

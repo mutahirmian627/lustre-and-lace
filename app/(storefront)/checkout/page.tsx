@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { getSavedAddresses } from "@/actions/addresses.actions";
 import { CheckoutPageClient } from "@/features/checkout/components/CheckoutPageClient";
+import { requireSessionOrRedirect } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Checkout" };
 
 export default async function CheckoutPage() {
+  await requireSessionOrRedirect();
   const savedAddresses = await getSavedAddresses();
 
   return (

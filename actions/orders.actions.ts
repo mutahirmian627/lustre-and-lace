@@ -2,14 +2,10 @@
 
 import { headers } from "next/headers";
 import { and, desc, eq, sql } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
 import { db } from "@/db";
 import { orders, productVariants, products } from "@/db/schema";
 import { auth } from "@/lib/auth";
-import { applyCancellationSideEffects } from "@/lib/order-cancellation";
 import { addToCart } from "@/actions/cart.actions";
-import { resend, FROM_EMAIL } from "@/lib/resend";
-import OrderCancelled from "@/emails/order-cancelled";
 
 const ORDERS_PER_PAGE = 10;
 
@@ -83,55 +79,6 @@ export async function trackGuestOrder(reference: string, email: string) {
     return { success: false as const, error: "No order found matching that reference and email." };
   }
   return { success: true as const, error: null, order };
-}
-
-/**
- * Self-service cancellation — restricted to `pending` orders (specs/11);
- * once fulfillment work has started (`processing`) the customer has to
- * reach out via WhatsApp/contact instead.
- */
-export async function cancelOrder(orderId: string) {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session?.user) return { error: "You must be signed in to cancel an order." };
-
-  const order = await db.query.orders.findFirst({
-    where: eq(orders.id, orderId),
-    with: { items: true },
-  });
-  if (!order || order.userId !== session.user.id) {
-    return { error: "Order not found." };
-  }
-  if (order.status !== "pending") {
-    return { error: "This order can no longer be cancelled — please contact us for help." };
-  }
-
-  await applyCancellationSideEffects(order);
-
-  try {
-    await resend.emails.send({
-      from: FROM_EMAIL,
-      to: order.customerEmail,
-      subject: `Order Cancelled — ${order.orderReference}`,
-      react: OrderCancelled({
-        customerName: order.customerName,
-        orderReference: order.orderReference,
-        items: order.items.map((item) => ({
-          productName: item.productName,
-          variantName: item.variantName,
-          quantity: item.quantity,
-          totalPrice: item.totalPrice,
-        })),
-        totalAmount: order.totalAmount,
-        wasRefunded: order.paymentStatus === "paid",
-      }),
-    });
-  } catch (error) {
-    console.error("Order cancellation email failed:", error);
-  }
-
-  revalidatePath("/account/orders");
-  revalidatePath(`/account/orders/${orderId}`);
-  return { success: true as const };
 }
 
 /**

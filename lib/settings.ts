@@ -24,3 +24,10 @@ export const getFlatShippingRate = unstable_cache(
   ["flat-shipping-rate"],
   { tags: [SETTINGS_CACHE_TAG], revalidate: 300 }
 );
+
+/** Display-only (studio footer and enquiry page), cached like the shipping rate; saving settings clears it. */
+export const getWhatsAppNumber = unstable_cache(
+  async (): Promise<string> => getSetting(SETTINGS_KEYS.whatsappBusinessNumber),
+  ["whatsapp-business-number"],
+  { tags: [SETTINGS_CACHE_TAG], revalidate: 300 }
+);

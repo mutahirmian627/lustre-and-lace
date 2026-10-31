@@ -81,9 +81,9 @@ export default async function SearchPage({
           </div>
         </div>
       ) : (
-        <div className="flex gap-8">
+        <div className="flex flex-col gap-4 md:flex-row md:gap-8">
           <FiltersSidebar facets={facets} />
-          <div className="flex-1 space-y-8">
+          <div className="min-w-0 space-y-8 md:flex-1">
             <ProductGrid products={items} />
             <ProductListPagination
               basePath="/search"

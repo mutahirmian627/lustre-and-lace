@@ -12,15 +12,18 @@ export async function sendEmail({
   subject,
   react,
   localLink,
+  replyTo,
 }: {
   to: string;
   subject: string;
   react: ReactElement;
   /** Verification / reset URL, printed only when the app runs on localhost and sending failed. */
   localLink?: string;
+  /** Where a reply should go, e.g. the customer who filled in an enquiry form. */
+  replyTo?: string;
 }): Promise<boolean> {
   try {
-    const result = (await resend.emails.send({ from: FROM_EMAIL, to, subject, react })) as {
+    const result = (await resend.emails.send({ from: FROM_EMAIL, to, subject, react, ...(replyTo ? { replyTo } : {}) })) as {
       error?: { message?: string } | null;
     } | null;
     if (result?.error) throw new Error(result.error.message ?? "Resend rejected the email");

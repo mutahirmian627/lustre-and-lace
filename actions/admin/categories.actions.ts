@@ -53,7 +53,7 @@ export async function createCategory(input: CategoryFormInput) {
 
   revalidateTag(CATEGORIES_CACHE_TAG);
   revalidatePath("/admin/categories");
-  revalidatePath("/");
+  revalidatePath("/shop");
   return { success: true as const };
 }
 
@@ -83,7 +83,7 @@ export async function updateCategory(id: string, input: CategoryFormInput) {
 
   revalidateTag(CATEGORIES_CACHE_TAG);
   revalidatePath("/admin/categories");
-  revalidatePath("/");
+  revalidatePath("/shop");
   return { success: true as const };
 }
 
@@ -114,7 +114,7 @@ export async function deleteCategory(id: string): Promise<{ error: string } | { 
 
   revalidateTag(CATEGORIES_CACHE_TAG);
   revalidatePath("/admin/categories");
-  revalidatePath("/");
+  revalidatePath("/shop");
   return { success: true as const };
 }
 

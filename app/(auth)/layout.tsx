@@ -18,11 +18,11 @@ export default async function AuthLayout({
 
       <div className="flex min-w-0 flex-col bg-accent">
         <header className="flex items-center justify-between gap-4 px-5 py-5 sm:px-10">
-          <Link href="/" className="font-heading text-2xl text-foreground sm:text-3xl">
+          <Link href="/shop" className="font-heading text-2xl text-foreground sm:text-3xl">
             {BRAND.name}
           </Link>
           <Link
-            href="/"
+            href="/shop"
             className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-primary"
           >
             <ArrowLeft className="size-4" aria-hidden="true" />

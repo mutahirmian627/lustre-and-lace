@@ -13,3 +13,4 @@ export * from "./addresses";
 export * from "./settings";
 export * from "./support";
 export * from "./audit";
+export * from "./inquiries";

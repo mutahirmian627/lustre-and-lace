@@ -7,7 +7,13 @@ import { testModeResend } from "@/lib/resend.test-mode";
 /** Narrowed to the one method every email template call site actually uses. */
 export interface EmailSender {
   emails: {
-    send(params: { from: string; to: string | string[]; subject: string; react: ReactElement }): Promise<unknown>;
+    send(params: {
+      from: string;
+      to: string | string[];
+      subject: string;
+      react: ReactElement;
+      replyTo?: string;
+    }): Promise<unknown>;
   };
 }
 
@@ -28,10 +34,10 @@ function createSmtpSender(): EmailSender {
 
   return {
     emails: {
-      async send({ from, to, subject, react }) {
+      async send({ from, to, subject, react, replyTo }) {
         try {
           const [html, text] = await Promise.all([render(react), render(react, { plainText: true })]);
-          const info = await transport.sendMail({ from, to, subject, html, text });
+          const info = await transport.sendMail({ from, to, subject, html, text, replyTo });
           return { data: { id: info.messageId }, error: null };
         } catch (error) {
           return { data: null, error: { message: error instanceof Error ? error.message : "SMTP send failed" } };

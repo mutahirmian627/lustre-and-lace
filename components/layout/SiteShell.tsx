@@ -7,6 +7,8 @@ import { MiniCartDrawer } from "@/features/cart/components/MiniCartDrawer";
 import { SupportChatLauncher } from "@/features/support/components/SupportChatLauncher";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { DemoStoreBanner } from "@/components/layout/DemoStoreBanner";
+import { SessionKeepAlive } from "@/components/layout/SessionKeepAlive";
 
 /**
  * Shared chrome + cart/wishlist context for every area of the site that
@@ -26,11 +28,13 @@ export async function SiteShell({ children }: { children: React.ReactNode }) {
   return (
     <WishlistProvider initialProductIds={wishlistProductIds} isLoggedIn={isLoggedIn}>
       <CartProvider initialCart={cart}>
+        <DemoStoreBanner />
         <Header isLoggedIn={isLoggedIn} />
         <main>{children}</main>
         <Footer />
         <MiniCartDrawer />
         <SupportChatLauncher isLoggedIn={isLoggedIn} />
+        {isLoggedIn && <SessionKeepAlive />}
       </CartProvider>
     </WishlistProvider>
   );

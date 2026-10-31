@@ -33,6 +33,8 @@ test("admin can confirm a manual-transfer order's payment", async ({ page }) => 
   const orderReference = (await referenceLocator.textContent())?.trim();
   expect(orderReference).toBeTruthy();
 
+  // The customer is still signed in, and signed-in visitors are redirected away from /login.
+  await page.context().clearCookies();
   await page.goto("/login");
   await page.getByLabel("Email").fill("admin@lustreandlace.com");
   await page.getByLabel("Password").fill("change-this-password-1");

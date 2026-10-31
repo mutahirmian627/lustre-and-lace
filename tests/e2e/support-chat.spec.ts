@@ -5,7 +5,7 @@ import { test, expect } from "@playwright/test";
  * Signed-out only, so it writes nothing to the database.
  */
 test("a visitor gets quick answers, and is asked to sign in before talking to the team", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/shop");
   await page.getByRole("button", { name: "Open chat" }).click();
 
   await page.getByRole("button", { name: "What is your return policy?" }).click();
@@ -13,7 +13,7 @@ test("a visitor gets quick answers, and is asked to sign in before talking to th
 
   await page.getByLabel("Ask, or enter an order number").fill("how many days for shipping");
   await page.getByRole("button", { name: "Send question" }).click();
-  await expect(page.getByText(/3-5 business days/)).toBeVisible();
+  await expect(page.getByRole("dialog").getByText(/3-5 business days/)).toBeVisible();
 
   await page.getByRole("button", { name: "Talk to our team" }).click();
   await expect(page.getByText(/Please sign in so our team knows/)).toBeVisible();
@@ -22,7 +22,7 @@ test("a visitor gets quick answers, and is asked to sign in before talking to th
 });
 
 test("the bot looks up an order by number without a login, and says so when it can't find one", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/shop");
   await page.getByRole("button", { name: "Open chat" }).click();
 
   await page.getByRole("button", { name: "Check my order status" }).click();

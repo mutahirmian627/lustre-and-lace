@@ -38,10 +38,10 @@ export default async function Image() {
           style={{
             marginTop: 24,
             fontSize: 32,
-            color: BRAND_COLORS.secondary,
+            color: BRAND_COLORS.plum,
           }}
         >
-          {BRAND.tagline}
+          {BRAND.descriptor}
         </div>
       </div>
     ),

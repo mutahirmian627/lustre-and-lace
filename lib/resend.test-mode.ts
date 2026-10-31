@@ -19,7 +19,7 @@ const capturedEmails: CapturedEmail[] = [];
  */
 export const testModeResend = {
   emails: {
-    async send(params: { from: string; to: string | string[]; subject: string; react: ReactElement }) {
+    async send(params: { from: string; to: string | string[]; subject: string; react: ReactElement; replyTo?: string }) {
       capturedEmails.push({ ...params, sentAt: new Date() });
       return { data: { id: `test-mode-${capturedEmails.length}` }, error: null };
     },

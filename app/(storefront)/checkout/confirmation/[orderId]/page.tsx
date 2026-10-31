@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getOrderById } from "@/actions/orders.actions";
 import { getSetting } from "@/lib/settings";
+import { requireSessionOrRedirect } from "@/lib/session";
 import { SETTINGS_KEYS } from "@/constants/settings-keys";
 import { buildWhatsAppLink } from "@/services/whatsapp.service";
 import { formatCurrency } from "@/utils/format-currency";
@@ -16,6 +17,7 @@ export default async function CheckoutConfirmationPage({
 }: {
   params: Promise<{ orderId: string }>;
 }) {
+  await requireSessionOrRedirect();
   const { orderId } = await params;
   const order = await getOrderById(orderId);
   if (!order) notFound();

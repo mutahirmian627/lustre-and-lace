@@ -26,7 +26,7 @@ export function ConfirmDeletionButton({ token }: { token: string }) {
     // The user row (and its session, via cascade) is already gone server-side —
     // this just clears client-side session state before leaving the account area.
     await signOut();
-    router.push("/");
+    router.push("/shop");
   }
 
   if (done) {

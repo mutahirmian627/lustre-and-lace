@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 // Pakistani mobile numbers: "03XXXXXXXXX" or "+923XXXXXXXXX" (specs/03).
-const PK_PHONE_REGEX = /^(\+92|0)3\d{9}$/;
+export const PK_PHONE_REGEX = /^(\+92|0)3\d{9}$/;
 
 export const loginSchema = z.object({
   email: z.email("Enter a valid email address").toLowerCase(),

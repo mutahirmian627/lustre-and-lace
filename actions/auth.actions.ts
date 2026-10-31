@@ -7,7 +7,7 @@ import { getSafeRedirect } from "@/utils/safe-redirect";
 /**
  * Where to send someone right after they sign in. Admins always land in their
  * panel (unless they were heading to another page inside it); customers go back
- * to where they were or the home page.
+ * to where they were or the shop.
  */
 export async function getPostLoginPath(redirect: string | null): Promise<string> {
   const session = await getSession();
@@ -19,5 +19,5 @@ export async function getPostLoginPath(redirect: string | null): Promise<string>
       !!safe && (safe.startsWith("/admin") || (isSuperAdminRole(role) && safe.startsWith("/super-admin")));
     return inOwnArea ? safe : getRoleHome(role);
   }
-  return safe ?? "/";
+  return safe ?? "/shop";
 }

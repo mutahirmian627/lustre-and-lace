@@ -2,12 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getOrderForAccount } from "@/actions/orders.actions";
+import { getWhatsAppNumber } from "@/lib/settings";
+import { buildOrderHelpWhatsAppLink, isRealWhatsAppNumber } from "@/services/whatsapp.service";
 import { OrderStatusBadge } from "@/features/account/components/OrderStatusBadge";
 import { PaymentStatusBadge } from "@/features/account/components/PaymentStatusBadge";
 import { OrderTimeline } from "@/features/account/components/OrderTimeline";
-import { CancelOrderDialog } from "@/features/account/components/CancelOrderDialog";
 import { ReorderButton } from "@/features/account/components/ReorderButton";
 import { formatCurrency } from "@/utils/format-currency";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Order Detail" };
 
@@ -21,6 +24,8 @@ export default async function OrderDetailPage({
   if (!order) notFound();
 
   const address = order.shippingAddress;
+  const whatsappNumber = await getWhatsAppNumber();
+  const canAskForCancellation = order.status === "pending" || order.status === "processing";
 
   return (
     <div className="space-y-8">
@@ -89,11 +94,35 @@ export default async function OrderDetailPage({
           </div>
 
           <div className="flex flex-wrap gap-3 pt-2">
-            {order.status === "pending" && (
-              <CancelOrderDialog orderId={order.id} orderReference={order.orderReference} />
-            )}
             <ReorderButton orderId={order.id} />
           </div>
+
+          {canAskForCancellation && (
+            <div className="space-y-3 rounded-xl border border-border bg-accent p-4">
+              <div>
+                <h2 className="font-heading text-base text-foreground">Need to cancel or change this order?</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Orders are cancelled by our team so nothing is missed. Contact support with your order number{" "}
+                  <span className="font-medium text-foreground">{order.orderReference}</span> and we&apos;ll sort it out.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Link href="/contact" className={cn(buttonVariants({ size: "sm" }), "h-9 px-4")}>
+                  Contact support
+                </Link>
+                {isRealWhatsAppNumber(whatsappNumber) && (
+                  <a
+                    href={buildOrderHelpWhatsAppLink(whatsappNumber, order.orderReference)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={cn(buttonVariants({ variant: "outline", size: "sm" }), "h-9 px-4")}
+                  >
+                    Message us on WhatsApp
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="space-y-4">

@@ -1,6 +1,9 @@
 export const BRAND = {
   name: "Lustre & Lace",
-  tagline: "Where Every Sparkle Tells Your Story.",
+  // The studio is the front door of the site; the jewellery store is its live demo project.
+  descriptor: "Web Development & Digital Marketing",
+  tagline: "We help businesses go digital and grow online.",
+  storeTagline: "Where Every Sparkle Tells Your Story.",
   domain: "lustreandlace.com",
 } as const;
 

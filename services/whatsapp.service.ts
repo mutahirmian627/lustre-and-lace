@@ -20,3 +20,15 @@ export function buildWhatsAppChatLink(businessNumber: string): string {
 export function isRealWhatsAppNumber(businessNumber: string): boolean {
   return /^\+?\d[\d\s-]{7,}$/.test(businessNumber.trim());
 }
+
+/** "Say hello" link for the studio side of the site. */
+export function buildStudioWhatsAppLink(businessNumber: string): string {
+  const digitsOnly = businessNumber.replace(/[^\d]/g, "");
+  return `https://wa.me/${digitsOnly}?text=${encodeURIComponent("Hi, I'd like to talk about a project with Lustre & Lace.")}`;
+}
+
+/** Opens a chat with the order reference already typed, for cancellations and other order help. */
+export function buildOrderHelpWhatsAppLink(businessNumber: string, orderReference: string): string {
+  const digitsOnly = businessNumber.replace(/[^\d]/g, "");
+  return `https://wa.me/${digitsOnly}?text=${encodeURIComponent(`Hi, I need help with order ${orderReference}.`)}`;
+}

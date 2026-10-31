@@ -26,7 +26,7 @@ export function AccountSidebar() {
 
   async function handleLogOut() {
     await signOut();
-    router.push("/");
+    router.push("/shop");
     router.refresh();
   }
 

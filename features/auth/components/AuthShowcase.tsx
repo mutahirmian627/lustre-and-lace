@@ -14,13 +14,16 @@ export const AUTH_BENEFITS = [
  * backdrop so the panel never looks broken.
  */
 export function AuthShowcase({ images }: { images: { url: string }[] }) {
-  const hasPhotos = images.length >= 2;
+  // Products can share a photo (the demo catalogue does); one tile per distinct picture keeps the
+  // keys unique and avoids showing the same image twice side by side.
+  const photos = [...new Map(images.map((image) => [image.url, image])).values()];
+  const hasPhotos = photos.length >= 2;
 
   return (
     <aside className="relative isolate hidden overflow-hidden bg-plum text-plum-foreground lg:flex">
       {hasPhotos ? (
         <div aria-hidden="true" className="absolute inset-0 -z-10 grid grid-cols-2 grid-rows-2 gap-3 p-3">
-          {images.slice(0, 4).map((image, index) => (
+          {photos.slice(0, 4).map((image, index) => (
             <div key={image.url} className="relative overflow-hidden rounded-xl">
               <Image
                 src={image.url}

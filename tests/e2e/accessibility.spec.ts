@@ -3,7 +3,11 @@ import AxeBuilder from "@axe-core/playwright";
 import { createAccountFromCheckoutGate } from "./helpers/account";
 
 const PAGES: { name: string; path: string; needsCartItem?: boolean }[] = [
-  { name: "homepage", path: "/" },
+  { name: "studio homepage", path: "/" },
+  { name: "services", path: "/services" },
+  { name: "work", path: "/work" },
+  { name: "start a project", path: "/get-started" },
+  { name: "store homepage", path: "/shop" },
   { name: "PDP", path: "/products/pearl-drop-earrings" },
   { name: "cart", path: "/cart", needsCartItem: true },
   { name: "checkout", path: "/checkout", needsCartItem: true },

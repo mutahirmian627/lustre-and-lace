@@ -2,11 +2,18 @@ import type { MetadataRoute } from "next";
 import { isNull, eq, and } from "drizzle-orm";
 import { db } from "@/db";
 import { products, categories } from "@/db/schema";
+import { SERVICES } from "@/constants/agency";
 
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://lustreandlace.com";
 
 const STATIC_ROUTES = [
   "",
+  "/services",
+  ...SERVICES.map((service) => `/services/${service.slug}`),
+  "/work",
+  "/about",
+  "/get-started",
+  "/shop",
   "/products",
   "/sale",
   "/search",

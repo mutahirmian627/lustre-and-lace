@@ -30,6 +30,7 @@
   --color-plum-foreground: var(--plum-foreground);
   --color-gold: var(--gold);
   --color-gold-dark: var(--gold-dark);
+  --color-gold-light: var(--gold-light);
   --color-champagne: var(--champagne);
   --color-blush-light: var(--blush-light);
   --color-input: var(--input);
@@ -83,6 +84,7 @@
   --plum-foreground: #ffffff;
   --gold: #b58b45; /* Champagne gold accent (icons, and text on plum) */
   --gold-dark: #8a6a2e; /* Same gold, dark enough for small text on light surfaces */
+  --gold-light: #d4b073; /* Same gold, light enough for small text on plum */
   --champagne: #ede4d3;
   --blush-light: #f9e2e7;
   --chart-1: #af5071;
@@ -127,6 +129,7 @@
   --plum-foreground: #f5efec;
   --gold: #d4b073;
   --gold-dark: #d4b073;
+  --gold-light: #d4b073;
   --champagne: #3a3128;
   --blush-light: #3a2a30;
   --chart-1: #d8abbb;

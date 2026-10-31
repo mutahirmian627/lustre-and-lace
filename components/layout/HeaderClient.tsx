@@ -88,7 +88,7 @@ export function HeaderClient({
           </div>
 
           <Link
-            href="/"
+            href="/shop"
             className="text-center font-heading text-2xl leading-none text-foreground sm:text-3xl"
           >
             {BRAND.name}

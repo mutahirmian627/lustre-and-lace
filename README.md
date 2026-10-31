@@ -1,8 +1,13 @@
 # Lustre & Lace
 
-*"Where Every Sparkle Tells Your Story."*
+*"We help businesses go digital and grow online."*
 
-An e-commerce storefront and admin platform for an artificial jewellery boutique — products, search, wishlist, cart, checkout (Cash on Delivery + manual bank transfer), order tracking, user accounts, and a full admin dashboard (products, categories, orders, customers, inventory, coupons, reviews, analytics, settings).
+The site has two sides under one name:
+
+- **Studio** (`/`, `/services`, `/work`, `/about`, `/get-started`): the web development and digital marketing studio's own site. Visitors fill in a project enquiry form; enquiries are saved, emailed to `INQUIRY_NOTIFY_EMAIL`, and managed in **Admin → Enquiries**.
+- **Demo store** (`/shop` and the pages under it): a complete jewellery store that shows what the studio builds, flagged on every page as a demo.
+
+The demo store is an e-commerce storefront and admin platform for an artificial jewellery boutique — products, search, wishlist, cart, checkout (Cash on Delivery + manual bank transfer), order tracking, user accounts, and a full admin dashboard (products, categories, orders, customers, inventory, coupons, reviews, analytics, settings).
 
 Full product/engineering specs live in [`specs/`](specs/), numbered in build order (`00` brand & tech stack → `17` deployment).
 
@@ -48,6 +53,7 @@ cp .env.example .env.local
 | `CLOUDINARY_API_SECRET` | Yes | Product image hosting/optimization |
 | `CRON_SECRET` | Yes | Verifies Vercel Cron requests to the auto-cancel-unpaid-orders route — generate with `openssl rand -base64 32` |
 | `NEXT_PUBLIC_APP_URL` | Yes | Absolute base URL used in emails and the WhatsApp `wa.me` deep link |
+| `INQUIRY_NOTIFY_EMAIL` | Recommended | Inbox that receives a notification for every project enquiry from `/get-started`. Falls back to `ADMIN_EMAIL`, which is often not a real mailbox, so set this |
 | `ADMIN_EMAIL` / `ADMIN_PASSWORD` | Yes (for seeding) | Bootstrap admin account created by `db:seed` — change the password after first login |
 | `SUPER_ADMIN_EMAIL` / `SUPER_ADMIN_PASSWORD` | Yes (for seeding) | The single super admin (12+ character password). Only this account can promote or remove admins, in `/super-admin`. A database trigger prevents a second one |
 
