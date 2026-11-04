@@ -1,0 +1,264 @@
+/*
+ * Paper & plum: the immersive experience's look.
+ *
+ * Everything is scoped to .immersive-root, so none of it can leak into the live site. Colours are
+ * mixed from one number, --atmosphere (0 = warm paper, 1 = plum night), which scroll updates from
+ * JavaScript. The plain declarations come first so browsers without color-mix() still get paper.
+ */
+
+.immersive-root {
+  --paper: #f6f1ea;
+  --paper-deep: #ebe2d4;
+  --ink: #1f1520;
+  --ink-soft: #66545f;
+  --night: #221820;
+  --night-raised: #2f222b;
+  --plum: #4e3844;
+  --raspberry: #af5071;
+  --raspberry-glow: #e58ba8;
+  --gold: #d4b073;
+  --gold-deep: #8f6b2c;
+
+  --atmosphere: 0;
+  --stage-bg: var(--paper);
+  --stage-fg: var(--ink);
+  --stage-soft: var(--ink-soft);
+  --stage-line: rgb(31 21 32 / 0.16);
+  --stage-accent: var(--raspberry);
+
+  position: relative;
+  background-color: var(--stage-bg);
+  color: var(--stage-fg);
+}
+
+@supports (color: color-mix(in oklab, red 50%, blue)) {
+  .immersive-root {
+    --stage-bg: color-mix(in oklab, var(--paper) calc((1 - var(--atmosphere)) * 100%), var(--night));
+    --stage-fg: color-mix(in oklab, var(--ink) calc((1 - var(--atmosphere)) * 100%), var(--paper));
+    --stage-soft: color-mix(in oklab, var(--ink-soft) calc((1 - var(--atmosphere)) * 100%), #cdbdc6);
+    --stage-line: color-mix(in oklab, rgb(31 21 32 / 0.16) calc((1 - var(--atmosphere)) * 100%), rgb(246 241 234 / 0.2));
+    --stage-accent: color-mix(in oklab, var(--raspberry) calc((1 - var(--atmosphere)) * 100%), var(--raspberry-glow));
+  }
+}
+
+/* A little paper grain on desktop screens only: it costs a full-screen layer, which phones can do without. */
+@media (hover: hover) and (pointer: fine) {
+  .immersive-root::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    pointer-events: none;
+    opacity: 0.05;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+}
+
+/* ---- Hero ---------------------------------------------------------------------------------- */
+
+/* Warm light pooling behind the gem, and a gold glow low on the left: depth without a flat colour field. */
+.imm-hero-light {
+  background:
+    radial-gradient(56% 52% at 72% 42%, rgb(229 139 168 / 0.3), transparent 70%),
+    radial-gradient(42% 40% at 12% 92%, rgb(212 176 115 / 0.22), transparent 72%);
+}
+
+.imm-eyebrow {
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold-deep);
+}
+@media (min-width: 640px) {
+  .imm-eyebrow {
+    letter-spacing: 0.24em;
+  }
+}
+
+.imm-display {
+  font-family: var(--font-heading), serif;
+  font-weight: 500;
+  font-size: clamp(3.5rem, 12.6vw, 5.5rem);
+  line-height: 0.92;
+  letter-spacing: -0.035em;
+}
+@media (min-width: 640px) {
+  .imm-display {
+    font-size: clamp(5rem, 11vw, 10.5rem);
+  }
+}
+@media (min-width: 1024px) {
+  .imm-display {
+    font-size: clamp(6rem, 9.4vw, 11rem);
+  }
+}
+
+.imm-line {
+  display: block;
+  animation: imm-rise 0.95s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: calc(var(--i, 0) * 120ms + 60ms);
+}
+
+.imm-better {
+  position: relative;
+  display: block;
+  width: fit-content;
+  font-style: italic;
+  color: var(--raspberry);
+}
+
+/* The "lace": a gold thread that draws itself under the last word. */
+.imm-thread {
+  position: absolute;
+  left: 0;
+  bottom: -0.2em;
+  width: 100%;
+  height: 0.24em;
+  overflow: visible;
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: imm-draw 1.4s 0.9s cubic-bezier(0.5, 0, 0.2, 1) forwards;
+}
+
+.imm-lead {
+  font-size: clamp(1.05rem, 1.7vw, 1.35rem);
+  line-height: 1.55;
+  color: var(--stage-soft);
+}
+
+.imm-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 3rem;
+  padding: 0 1.6rem;
+  border-radius: 9999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  transition: transform 0.25s ease, background-color 0.25s ease, border-color 0.25s ease;
+}
+/* Phones: a touch tighter so "Start your project" and "WhatsApp" sit side by side. */
+@media (max-width: 639px) {
+  .imm-cta {
+    padding: 0 1.15rem;
+    letter-spacing: 0.1em;
+  }
+}
+.imm-cta--solid {
+  background: var(--raspberry);
+  color: #fff;
+}
+.imm-cta--solid:hover {
+  background: #96405e;
+  transform: translateY(-2px);
+}
+.imm-cta--ghost {
+  border: 1px solid var(--stage-line);
+  color: var(--stage-fg);
+}
+.imm-cta--ghost:hover {
+  border-color: var(--stage-accent);
+  color: var(--stage-accent);
+}
+
+/* ---- Services (the first dark chapter) ------------------------------------------------------- */
+
+.imm-service-list {
+  list-style: none;
+  margin: 2.5rem 0 0;
+  padding: 0;
+  border-top: 1px solid var(--stage-line);
+}
+.imm-service-list li {
+  display: flex;
+  align-items: baseline;
+  gap: 1.25rem;
+  padding: 1.1rem 0;
+  border-bottom: 1px solid var(--stage-line);
+  transition: padding-left 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.imm-service-list li:hover {
+  padding-left: 1rem;
+}
+.imm-service-list .num {
+  min-width: 2.2rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  color: var(--gold);
+}
+.imm-service-list .name {
+  font-family: var(--font-heading), serif;
+  font-size: clamp(1.9rem, 5.4vw, 4.6rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  transition: color 0.3s ease;
+}
+.imm-service-list li:hover .name {
+  color: var(--stage-accent);
+}
+
+/* ---- Motion -------------------------------------------------------------------------------- */
+
+@keyframes imm-rise {
+  from {
+    transform: translateY(0.4em);
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    transform: none;
+    clip-path: inset(0 0 -25% 0);
+  }
+}
+@keyframes imm-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .imm-line {
+    animation: none;
+  }
+  .imm-thread {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+  .imm-service-list li,
+  .imm-service-list .name,
+  .imm-cta {
+    transition: none;
+  }
+}
+
+/* ---- Poster mode (?poster=1): only the gem, on transparent, for rendering the fallback picture -- */
+
+html[data-immersive-poster],
+html[data-immersive-poster] body,
+html[data-immersive-poster] .immersive-root {
+  background: transparent !important;
+}
+html[data-immersive-poster] .immersive-root::before,
+html[data-immersive-poster] .imm-chrome,
+html[data-immersive-poster] .imm-hero-light {
+  display: none !important;
+}
+html[data-immersive-poster] [data-gem-anchor] {
+  position: fixed !important;
+  inset: auto !important;
+  left: 50% !important;
+  top: 50% !important;
+  width: 512px !important;
+  height: 512px !important;
+  max-width: none !important;
+  transform: translate(-50%, -50%) !important;
+}
+html[data-immersive-poster] [data-gem-anchor] img {
+  opacity: 0 !important;
+}
