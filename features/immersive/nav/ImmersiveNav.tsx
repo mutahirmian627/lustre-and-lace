@@ -1,10 +1,17 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
-import { MenuOverlay } from "@/features/immersive/nav/MenuOverlay";
 import { setMenuOpen, useMenuOpen } from "@/features/immersive/lib/menu-store";
+import { whenNeeded } from "@/features/immersive/lib/when-needed";
 import { cn } from "@/lib/utils";
+
+// The menu (and the animation library it uses) is not needed to show the page. It is fetched once the
+// browser is idle, or the moment someone reaches for the Menu button, whichever comes first.
+const MenuOverlay = dynamic(() => import("@/features/immersive/nav/MenuOverlay").then((m) => m.MenuOverlay), {
+  ssr: false,
+});
 
 // A stable function (not recreated per render) so the overlay's effects don't re-run needlessly.
 const closeMenu = () => setMenuOpen(false);
@@ -20,6 +27,7 @@ export function ImmersiveNav() {
   const open = useMenuOpen();
   const menuButton = useRef<HTMLButtonElement>(null);
   const [scrolled, setScrolled] = useState(false);
+  const [menuReady, setMenuReady] = useState(false);
 
   useEffect(() => {
     const update = () => setScrolled(window.scrollY > 24);
@@ -30,6 +38,11 @@ export function ImmersiveNav() {
       window.removeEventListener("scroll", update);
     };
   }, []);
+
+  // Start fetching the menu early (idle, or first interaction anywhere on the page).
+  useEffect(() => whenNeeded(() => setMenuReady(true), { idleTimeout: 3000 }), []);
+
+  const showMenu = menuReady || open;
 
   return (
     <>
@@ -42,6 +55,8 @@ export function ImmersiveNav() {
             style={{ "--d": 0 } as React.CSSProperties}
             aria-expanded={open}
             aria-controls="immersive-menu"
+            onPointerEnter={() => setMenuReady(true)}
+            onFocus={() => setMenuReady(true)}
             onClick={() => setMenuOpen(true)}
           >
             <span className="imm-pill-icon" aria-hidden="true" />
@@ -63,7 +78,7 @@ export function ImmersiveNav() {
         <span className="imm-nav-thread" aria-hidden="true" />
       </header>
 
-      <MenuOverlay open={open} onClose={closeMenu} returnFocusRef={menuButton} />
+      {showMenu && <MenuOverlay open={open} onClose={closeMenu} returnFocusRef={menuButton} />}
     </>
   );
 }

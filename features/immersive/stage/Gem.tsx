@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import { BackSide, MathUtils, type Group, type PerspectiveCamera } from "three";
+import { BackSide, MathUtils, MixOperation, type Group, type PerspectiveCamera } from "three";
 import { createGemGeometry } from "@/features/immersive/lib/gem-geometry";
+import { createStudioCube } from "@/features/immersive/lib/studio-cube";
 import { pointer } from "@/features/immersive/lib/pointer";
 
 /** How much of the anchor box the gem's widest point fills. */
@@ -31,6 +32,8 @@ export function Gem({ anchorId, poster, onReady }: GemProps) {
   const frames = useRef(0);
   const age = useRef(0); // seconds the gem has been animating, for the ease-in
   const geometry = useMemo(() => createGemGeometry(), []);
+  const studio = useMemo(() => createStudioCube(), []);
+  useEffect(() => () => studio.dispose(), [studio]);
 
   useFrame((state, delta) => {
     const g = group.current;
@@ -76,25 +79,27 @@ export function Gem({ anchorId, poster, onReady }: GemProps) {
         {/* The inside: back faces only, dark and mirror-like. Seen through the front layer it gives the
             stone depth, the way light bouncing around inside a real gem does. */}
         <mesh geometry={geometry} scale={0.97} renderOrder={1}>
-          <meshStandardMaterial
-            color="#7a2142"
-            roughness={0.12}
-            metalness={0.85}
-            envMapIntensity={2.4}
+          <meshPhongMaterial
+            color="#6a1a3e"
+            specular="#ffc2d6"
+            shininess={120}
+            envMap={studio}
+            combine={MixOperation}
+            reflectivity={0.55}
             side={BackSide}
           />
         </mesh>
         {/* The outside: glossy and slightly see-through. */}
         <mesh geometry={geometry} renderOrder={2}>
-          <meshPhysicalMaterial
-            color="#e0698f"
-            roughness={0.03}
-            metalness={0.1}
-            clearcoat={1}
-            clearcoatRoughness={0.02}
-            envMapIntensity={2.2}
+          <meshPhongMaterial
+            color="#ee6a96"
+            specular="#ffffff"
+            shininess={220}
+            envMap={studio}
+            combine={MixOperation}
+            reflectivity={0.5}
             transparent
-            opacity={0.82}
+            opacity={0.74}
             depthWrite={false}
           />
         </mesh>

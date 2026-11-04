@@ -96,8 +96,8 @@
 
 .imm-line {
   display: block;
-  animation: imm-rise 0.95s cubic-bezier(0.2, 0.7, 0.2, 1) both;
-  animation-delay: calc(var(--i, 0) * 120ms + 60ms);
+  animation: imm-rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: calc(var(--i, 0) * 90ms);
 }
 
 .imm-better {
@@ -206,14 +206,15 @@
 
 /* ---- Motion -------------------------------------------------------------------------------- */
 
+/* The headline is visible from the very first frame and only slides up. (An earlier version also masked it
+   from fully clipped; browsers do not count fully clipped text as painted, which delayed the first paint
+   on slow phones until the image arrived.) */
 @keyframes imm-rise {
   from {
-    transform: translateY(0.4em);
-    clip-path: inset(0 0 100% 0);
+    transform: translateY(0.35em);
   }
   to {
     transform: none;
-    clip-path: inset(0 0 -25% 0);
   }
 }
 @keyframes imm-draw {

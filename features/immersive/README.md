@@ -31,6 +31,15 @@ features/immersive/
 - **The picture is always there first.** `public/immersive/gem-poster.png` shows instantly; the live gem
   fades in over it once the browser is idle. Regenerate it whenever the gem's look changes:
   `npm run dev` in one terminal, then `npm run poster:immersive`.
+- **Reflections are painted, not processed.** `lib/studio-cube.ts` draws a small studio (panels of light at
+  chosen directions) into a six-face cube in code, and the gem's materials read it directly. The usual
+  environment helper converts a scene into a blurred reflection map on the graphics card, and compiling that
+  step's shaders froze the page for ~2.9 s on a Windows laptop. A near-mirror gem doesn't need the blur,
+  and this version freezes it for ~0.3 s. If you change the lighting, edit the `PANELS` list there.
+- **Load what you need, when you need it.** The 3D chunk, the menu (and Framer Motion) and GSAP are all
+  fetched after the first paint (`lib/when-needed.ts`: browser idle, first scroll or first touch, whichever
+  comes first). The headline is never hidden or clipped on its first frame, because browsers do not count
+  fully clipped text as painted, which delays the first paint on slow phones.
 - **One number drives the mood.** `--atmosphere` (0 paper, 1 plum night) is updated by GSAP ScrollTrigger
   as you scroll; every colour on the page is mixed from it in CSS. Scrolling itself stays native.
 

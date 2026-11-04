@@ -2,7 +2,7 @@
 
 import { Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
-import { Environment, Lightformer, PerformanceMonitor } from "@react-three/drei";
+import { PerformanceMonitor } from "@react-three/drei";
 import { Gem } from "@/features/immersive/stage/Gem";
 import { GEM_ANCHOR_ID } from "@/features/immersive/constants";
 import type { Tier } from "@/features/immersive/lib/tiers";
@@ -15,30 +15,6 @@ interface StageCanvasProps {
   onReady: () => void;
   /** The scene could not keep its frame rate: ask for a cheaper tier. */
   onDecline: () => void;
-}
-
-/**
- * The lighting. Instead of downloading an environment photo (which would be a file to host, license and
- * wait for), the "studio" is built from a few glowing panels: a warm key light, a raspberry rim from
- * the right and a gold kicker from below. They are baked into reflections once, then reused every frame.
- */
-function StudioLight({ resolution }: { resolution: number }) {
-  return (
-    <Environment resolution={resolution} frames={1}>
-      {/* A dim plum room, so facets that face no light still read as plum rather than black. */}
-      <color attach="background" args={["#3b2631"]} />
-      {/* Big soft key from the upper left, a raspberry rim on the right, a gold kicker from below. */}
-      <Lightformer form="rect" intensity={5} color="#fff1e2" position={[-4, 3, 3]} scale={[6, 3, 1]} rotation-y={Math.PI / 5} />
-      <Lightformer form="rect" intensity={4} color="#f08fb0" position={[5, 0.5, 2]} scale={[3.5, 6, 1]} rotation-y={-Math.PI / 3} />
-      <Lightformer form="ring" intensity={3} color="#d4b073" position={[0, -4, 2]} scale={4} rotation-x={Math.PI / 2.4} />
-      <Lightformer form="circle" intensity={2} color="#ffffff" position={[0, 5, -3]} scale={3} />
-      {/* Thin bright strips: each facet that turns to face one flashes, which is what reads as sparkle. */}
-      <Lightformer form="rect" intensity={9} color="#ffffff" position={[-2.5, 0.5, 4]} scale={[0.35, 5, 1]} rotation-y={Math.PI / 8} />
-      <Lightformer form="rect" intensity={8} color="#ffd9e6" position={[2.2, 2, 4.5]} scale={[0.3, 4, 1]} rotation-y={-Math.PI / 9} />
-      <Lightformer form="rect" intensity={7} color="#ffe9b8" position={[0.4, -2.6, 4]} scale={[5, 0.3, 1]} />
-      <Lightformer form="rect" intensity={6} color="#ffffff" position={[3.5, -1.5, -2]} scale={[0.4, 5, 1]} rotation-y={Math.PI / 3} />
-    </Environment>
-  );
 }
 
 export default function StageCanvas({ tier, active, poster, onReady, onDecline }: StageCanvasProps) {
@@ -61,7 +37,10 @@ export default function StageCanvas({ tier, active, poster, onReady, onDecline }
       style={{ position: "fixed", inset: 0, zIndex: 20, pointerEvents: "none" }}
     >
       <Suspense fallback={null}>
-        <StudioLight resolution={full ? 256 : 128} />
+        {/* A few real lights for the highlights; the colourful reflections come from the painted cube in Gem. */}
+        <ambientLight intensity={0.95} color="#ffd9e6" />
+        <directionalLight position={[-3, 4, 5]} intensity={2.4} color="#fff1e2" />
+        <pointLight position={[4, 0.5, 3]} intensity={40} color="#f4789f" />
         <Gem anchorId={GEM_ANCHOR_ID} poster={poster} onReady={onReady} />
       </Suspense>
       {!poster && <PerformanceMonitor flipflops={2} onDecline={onDecline} />}
