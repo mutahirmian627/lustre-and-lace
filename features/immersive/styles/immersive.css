@@ -262,3 +262,349 @@ html[data-immersive-poster] [data-gem-anchor] {
 html[data-immersive-poster] [data-gem-anchor] img {
   opacity: 0 !important;
 }
+
+/* ---- Navigation ----------------------------------------------------------------------------- */
+
+.immersive-root :focus-visible {
+  outline: 2px solid var(--stage-accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.imm-skip {
+  position: fixed;
+  left: 0.75rem;
+  top: 0.75rem;
+  z-index: 80;
+  padding: 0.7rem 1.1rem;
+  border-radius: 9999px;
+  background: var(--raspberry);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transform: translateY(-200%);
+}
+.imm-skip:focus {
+  transform: none;
+}
+
+.imm-nav {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 30;
+  color: var(--stage-fg);
+  transition: background-color 0.3s ease, backdrop-filter 0.3s ease;
+}
+.imm-nav-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 96rem;
+  margin: 0 auto;
+  padding: 1rem 1.25rem;
+}
+@media (min-width: 640px) {
+  .imm-nav-row {
+    padding: 1.1rem 2rem;
+  }
+}
+@media (min-width: 1024px) {
+  .imm-nav-row {
+    padding: 1.2rem 3rem;
+  }
+}
+.imm-nav-right {
+  justify-self: end;
+}
+/* The Menu / Close pill hugs its label instead of stretching across its grid column. */
+.imm-nav-row > :first-child,
+.imm-menu-top > :first-child {
+  justify-self: start;
+}
+/* After scrolling, the bar gets a frosted backdrop in the page's current colour. */
+.imm-nav--scrolled {
+  background: var(--stage-bg);
+}
+@supports (color: color-mix(in srgb, red 50%, transparent)) {
+  .imm-nav--scrolled {
+    background: color-mix(in srgb, var(--stage-bg) 74%, transparent);
+    -webkit-backdrop-filter: blur(14px) saturate(1.2);
+    backdrop-filter: blur(14px) saturate(1.2);
+  }
+}
+
+.imm-wordmark {
+  font-family: var(--font-heading), serif;
+  font-size: 1.3rem;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+@media (min-width: 640px) {
+  .imm-wordmark {
+    font-size: 1.6rem;
+  }
+}
+
+.imm-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 2.5rem;
+  padding: 0 1rem;
+  border: 1px solid var(--stage-line);
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+  transition: border-color 0.25s ease, background-color 0.25s ease, color 0.25s ease;
+}
+.imm-pill:hover {
+  border-color: var(--stage-accent);
+  color: var(--stage-accent);
+}
+.imm-pill--solid {
+  border-color: transparent;
+  background: var(--raspberry);
+  color: #fff;
+}
+.imm-pill--solid:hover {
+  background: #96405e;
+  color: #fff;
+}
+/* The Menu icon: two short lines. In the open menu they cross to form a close mark. */
+.imm-pill-icon {
+  position: relative;
+  width: 0.95rem;
+  height: 0.6rem;
+}
+.imm-pill-icon::before,
+.imm-pill-icon::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1.5px;
+  background: currentColor;
+  transition: transform 0.3s ease;
+}
+.imm-pill-icon::before {
+  top: 0;
+}
+.imm-pill-icon::after {
+  bottom: 0;
+}
+.imm-pill-icon--close::before {
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
+}
+.imm-pill-icon--close::after {
+  bottom: auto;
+  top: 50%;
+  transform: translateY(-50%) rotate(-45deg);
+}
+
+.imm-nav-thread {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--gold), rgb(212 176 115 / 0.15) 70%, transparent);
+  transform-origin: left center;
+  animation: imm-thread-in 1.6s 0.35s cubic-bezier(0.5, 0, 0.2, 1) both;
+}
+
+/* The full-screen menu */
+.imm-menu {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  color: var(--paper);
+  background:
+    radial-gradient(60% 55% at 85% 20%, rgb(229 139 168 / 0.2), transparent 70%),
+    radial-gradient(50% 50% at 8% 95%, rgb(212 176 115 / 0.16), transparent 72%),
+    var(--night);
+}
+.imm-menu .imm-pill {
+  --stage-line: rgb(246 241 234 / 0.28);
+  --stage-accent: var(--raspberry-glow);
+}
+.imm-menu-top {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 96rem;
+  width: 100%;
+  margin: 0 auto;
+  padding: 1rem 1.25rem;
+}
+@media (min-width: 640px) {
+  .imm-menu-top {
+    padding: 1.1rem 2rem;
+  }
+}
+@media (min-width: 1024px) {
+  .imm-menu-top {
+    padding: 1.2rem 3rem;
+  }
+}
+.imm-menu-body {
+  display: grid;
+  flex: 1;
+  gap: 2.5rem;
+  max-width: 96rem;
+  width: 100%;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 2.5rem;
+}
+@media (min-width: 640px) {
+  .imm-menu-body {
+    padding: 2.5rem 2rem 3rem;
+  }
+}
+@media (min-width: 1024px) {
+  .imm-menu-body {
+    grid-template-columns: minmax(0, 1fr) 19rem;
+    align-items: end;
+    padding: 2rem 3rem 3.5rem;
+  }
+}
+.imm-menu-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid rgb(246 241 234 / 0.16);
+}
+.imm-menu-list li {
+  border-bottom: 1px solid rgb(246 241 234 / 0.16);
+}
+.imm-menu-link {
+  display: flex;
+  align-items: baseline;
+  gap: 1.1rem;
+  padding: 0.85rem 0;
+  transition: padding-left 0.35s cubic-bezier(0.2, 0.7, 0.2, 1), color 0.3s ease;
+}
+.imm-menu-link:hover,
+.imm-menu-link:focus-visible {
+  padding-left: 0.9rem;
+  color: var(--raspberry-glow);
+}
+.imm-menu-num {
+  min-width: 2rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  color: var(--gold);
+}
+.imm-menu-label {
+  font-family: var(--font-heading), serif;
+  font-size: clamp(2.2rem, 7.4vw, 5.6rem);
+  line-height: 1;
+  letter-spacing: -0.025em;
+}
+.imm-menu-link:hover .imm-menu-label {
+  font-style: italic;
+}
+.imm-menu-note {
+  margin-left: auto;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  color: rgb(246 241 234 / 0.55);
+}
+@media (max-width: 639px) {
+  .imm-menu-note {
+    display: none;
+  }
+}
+.imm-menu-aside {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+.imm-menu-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgb(246 241 234 / 0.16);
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgb(246 241 234 / 0.6);
+  transition: color 0.25s ease;
+}
+.imm-menu-contact span {
+  font-family: var(--font-heading), serif;
+  font-size: 1.5rem;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--paper);
+}
+.imm-menu-contact:hover,
+.imm-menu-contact:focus-visible {
+  color: var(--raspberry-glow);
+}
+.imm-menu-back {
+  font-size: 0.8rem;
+  color: rgb(246 241 234 / 0.6);
+}
+.imm-menu-back:hover {
+  color: var(--paper);
+}
+
+/* ---- The intro: not a loading screen, an assembly --------------------------------------------- */
+/* Content is visible from the first frame; the bar and the supporting text arrive around the headline. */
+
+.imm-nav-item {
+  animation: imm-drop 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: calc(var(--d, 0) * 90ms + 120ms);
+}
+.imm-fade {
+  animation: imm-fade 1s ease both;
+  animation-delay: calc(var(--i, 0) * 110ms + 700ms);
+}
+
+@keyframes imm-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-0.7rem);
+  }
+}
+@keyframes imm-fade {
+  from {
+    opacity: 0;
+    transform: translateY(0.6rem);
+  }
+}
+@keyframes imm-thread-in {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .imm-nav-item,
+  .imm-fade,
+  .imm-nav-thread {
+    animation: none;
+  }
+  .imm-nav,
+  .imm-pill,
+  .imm-pill-icon::before,
+  .imm-pill-icon::after,
+  .imm-menu-link,
+  .imm-menu-contact {
+    transition: none;
+  }
+}

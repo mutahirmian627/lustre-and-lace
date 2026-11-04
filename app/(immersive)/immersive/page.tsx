@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ScrollAtmosphere } from "@/features/immersive/sections/ScrollAtmosphere";
+import { ImmersiveNav } from "@/features/immersive/nav/ImmersiveNav";
 import { Hero } from "@/features/immersive/sections/Hero";
 import { ServicesNight } from "@/features/immersive/sections/ServicesNight";
 import { ContactStub } from "@/features/immersive/sections/ContactStub";
@@ -15,11 +16,18 @@ export const metadata: Metadata = {
 export default function ImmersivePage() {
   return (
     <ScrollAtmosphere>
-      <Hero />
-      <ServicesNight />
-      <ContactStub />
+      <a href="#main" className="imm-skip">
+        Skip to content
+      </a>
+      <ImmersiveNav />
+      {/* Everything marked data-immersive-background is made inert while the full-screen menu is open. */}
+      <main id="main" data-immersive-background>
+        <Hero />
+        <ServicesNight />
+        <ContactStub />
+      </main>
       <div className="imm-chrome pointer-events-none fixed bottom-3 right-3 z-50 rounded-full bg-black/70 px-3 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-white">
-        Experimental preview · stage 1
+        Experimental preview · stage 2
       </div>
       <TierBadge />
     </ScrollAtmosphere>

@@ -7,7 +7,8 @@ const step = (i: number): CSSProperties => ({ "--i": i }) as CSSProperties;
 
 /**
  * First screen. Everything here is real HTML and renders on the server, so the headline, the buttons
- * and the gem's picture appear immediately; the 3D scene arrives later and sits on top.
+ * and the gem's picture appear immediately; the 3D scene arrives later and sits on top. The navigation
+ * bar is separate (ImmersiveNav) and floats above this section.
  */
 export function Hero() {
   const whatsappHref = `https://wa.me/${IMMERSIVE_WHATSAPP_NUMBER}?text=${encodeURIComponent(
@@ -18,21 +19,9 @@ export function Hero() {
     <section className="relative min-h-svh overflow-x-clip">
       <div aria-hidden="true" className="imm-hero-light pointer-events-none absolute inset-0" />
 
-      <header className="imm-chrome relative z-30 flex items-center justify-between px-5 py-5 sm:px-8 lg:px-12">
-        <Link href="/immersive" className="flex items-baseline gap-2 whitespace-nowrap leading-none">
-          <span className="font-heading text-xl sm:text-2xl">Lustre &amp; Lace</span>
-          <span className="hidden text-[0.62rem] font-medium uppercase tracking-[0.26em] text-[color:var(--gold-deep)] sm:inline">
-            Studio
-          </span>
-        </Link>
-        <Link href="/get-started" className="imm-cta imm-cta--ghost !min-h-10 whitespace-nowrap !px-4 sm:!px-5">
-          Start a project
-        </Link>
-      </header>
-
-      <div className="relative mx-auto grid max-w-[96rem] px-5 pb-16 pt-4 sm:px-8 lg:min-h-[calc(100svh-5.5rem)] lg:grid-cols-12 lg:items-center lg:px-12">
+      <div className="relative mx-auto grid max-w-[96rem] px-5 pb-16 pt-24 sm:px-8 sm:pt-28 lg:min-h-svh lg:grid-cols-12 lg:items-center lg:px-12 lg:pt-20">
         <div className="imm-chrome relative z-10 lg:col-span-8">
-          <p className="imm-eyebrow mb-5 lg:mb-7">
+          <p className="imm-eyebrow imm-fade mb-5 lg:mb-7" style={step(0)}>
             <span className="sm:hidden">Web &amp; digital studio · Pakistan</span>
             <span className="hidden sm:inline">Web development &amp; digital studio · Pakistan</span>
           </p>
@@ -52,14 +41,18 @@ export function Hero() {
             </span>
           </h1>
 
-          <p className="imm-lead mt-7 max-w-xl lg:mt-9">We help businesses go digital and grow online.</p>
+          <p className="imm-lead imm-fade mt-7 max-w-xl lg:mt-9" style={step(1)}>
+            We help businesses go digital and grow online.
+          </p>
 
-          <div className="mt-7 flex flex-wrap gap-3 lg:mt-8">
+          <div className="imm-fade mt-7 flex flex-wrap gap-3 lg:mt-8" style={step(2)}>
             <Link href="/get-started" className="imm-cta imm-cta--solid">
               Start your project
             </Link>
             <a href={whatsappHref} target="_blank" rel="noopener noreferrer" className="imm-cta imm-cta--ghost">
-              WhatsApp<span className="hidden sm:inline"> us</span>
+              <span>
+                WhatsApp<span className="hidden sm:inline"> us</span>
+              </span>
             </a>
           </div>
         </div>

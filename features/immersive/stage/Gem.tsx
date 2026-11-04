@@ -29,6 +29,7 @@ export function Gem({ anchorId, poster, onReady }: GemProps) {
   const spin = useRef<Group>(null);
   const anchor = useRef<HTMLElement | null>(null);
   const frames = useRef(0);
+  const age = useRef(0); // seconds the gem has been animating, for the ease-in
   const geometry = useMemo(() => createGemGeometry(), []);
 
   useFrame((state, delta) => {
@@ -52,13 +53,17 @@ export function Gem({ anchorId, poster, onReady }: GemProps) {
     );
     g.scale.setScalar(rect.width * unitsPerPx * GEM_FILL);
 
-    if (poster) {
+    if (poster || frames.current === 0) {
+      // The live gem begins in the poster's exact pose, so the hand-over from picture to 3D is invisible.
       s.rotation.set(POSTER_POSE.x, POSTER_POSE.y, POSTER_POSE.z);
-    } else {
-      // A slow turn, leaning towards the cursor.
-      s.rotation.y += delta * (0.24 + pointer.x * 0.35);
-      s.rotation.x = MathUtils.damp(s.rotation.x, 0.3 + pointer.y * 0.4, 4, delta);
-      s.rotation.z = MathUtils.damp(s.rotation.z, 0.08 - pointer.x * 0.2, 4, delta);
+    }
+    if (!poster) {
+      // Then it eases into a slow turn that leans towards the cursor.
+      age.current += delta;
+      const settle = MathUtils.smoothstep(age.current, 0, 2.2);
+      s.rotation.y += delta * (0.05 + 0.2 * settle + pointer.x * 0.35 * settle);
+      s.rotation.x = MathUtils.damp(s.rotation.x, 0.3 + pointer.y * 0.4 * settle, 4, delta);
+      s.rotation.z = MathUtils.damp(s.rotation.z, 0.08 - pointer.x * 0.2 * settle, 4, delta);
     }
 
     frames.current += 1;

@@ -12,6 +12,22 @@ export const IMMERSIVE_INSTAGRAM_URL = "https://instagram.com/lustreandlacestudi
 /** The anchor element the 3D gem is attached to. The canvas reads its position every frame. */
 export const GEM_ANCHOR_ID = "gem-anchor";
 
+/** How the number is written for people (the link form above is for wa.me). */
+export const IMMERSIVE_WHATSAPP_DISPLAY = "0323 6022290";
+export const IMMERSIVE_INSTAGRAM_HANDLE = "@lustreandlacestudio";
+
+/**
+ * The full-screen menu. Every entry goes somewhere that works today: an in-page chapter, or an existing
+ * page of the site. As later stages add chapters (work, method, studio) their entries move in-page.
+ */
+export const IMMERSIVE_MENU = [
+  { label: "Services", href: "/immersive#services", note: "What we build" },
+  { label: "Work", href: "/work", note: "The live demo store" },
+  { label: "About", href: "/about", note: "How we think" },
+  { label: "Demo store", href: "/shop", note: "Try it yourself" },
+  { label: "Start a project", href: "/get-started", note: "Free quote" },
+] as const;
+
 /** What the studio offers, in the order it is presented. Capabilities only: no claims of results. */
 export const IMMERSIVE_SERVICES = [
   "Website development",

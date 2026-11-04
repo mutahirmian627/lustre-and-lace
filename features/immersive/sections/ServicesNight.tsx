@@ -7,7 +7,7 @@ import { IMMERSIVE_SERVICES } from "@/features/immersive/constants";
  */
 export function ServicesNight() {
   return (
-    <section data-night className="relative px-5 pb-28 pt-32 sm:px-8 lg:px-12 lg:pt-44">
+    <section id="services" data-night className="relative scroll-mt-4 px-5 pb-28 pt-32 sm:px-8 lg:px-12 lg:pt-44">
       <div className="mx-auto max-w-[96rem]">
         <p className="imm-eyebrow !text-[color:var(--gold)]">What we build</p>
         <ol className="imm-service-list">

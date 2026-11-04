@@ -6,6 +6,7 @@ import Image from "next/image";
 import { createPortal } from "react-dom";
 import { useDeviceTier, useQueryFlag } from "@/features/immersive/hooks/useDeviceTier";
 import { trackPointer } from "@/features/immersive/lib/pointer";
+import { useMenuOpen } from "@/features/immersive/lib/menu-store";
 import { downgradeTier, type Tier } from "@/features/immersive/lib/tiers";
 import { GEM_ANCHOR_ID } from "@/features/immersive/constants";
 import { cn } from "@/lib/utils";
@@ -29,6 +30,7 @@ export function GemStage({ className }: { className?: string }) {
   const [inView, setInView] = useState(true);
   const [tabVisible, setTabVisible] = useState(true);
   const [idle, setIdle] = useState(false);
+  const menuOpen = useMenuOpen();
   const anchorRef = useRef<HTMLDivElement>(null);
 
   const tier: Tier | null = poster ? "full" : (downgraded ?? detected?.tier ?? null);
@@ -107,7 +109,7 @@ export function GemStage({ className }: { className?: string }) {
         createPortal(
           <StageCanvas
             tier={tier}
-            active={inView && tabVisible}
+            active={inView && tabVisible && !menuOpen}
             poster={poster}
             onReady={() => setReady(true)}
             onDecline={() => setDowngraded(downgradeTier(tier))}
