@@ -16,6 +16,8 @@ export interface TierSignals {
   saveData: boolean;
   /** Network Information API value such as "4g" or "3g". Undefined where the browser doesn't expose it. */
   effectiveType?: string;
+  /** Estimated bandwidth in Mbit/s (Network Information API). Undefined where the browser doesn't expose it. */
+  downlink?: number;
   /** Logical CPU cores. Undefined where hidden. */
   cores?: number;
   /** Approximate device memory in GB (Chrome/Android only). */
@@ -36,8 +38,13 @@ export function classifyTier(s: TierSignals): TierResult {
   if (!s.webgl2) return { tier: "static", reason: "WebGL 2 is not available" };
   if (s.reducedMotion) return { tier: "static", reason: "Reduced motion is on" };
   if (s.saveData) return { tier: "static", reason: "Data saver is on" };
-  if (s.effectiveType && /^(slow-2g|2g|3g)$/.test(s.effectiveType)) {
+  if (s.effectiveType && /^(slow-2g|2g)$/.test(s.effectiveType)) {
     return { tier: "static", reason: `Slow network (${s.effectiveType})` };
+  }
+  // Browsers label a link "3g" from its latency alone, so a fast connection to a distant server can look like one.
+  // Only treat it as slow if its bandwidth is low too (the 3D code is about a third of a megabyte).
+  if (s.effectiveType === "3g" && (s.downlink === undefined || s.downlink < 1.5)) {
+    return { tier: "static", reason: `Slow network (3g, ${s.downlink ?? "?"} Mbps)` };
   }
   if ((s.cores !== undefined && s.cores <= 2) || (s.memoryGb !== undefined && s.memoryGb <= 2)) {
     return { tier: "static", reason: "Low-end device" };
@@ -58,7 +65,7 @@ export function downgradeTier(tier: Tier): Tier {
 
 interface NavigatorWithHints extends Navigator {
   deviceMemory?: number;
-  connection?: { saveData?: boolean; effectiveType?: string };
+  connection?: { saveData?: boolean; effectiveType?: string; downlink?: number };
 }
 
 function supportsWebGL2(): boolean {
@@ -82,6 +89,7 @@ export function readTierSignals(): TierSignals {
     reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)").matches,
     saveData: nav.connection?.saveData === true,
     effectiveType: nav.connection?.effectiveType,
+    downlink: nav.connection?.downlink,
     cores: nav.hardwareConcurrency || undefined,
     memoryGb: nav.deviceMemory,
     screenWidth: window.innerWidth,

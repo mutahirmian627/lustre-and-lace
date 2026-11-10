@@ -28,10 +28,16 @@ describe("classifyTier", () => {
   });
 
   it("keeps slow networks off the 3D download", () => {
-    for (const effectiveType of ["slow-2g", "2g", "3g"]) {
+    for (const effectiveType of ["slow-2g", "2g"]) {
       expect(classifyTier({ ...desktop, effectiveType }).tier).toBe("static");
     }
     expect(classifyTier({ ...desktop, effectiveType: "4g" }).tier).toBe("full");
+  });
+
+  it("does not mistake a fast but distant link for a slow one: '3g' means slow only when the bandwidth is low too", () => {
+    expect(classifyTier({ ...desktop, effectiveType: "3g", downlink: 0.7 }).tier).toBe("static");
+    expect(classifyTier({ ...desktop, effectiveType: "3g" }).tier).toBe("static"); // unknown bandwidth: be cautious
+    expect(classifyTier({ ...desktop, effectiveType: "3g", downlink: 8 }).tier).toBe("full");
   });
 
   it("treats very weak hardware as static", () => {
