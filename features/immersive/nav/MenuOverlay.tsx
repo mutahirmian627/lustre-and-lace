@@ -141,7 +141,7 @@ export function MenuOverlay({ open, onClose, returnFocusRef }: MenuOverlayProps)
               animate={{ opacity: 1 }}
               transition={{ duration: 0.8, delay: reduceMotion ? 0 : 0.7 }}
             >
-              <p className="imm-eyebrow !text-[color:var(--gold)]">Say hello</p>
+              <p className="imm-eyebrow">Say hello</p>
               <a href={whatsappHref} target="_blank" rel="noopener noreferrer" className="imm-menu-contact">
                 WhatsApp
                 <span>{IMMERSIVE_WHATSAPP_DISPLAY}</span>

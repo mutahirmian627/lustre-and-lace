@@ -1,270 +1,452 @@
 /*
- * Paper & plum: the immersive experience's look.
+ * Digital atelier: the immersive experience's look.
  *
- * Everything is scoped to .immersive-root, so none of it can leak into the live site. Colours are
- * mixed from one number, --atmosphere (0 = warm paper, 1 = plum night), which scroll updates from
- * JavaScript. The plain declarations come first so browsers without color-mix() still get paper.
+ * Everything is scoped to .immersive-root, so none of it can leak into the live site.
+ *
+ * Colour is mixed from one number, --atmosphere (0 = ivory gallery, 1 = plum hall), which is itself derived
+ * from --p, the scroll position (0..1 across the opening) that a small script keeps up to date. The 3D scene
+ * and the text therefore turn from day to night on the same cue. The plain declarations come first so
+ * browsers without color-mix() still get the ivory look.
  */
 
 .immersive-root {
-  --paper: #f6f1ea;
-  --paper-deep: #ebe2d4;
-  --ink: #1f1520;
-  --ink-soft: #66545f;
-  --night: #221820;
-  --night-raised: #2f222b;
-  --plum: #4e3844;
-  --raspberry: #af5071;
-  --raspberry-glow: #e58ba8;
-  --gold: #d4b073;
-  --gold-deep: #8f6b2c;
+  --ivory: #f4efe6;
+  --plum: #3d2142;
+  --lavender: #b8aacb;
+  --rose: #d3a5b0;
+  --ink: #211822;
+  --ink-soft: #62535f;
+  --night: #26122b;
 
-  --atmosphere: 0;
-  --stage-bg: var(--paper);
+  --p: 0;
+  --atmosphere: clamp(0, calc((var(--p) - 0.36) / 0.24), 1);
+
+  --stage-bg: var(--ivory);
   --stage-fg: var(--ink);
   --stage-soft: var(--ink-soft);
-  --stage-line: rgb(31 21 32 / 0.16);
-  --stage-accent: var(--raspberry);
+  --stage-line: rgb(33 24 34 / 0.2);
+  --stage-accent: var(--plum);
+  --stage-btn-bg: var(--plum);
+  --stage-btn-fg: var(--ivory);
+
+  --serif: var(--imm-serif), "Iowan Old Style", Georgia, serif;
+  --sans: var(--imm-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: var(--imm-mono), ui-monospace, "SFMono-Regular", Menlo, monospace;
 
   position: relative;
   background-color: var(--stage-bg);
   color: var(--stage-fg);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
 }
 
 @supports (color: color-mix(in oklab, red 50%, blue)) {
   .immersive-root {
-    --stage-bg: color-mix(in oklab, var(--paper) calc((1 - var(--atmosphere)) * 100%), var(--night));
-    --stage-fg: color-mix(in oklab, var(--ink) calc((1 - var(--atmosphere)) * 100%), var(--paper));
-    --stage-soft: color-mix(in oklab, var(--ink-soft) calc((1 - var(--atmosphere)) * 100%), #cdbdc6);
-    --stage-line: color-mix(in oklab, rgb(31 21 32 / 0.16) calc((1 - var(--atmosphere)) * 100%), rgb(246 241 234 / 0.2));
-    --stage-accent: color-mix(in oklab, var(--raspberry) calc((1 - var(--atmosphere)) * 100%), var(--raspberry-glow));
+    --stage-bg: color-mix(in oklab, var(--ivory) calc((1 - var(--atmosphere)) * 100%), var(--night));
+    --stage-fg: color-mix(in oklab, var(--ink) calc((1 - var(--atmosphere)) * 100%), var(--ivory));
+    --stage-soft: color-mix(in oklab, var(--ink-soft) calc((1 - var(--atmosphere)) * 100%), #cdbfd3);
+    --stage-line: color-mix(in oklab, rgb(33 24 34 / 0.2) calc((1 - var(--atmosphere)) * 100%), rgb(244 239 230 / 0.26));
+    --stage-accent: color-mix(in oklab, var(--plum) calc((1 - var(--atmosphere)) * 100%), var(--rose));
+    --stage-btn-bg: color-mix(in oklab, var(--plum) calc((1 - var(--atmosphere)) * 100%), var(--ivory));
+    --stage-btn-fg: color-mix(in oklab, var(--ivory) calc((1 - var(--atmosphere)) * 100%), var(--plum));
   }
 }
 
-/* A little paper grain on desktop screens only: it costs a full-screen layer, which phones can do without. */
-@media (hover: hover) and (pointer: fine) {
-  .immersive-root::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    z-index: 40;
-    pointer-events: none;
-    opacity: 0.05;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  }
+/* ---- The backdrop: pre-rendered pictures of the scene -------------------------------------------- */
+/* The first thing painted, and the whole experience on devices that never load the 3D. The live canvas
+   takes over in exactly this framing (see scene/CameraRig.tsx), so the hand-over is a quiet fade. */
+
+.imm-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background: var(--ivory);
+}
+.imm-still,
+.imm-still img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 50%;
+}
+.imm-still {
+  transition: opacity 0.7s ease;
+}
+.immersive-root[data-stage="live"] .imm-backdrop {
+  opacity: 0;
+  transition: opacity 0.7s ease;
+}
+/* Without the live scene, the second picture (the hall) fades in as you scroll through the doorway. */
+.imm-still--hall {
+  opacity: clamp(0, calc((var(--p) - 0.42) / 0.22), 1);
 }
 
-/* ---- Hero ---------------------------------------------------------------------------------- */
+/* ---- The pinned stage: text that stays put while the scene moves --------------------------------- */
 
-/* Warm light pooling behind the gem, and a gold glow low on the left: depth without a flat colour field. */
-.imm-hero-light {
-  background:
-    radial-gradient(56% 52% at 72% 42%, rgb(229 139 168 / 0.3), transparent 70%),
-    radial-gradient(42% 40% at 12% 92%, rgb(212 176 115 / 0.22), transparent 72%);
-}
-
-.imm-eyebrow {
-  font-size: 0.72rem;
-  font-weight: 500;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--gold-deep);
-}
-@media (min-width: 640px) {
-  .imm-eyebrow {
-    letter-spacing: 0.24em;
-  }
-}
-
-.imm-display {
-  font-family: var(--font-heading), serif;
-  font-weight: 500;
-  font-size: clamp(3.5rem, 12.6vw, 5.5rem);
-  line-height: 0.92;
-  letter-spacing: -0.035em;
-}
-@media (min-width: 640px) {
-  .imm-display {
-    font-size: clamp(5rem, 11vw, 10.5rem);
-  }
-}
-@media (min-width: 1024px) {
-  .imm-display {
-    font-size: clamp(6rem, 9.4vw, 11rem);
-  }
-}
-
-.imm-line {
-  display: block;
-  animation: imm-rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
-  animation-delay: calc(var(--i, 0) * 90ms);
-}
-
-.imm-better {
+.imm-run {
   position: relative;
-  display: block;
-  width: fit-content;
-  font-style: italic;
-  color: var(--raspberry);
+  height: 330svh;
 }
-
-/* The "lace": a gold thread that draws itself under the last word. */
-.imm-thread {
+.imm-sticky {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+  z-index: 1;
+}
+/* Where the menu's "Approach" entry scrolls to: a point 78% of the way through the sequence. */
+.imm-anchor {
   position: absolute;
   left: 0;
-  bottom: -0.2em;
-  width: 100%;
-  height: 0.24em;
-  overflow: visible;
-  fill: none;
-  stroke: var(--gold);
-  stroke-width: 3;
-  stroke-linecap: round;
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  animation: imm-draw 1.4s 0.9s cubic-bezier(0.5, 0, 0.2, 1) forwards;
+  top: calc(0.78 * (100% - 100svh));
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+.imm-scene {
+  position: absolute;
+  left: clamp(1.25rem, 5vw, 5rem);
+  right: clamp(1.25rem, 5vw, 5rem);
+  will-change: transform, opacity;
+}
+
+/* Opening: set into the calm left of the gallery on wide screens, low on the page on tall ones. */
+.imm-scene--opening {
+  bottom: max(2.25rem, 6svh);
+  max-width: 34rem;
+  opacity: clamp(0, calc(1 - (var(--p) - 0.025) * 8), 1);
+  transform: translate3d(0, calc(var(--p) * -9rem), 0);
+}
+@media (min-width: 900px) {
+  .imm-scene--opening {
+    top: 50%;
+    bottom: auto;
+    width: min(31rem, 36vw);
+    margin-top: calc(var(--p) * -9rem);
+    transform: translate3d(0, -48%, 0);
+  }
+}
+
+/* Approach: arrives once the screen has parted and the hall is around you. */
+.imm-scene--approach {
+  bottom: max(3rem, 9svh);
+  max-width: 30rem;
+  opacity: clamp(0, calc((var(--p) - 0.6) * 7), 1);
+  transform: translate3d(0, calc((1 - clamp(0, (var(--p) - 0.6) * 5, 1)) * 1.6rem), 0);
+  visibility: hidden;
+}
+@media (min-width: 900px) {
+  .imm-scene--approach {
+    bottom: auto;
+    top: 50%;
+    width: min(28rem, 34vw);
+    margin-top: -4rem;
+  }
+}
+.immersive-root[data-phase="approach"] .imm-scene--approach {
+  visibility: visible;
+}
+.immersive-root:not([data-phase="opening"]) .imm-scene--opening {
+  visibility: hidden;
+}
+
+/* ---- Typography ----------------------------------------------------------------------------------- */
+
+.imm-label {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  font-weight: 400;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--stage-soft);
+}
+.imm-label::before {
+  content: "";
+  width: 1.75rem;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.7;
+}
+
+.imm-title {
+  margin: 1.1rem 0 1.3rem;
+  font-size: clamp(2.2rem, 1.2rem + 3.4vw, 4rem);
+  line-height: 1.02;
+  font-weight: 400;
+}
+.imm-title-serif,
+.imm-title-sans {
+  display: block;
+}
+.imm-title-serif {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.015em;
+}
+.imm-title-sans {
+  font-family: var(--sans);
+  font-weight: 500;
+  letter-spacing: -0.04em;
 }
 
 .imm-lead {
-  font-size: clamp(1.05rem, 1.7vw, 1.35rem);
-  line-height: 1.55;
+  margin: 0;
+  max-width: 27rem;
+  font-size: 1.0625rem;
+  line-height: 1.62;
   color: var(--stage-soft);
 }
 
-.imm-cta {
+.imm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.9rem 1.6rem;
+  margin-top: 1.9rem;
+}
+.imm-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
-  min-height: 3rem;
+  min-height: 2.9rem;
   padding: 0 1.6rem;
   border-radius: 9999px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  transition: transform 0.25s ease, background-color 0.25s ease, border-color 0.25s ease;
+  background: var(--stage-btn-bg);
+  color: var(--stage-btn-fg);
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  transition: transform 0.25s ease, opacity 0.25s ease;
 }
-/* Phones: a touch tighter so "Start your project" and "WhatsApp" sit side by side. */
-@media (max-width: 639px) {
-  .imm-cta {
-    padding: 0 1.15rem;
-    letter-spacing: 0.1em;
+.imm-btn:hover {
+  transform: translateY(-2px);
+  opacity: 0.92;
+}
+.imm-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 2.9rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--stage-fg);
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 100% 1px;
+  background-position: 0 calc(50% + 0.78rem);
+  background-repeat: no-repeat;
+}
+.imm-link span {
+  transition: transform 0.25s ease;
+}
+.imm-link:hover span {
+  transform: translateX(4px);
+}
+
+.imm-statement {
+  margin: 1rem 0 0;
+  font-family: var(--serif);
+  font-size: clamp(1.9rem, 1.1rem + 2.4vw, 3rem);
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  font-weight: 400;
+}
+
+/* The mono eyebrow used inside the menu. */
+.imm-eyebrow {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--lavender);
+}
+
+/* ---- Placards: gallery labels pinned to the scene ------------------------------------------------ */
+
+.imm-placard {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 2;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+  display: none;
+}
+@media (min-width: 1000px) and (min-height: 560px) {
+  .imm-placard {
+    display: block;
   }
 }
-.imm-cta--solid {
-  background: var(--raspberry);
-  color: #fff;
+.imm-placard::before {
+  content: "";
+  position: absolute;
+  left: -3px;
+  top: -3px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--stage-fg);
 }
-.imm-cta--solid:hover {
-  background: #96405e;
-  transform: translateY(-2px);
+.imm-placard-body {
+  position: absolute;
+  left: 1.6rem;
+  top: -2.2rem;
+  width: max-content;
+  max-width: 15rem;
+  padding-left: 0.85rem;
+  border-left: 1px solid var(--stage-line);
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  line-height: 1.6;
+  letter-spacing: 0.04em;
+  color: var(--stage-soft);
 }
-.imm-cta--ghost {
-  border: 1px solid var(--stage-line);
+/* A label that sits to the left of its point instead of the right. */
+.imm-placard--left .imm-placard-body {
+  left: auto;
+  right: 2.4rem;
+  padding-left: 0;
+  padding-right: 0.85rem;
+  border-left: 0;
+  border-right: 1px solid var(--stage-line);
+  text-align: right;
+}
+.imm-placard--left::after {
+  left: auto;
+  right: 4px;
+}
+.imm-placard::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 0;
+  width: 1.6rem;
+  height: 1px;
+  background: var(--stage-line);
+}
+.imm-placard-body strong {
+  display: block;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
   color: var(--stage-fg);
 }
-.imm-cta--ghost:hover {
-  border-color: var(--stage-accent);
-  color: var(--stage-accent);
+
+/* ---- Scroll cue ----------------------------------------------------------------------------------- */
+
+.imm-cue {
+  position: absolute;
+  left: clamp(1.25rem, 5vw, 5rem);
+  bottom: 1.6rem;
+  display: none;
+  align-items: center;
+  gap: 0.8rem;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--stage-soft);
+  opacity: clamp(0, calc(1 - var(--p) * 22), 1);
+}
+.imm-cue::after {
+  content: "";
+  width: 2.75rem;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.6;
+}
+@media (min-width: 900px) and (min-height: 620px) {
+  .imm-cue {
+    display: flex;
+  }
 }
 
-/* ---- Services (the first dark chapter) ------------------------------------------------------- */
-
-.imm-service-list {
-  list-style: none;
-  margin: 2.5rem 0 0;
-  padding: 0;
-  border-top: 1px solid var(--stage-line);
-}
-.imm-service-list li {
-  display: flex;
-  align-items: baseline;
-  gap: 1.25rem;
-  padding: 1.1rem 0;
-  border-bottom: 1px solid var(--stage-line);
-  transition: padding-left 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
-}
-.imm-service-list li:hover {
-  padding-left: 1rem;
-}
-.imm-service-list .num {
-  min-width: 2.2rem;
-  font-size: 0.8rem;
-  letter-spacing: 0.12em;
-  color: var(--gold);
-}
-.imm-service-list .name {
-  font-family: var(--font-heading), serif;
-  font-size: clamp(1.9rem, 5.4vw, 4.6rem);
-  line-height: 1.05;
-  letter-spacing: -0.02em;
-  transition: color 0.3s ease;
-}
-.imm-service-list li:hover .name {
-  color: var(--stage-accent);
-}
-
-/* ---- Motion -------------------------------------------------------------------------------- */
+/* ---- Motion --------------------------------------------------------------------------------------- */
 
 /* The headline is visible from the very first frame and only slides up. (An earlier version also masked it
    from fully clipped; browsers do not count fully clipped text as painted, which delayed the first paint
-   on slow phones until the image arrived.) */
+   on slow phones.) Supporting text fades in around it. */
+.imm-rise {
+  animation: imm-rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: calc(var(--i, 0) * 90ms);
+}
+.imm-fade {
+  animation: imm-fade 1s ease both;
+  animation-delay: calc(var(--i, 0) * 110ms + 500ms);
+}
+.imm-nav-item {
+  animation: imm-drop 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: calc(var(--d, 0) * 90ms + 120ms);
+}
 @keyframes imm-rise {
   from {
-    transform: translateY(0.35em);
+    transform: translateY(0.3em);
   }
   to {
     transform: none;
   }
 }
-@keyframes imm-draw {
-  to {
-    stroke-dashoffset: 0;
+@keyframes imm-fade {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+}
+@keyframes imm-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-0.6rem);
+  }
+}
+@keyframes imm-thread-in {
+  from {
+    transform: scaleX(0);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .imm-line {
+  .imm-rise,
+  .imm-fade,
+  .imm-nav-item,
+  .imm-nav-thread {
     animation: none;
   }
-  .imm-thread {
-    animation: none;
-    stroke-dashoffset: 0;
+  .imm-scene {
+    will-change: auto;
   }
-  .imm-service-list li,
-  .imm-service-list .name,
-  .imm-cta {
+  .imm-btn,
+  .imm-link span,
+  .imm-still {
     transition: none;
   }
 }
 
-/* ---- Poster mode (?poster=1): only the gem, on transparent, for rendering the fallback picture -- */
+/* ---- Poster mode (?poster=1): only the scene, for rendering the fallback pictures ---------------- */
 
-html[data-immersive-poster],
-html[data-immersive-poster] body,
-html[data-immersive-poster] .immersive-root {
-  background: transparent !important;
+html[data-immersive-poster] body {
+  overflow: hidden;
 }
-html[data-immersive-poster] .immersive-root::before,
+html[data-immersive-poster] .imm-nav,
+html[data-immersive-poster] .imm-backdrop,
 html[data-immersive-poster] .imm-chrome,
-html[data-immersive-poster] .imm-hero-light {
+html[data-immersive-poster] .imm-skip,
+html[data-immersive-poster] main,
+html[data-immersive-poster] .immersive-root::before,
+html[data-immersive-poster] nextjs-portal {
   display: none !important;
 }
-html[data-immersive-poster] [data-gem-anchor] {
-  position: fixed !important;
-  inset: auto !important;
-  left: 50% !important;
-  top: 50% !important;
-  width: 512px !important;
-  height: 512px !important;
-  max-width: none !important;
-  transform: translate(-50%, -50%) !important;
-}
-html[data-immersive-poster] [data-gem-anchor] img {
-  opacity: 0 !important;
-}
 
-/* ---- Navigation ----------------------------------------------------------------------------- */
+/* ---- Navigation ----------------------------------------------------------------------------------- */
 
 .immersive-root :focus-visible {
   outline: 2px solid var(--stage-accent);
@@ -279,10 +461,10 @@ html[data-immersive-poster] [data-gem-anchor] img {
   z-index: 80;
   padding: 0.7rem 1.1rem;
   border-radius: 9999px;
-  background: var(--raspberry);
-  color: #fff;
+  background: var(--plum);
+  color: var(--ivory);
   font-size: 0.8rem;
-  font-weight: 600;
+  font-weight: 500;
   transform: translateY(-200%);
 }
 .imm-skip:focus {
@@ -323,23 +505,38 @@ html[data-immersive-poster] [data-gem-anchor] img {
 .imm-menu-top > :first-child {
   justify-self: start;
 }
+/* On narrow screens the ribbon enters at the top, behind the wordmark, so the bar is always frosted there. */
+@media (max-width: 899px) {
+  .imm-nav {
+    background: var(--stage-bg);
+  }
+}
+@supports (color: color-mix(in srgb, red 50%, transparent)) {
+  @media (max-width: 899px) {
+    .imm-nav {
+      background: color-mix(in srgb, var(--stage-bg) 64%, transparent);
+      -webkit-backdrop-filter: blur(14px) saturate(1.2);
+      backdrop-filter: blur(14px) saturate(1.2);
+    }
+  }
+}
 /* After scrolling, the bar gets a frosted backdrop in the page's current colour. */
 .imm-nav--scrolled {
   background: var(--stage-bg);
 }
 @supports (color: color-mix(in srgb, red 50%, transparent)) {
   .imm-nav--scrolled {
-    background: color-mix(in srgb, var(--stage-bg) 74%, transparent);
+    background: color-mix(in srgb, var(--stage-bg) 64%, transparent);
     -webkit-backdrop-filter: blur(14px) saturate(1.2);
     backdrop-filter: blur(14px) saturate(1.2);
   }
 }
 
 .imm-wordmark {
-  font-family: var(--font-heading), serif;
-  font-size: 1.3rem;
+  font-family: var(--serif);
+  font-size: 1.4rem;
   line-height: 1;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.005em;
   white-space: nowrap;
 }
 @media (min-width: 640px) {
@@ -356,8 +553,9 @@ html[data-immersive-poster] [data-gem-anchor] img {
   padding: 0 1rem;
   border: 1px solid var(--stage-line);
   border-radius: 9999px;
-  font-size: 0.72rem;
-  font-weight: 600;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  font-weight: 400;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   white-space: nowrap;
@@ -372,12 +570,12 @@ html[data-immersive-poster] [data-gem-anchor] img {
 }
 .imm-pill--solid {
   border-color: transparent;
-  background: var(--raspberry);
-  color: #fff;
+  background: var(--stage-btn-bg);
+  color: var(--stage-btn-fg);
 }
 .imm-pill--solid:hover {
-  background: #96405e;
-  color: #fff;
+  color: var(--stage-btn-fg);
+  opacity: 0.9;
 }
 /* The Menu icon: two short lines. In the open menu they cross to form a close mark. */
 .imm-pill-icon {
@@ -411,18 +609,20 @@ html[data-immersive-poster] [data-gem-anchor] img {
   transform: translateY(-50%) rotate(-45deg);
 }
 
+/* A hairline that draws itself across, then stays as the bar's lower edge. */
 .imm-nav-thread {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
   height: 1px;
-  background: linear-gradient(90deg, var(--gold), rgb(212 176 115 / 0.15) 70%, transparent);
+  background: linear-gradient(90deg, var(--stage-line), transparent 85%);
   transform-origin: left center;
   animation: imm-thread-in 1.6s 0.35s cubic-bezier(0.5, 0, 0.2, 1) both;
 }
 
-/* The full-screen menu */
+/* ---- The full-screen menu ------------------------------------------------------------------------- */
+
 .imm-menu {
   position: fixed;
   inset: 0;
@@ -430,15 +630,15 @@ html[data-immersive-poster] [data-gem-anchor] img {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  color: var(--paper);
+  color: var(--ivory);
   background:
-    radial-gradient(60% 55% at 85% 20%, rgb(229 139 168 / 0.2), transparent 70%),
-    radial-gradient(50% 50% at 8% 95%, rgb(212 176 115 / 0.16), transparent 72%),
+    radial-gradient(60% 55% at 85% 20%, rgb(211 165 176 / 0.18), transparent 70%),
+    radial-gradient(50% 50% at 8% 95%, rgb(184 170 203 / 0.14), transparent 72%),
     var(--night);
 }
 .imm-menu .imm-pill {
-  --stage-line: rgb(246 241 234 / 0.28);
-  --stage-accent: var(--raspberry-glow);
+  --stage-line: rgb(244 239 230 / 0.3);
+  --stage-accent: var(--rose);
 }
 .imm-menu-top {
   display: grid;
@@ -485,43 +685,43 @@ html[data-immersive-poster] [data-gem-anchor] img {
   list-style: none;
   margin: 0;
   padding: 0;
-  border-top: 1px solid rgb(246 241 234 / 0.16);
+  border-top: 1px solid rgb(244 239 230 / 0.16);
 }
 .imm-menu-list li {
-  border-bottom: 1px solid rgb(246 241 234 / 0.16);
+  border-bottom: 1px solid rgb(244 239 230 / 0.16);
 }
 .imm-menu-link {
   display: flex;
   align-items: baseline;
   gap: 1.1rem;
-  padding: 0.85rem 0;
+  padding: 0.8rem 0;
   transition: padding-left 0.35s cubic-bezier(0.2, 0.7, 0.2, 1), color 0.3s ease;
 }
 .imm-menu-link:hover,
 .imm-menu-link:focus-visible {
   padding-left: 0.9rem;
-  color: var(--raspberry-glow);
+  color: var(--rose);
 }
 .imm-menu-num {
   min-width: 2rem;
-  font-size: 0.78rem;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
   letter-spacing: 0.12em;
-  color: var(--gold);
+  color: var(--lavender);
 }
 .imm-menu-label {
-  font-family: var(--font-heading), serif;
-  font-size: clamp(2.2rem, 7.4vw, 5.6rem);
-  line-height: 1;
-  letter-spacing: -0.025em;
+  font-family: var(--serif);
+  font-size: clamp(1.9rem, 1.2rem + 2.6vw, 3.1rem);
+  line-height: 1.05;
+  letter-spacing: -0.015em;
 }
 .imm-menu-link:hover .imm-menu-label {
   font-style: italic;
 }
 .imm-menu-note {
   margin-left: auto;
-  font-size: 0.78rem;
-  letter-spacing: 0.04em;
-  color: rgb(246 241 234 / 0.55);
+  font-size: 0.8rem;
+  color: rgb(244 239 230 / 0.55);
 }
 @media (max-width: 639px) {
   .imm-menu-note {
@@ -536,70 +736,36 @@ html[data-immersive-poster] [data-gem-anchor] img {
 .imm-menu-contact {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 0.2rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid rgb(246 241 234 / 0.16);
-  font-size: 0.72rem;
-  letter-spacing: 0.18em;
+  border-bottom: 1px solid rgb(244 239 230 / 0.16);
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: rgb(246 241 234 / 0.6);
+  color: rgb(244 239 230 / 0.6);
   transition: color 0.25s ease;
 }
 .imm-menu-contact span {
-  font-family: var(--font-heading), serif;
+  font-family: var(--serif);
   font-size: 1.5rem;
   letter-spacing: 0;
   text-transform: none;
-  color: var(--paper);
+  color: var(--ivory);
 }
 .imm-menu-contact:hover,
 .imm-menu-contact:focus-visible {
-  color: var(--raspberry-glow);
+  color: var(--rose);
 }
 .imm-menu-back {
   font-size: 0.8rem;
-  color: rgb(246 241 234 / 0.6);
+  color: rgb(244 239 230 / 0.6);
 }
 .imm-menu-back:hover {
-  color: var(--paper);
-}
-
-/* ---- The intro: not a loading screen, an assembly --------------------------------------------- */
-/* Content is visible from the first frame; the bar and the supporting text arrive around the headline. */
-
-.imm-nav-item {
-  animation: imm-drop 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
-  animation-delay: calc(var(--d, 0) * 90ms + 120ms);
-}
-.imm-fade {
-  animation: imm-fade 1s ease both;
-  animation-delay: calc(var(--i, 0) * 110ms + 700ms);
-}
-
-@keyframes imm-drop {
-  from {
-    opacity: 0;
-    transform: translateY(-0.7rem);
-  }
-}
-@keyframes imm-fade {
-  from {
-    opacity: 0;
-    transform: translateY(0.6rem);
-  }
-}
-@keyframes imm-thread-in {
-  from {
-    transform: scaleX(0);
-  }
+  color: var(--ivory);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .imm-nav-item,
-  .imm-fade,
-  .imm-nav-thread {
-    animation: none;
-  }
   .imm-nav,
   .imm-pill,
   .imm-pill-icon::before,

@@ -1,10 +1,13 @@
 /**
- * Renders the gem's fallback picture: public/immersive/gem-poster.png.
+ * Renders the fallback pictures of the immersive scene into public/immersive/:
  *
- * It opens the running site at /immersive?poster=1, a mode in which the page strips itself down to just
- * the gem (fixed pose, transparent background), waits for the live 3D scene to draw, and screenshots
- * the gem's box. Phones and browsers that never load the 3D scene show this picture instead, so it must
- * be regenerated whenever the gem's look changes:
+ *   opening-landscape.webp   opening-portrait.webp   the gallery, as the page first appears
+ *   hall-landscape.webp      hall-portrait.webp      the hall, for devices that never load the live 3D
+ *
+ * Each is a frame of the real scene. The script opens the running site at /immersive?poster=1&p=<scroll>,
+ * a mode in which the page strips itself down to just the 3D canvas, frozen at a fixed moment, waits for
+ * the first frames to draw, and screenshots it. Phones with weak graphics, reduced-motion visitors and every
+ * first paint show these, so regenerate them whenever the scene's look changes:
  *
  *   npm run dev            (in one terminal)
  *   npm run poster:immersive
@@ -13,11 +16,20 @@
  * Set BASE_URL to render from a deployed preview instead of localhost.
  */
 import { chromium } from "@playwright/test";
+import sharp from "sharp";
 import { mkdir, stat } from "node:fs/promises";
 import path from "node:path";
 
 const baseUrl = process.env.BASE_URL ?? "http://localhost:3000";
-const output = path.join(process.cwd(), "public", "immersive", "gem-poster.png");
+const outDir = path.join(process.cwd(), "public", "immersive");
+
+// Sizes match the reference framings in features/immersive/scene/CameraRig.tsx (16:9 and 1:2).
+const shots = [
+  { name: "opening-landscape", width: 1600, height: 900, p: 0 },
+  { name: "opening-portrait", width: 750, height: 1500, p: 0 },
+  { name: "hall-landscape", width: 1600, height: 900, p: 0.95 },
+  { name: "hall-portrait", width: 750, height: 1500, p: 0.95 },
+];
 
 async function launch() {
   try {
@@ -27,19 +39,23 @@ async function launch() {
   }
 }
 
-await mkdir(path.dirname(output), { recursive: true });
+await mkdir(outDir, { recursive: true });
 
 const browser = await launch();
 try {
-  const context = await browser.newContext({ viewport: { width: 1000, height: 1000 }, deviceScaleFactor: 2 });
-  const page = await context.newPage();
-  await page.goto(`${baseUrl}/immersive?poster=1`, { waitUntil: "load", timeout: 120_000 });
-  await page.waitForSelector('html[data-gem-ready="1"]', { timeout: 120_000 });
-  await page.waitForTimeout(600);
-  await page.locator("[data-gem-anchor]").screenshot({ path: output, omitBackground: true });
+  for (const shot of shots) {
+    const context = await browser.newContext({ viewport: { width: shot.width, height: shot.height }, deviceScaleFactor: 1 });
+    const page = await context.newPage();
+    await page.goto(`${baseUrl}/immersive?poster=1&p=${shot.p}`, { waitUntil: "load", timeout: 120_000 });
+    await page.waitForSelector('html[data-stage-ready="1"]', { timeout: 120_000 });
+    await page.waitForTimeout(800);
+    const png = await page.screenshot({ type: "png" });
+    const file = path.join(outDir, `${shot.name}.webp`);
+    await sharp(png).webp({ quality: 74, effort: 5 }).toFile(file);
+    const { size } = await stat(file);
+    console.log(`Wrote ${path.relative(process.cwd(), file)} (${(size / 1024).toFixed(0)} KB)`);
+    await context.close();
+  }
 } finally {
   await browser.close();
 }
-
-const { size } = await stat(output);
-console.log(`Wrote ${path.relative(process.cwd(), output)} (${(size / 1024).toFixed(0)} KB)`);

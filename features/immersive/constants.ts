@@ -9,9 +9,6 @@
 export const IMMERSIVE_WHATSAPP_NUMBER = "923236022290";
 export const IMMERSIVE_INSTAGRAM_URL = "https://instagram.com/lustreandlacestudio";
 
-/** The anchor element the 3D gem is attached to. The canvas reads its position every frame. */
-export const GEM_ANCHOR_ID = "gem-anchor";
-
 /** How the number is written for people (the link form above is for wa.me). */
 export const IMMERSIVE_WHATSAPP_DISPLAY = "0323 6022290";
 export const IMMERSIVE_INSTAGRAM_HANDLE = "@lustreandlacestudio";
@@ -21,23 +18,10 @@ export const IMMERSIVE_INSTAGRAM_HANDLE = "@lustreandlacestudio";
  * page of the site. As later stages add chapters (work, method, studio) their entries move in-page.
  */
 export const IMMERSIVE_MENU = [
-  { label: "Services", href: "/immersive#services", note: "What we build" },
+  { label: "Approach", href: "/immersive#approach", note: "How we work" },
   { label: "Work", href: "/work", note: "The live demo store" },
   { label: "About", href: "/about", note: "How we think" },
   { label: "Demo store", href: "/shop", note: "Try it yourself" },
   { label: "Start a project", href: "/get-started", note: "Free quote" },
 ] as const;
 
-/** What the studio offers, in the order it is presented. Capabilities only: no claims of results. */
-export const IMMERSIVE_SERVICES = [
-  "Website development",
-  "Ecommerce",
-  "Custom web apps",
-  "Branding & identity",
-  "Social media",
-  "Marketing & ads",
-  "SEO",
-  "AI & process automation",
-  "WhatsApp automation",
-  "Immersive 3D experiences",
-] as const;
