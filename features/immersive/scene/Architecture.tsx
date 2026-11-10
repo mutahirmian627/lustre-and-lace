@@ -3,8 +3,11 @@
 import { useMemo } from "react";
 import {
   AdditiveBlending,
+  BufferAttribute,
+  Color,
   CatmullRomCurve3,
   ExtrudeGeometry,
+  ShapeGeometry,
   Texture,
   TubeGeometry,
   Vector3,
@@ -24,6 +27,9 @@ interface ArchitectureProps {
 
 const hallStartZ = WALL.z - WALL.depth;
 const TILE = 1.6;
+/** The door of light at the far end of the hall. */
+const DOOR = { width: 2.6, straight: 1.9 } as const;
+const endZ = hallStartZ - HALL.length;
 const FLOOR = { width: 120, depth: 60 } as const;
 
 /** The stretches of wall either side of the doorway. */
@@ -75,6 +81,20 @@ export function Architecture({ materials, tileMap, glow, lite }: ArchitecturePro
       bevelEnabled: false,
       curveSegments,
     });
+    // The end of the hall: a dark wall with one arched door of light in it, the same silhouette as everything else.
+    const endWall = new ShapeGeometry(archShape(HALL.width - 0.02, HALL.straight), curveSegments);
+    const door = new ShapeGeometry(archShape(DOOR.width, DOOR.straight), curveSegments);
+    // Lit from within: warm white at the floor, rose-gold at the crown.
+    const doorPosition = door.getAttribute("position");
+    const doorColours = new Float32Array(doorPosition.count * 3);
+    const low = new Color("#fff4e8");
+    const high = new Color("#ffb99c");
+    for (let i = 0; i < doorPosition.count; i++) {
+      const t = Math.min(1, Math.max(0, doorPosition.getY(i) / (DOOR.straight + DOOR.width / 2)));
+      const colour = low.clone().lerp(high, t * t);
+      doorColours.set([colour.r, colour.g, colour.b], i * 3);
+    }
+    door.setAttribute("color", new BufferAttribute(doorColours, 3));
     const inlay = new TubeGeometry(doorwayOutline(PORTAL.width, PORTAL.straight, 0.11), lite ? 90 : 160, 0.014, 6, false);
 
     // The floor is tiled in 1.6 m squares; the wall is plain glazed ivory.
@@ -89,7 +109,7 @@ export function Architecture({ materials, tileMap, glow, lite }: ArchitecturePro
     ribMaterial.fog = false;
     ribMaterial.color.set(0xa398a6); // a lilac-tinted ivory, so the ribs belong to the hall's light rather than the gallery's
     const contact = createContactShadeTexture();
-    return { wall: smooth(wall), hall: smooth(hall), rib: smooth(rib), inlay, wallMaterial, floorMaterial, ribMaterial, contact };
+    return { wall: smooth(wall), hall: smooth(hall), rib: smooth(rib), endWall, door, inlay, wallMaterial, floorMaterial, ribMaterial, contact };
   }, [materials, tileMap, lite]);
 
   const ribCount = Math.floor((HALL.length - 1) / HALL.ribEvery);
@@ -138,13 +158,19 @@ export function Architecture({ materials, tileMap, glow, lite }: ArchitecturePro
         />
       ))}
 
-      {/* The light at the far end of the hall. */}
-      <mesh position={[PORTAL.x, 2.6, hallStartZ - HALL.length + 0.05]}>
-        <planeGeometry args={[6, 6]} />
+      {/* The end of the hall: a dark wall, an arched door of light, and a halo round it. */}
+      <mesh geometry={parts.endWall} position={[PORTAL.x, 0, endZ + 0.02]}>
+        <meshBasicMaterial color="#1b0c22" fog={false} toneMapped={false} />
+      </mesh>
+      <mesh geometry={parts.door} position={[PORTAL.x, 0, endZ + 0.04]}>
+        <meshBasicMaterial vertexColors fog={false} toneMapped={false} />
+      </mesh>
+      <mesh position={[PORTAL.x, 2.2, endZ + 0.06]}>
+        <planeGeometry args={[7.5, 7.5]} />
         <meshBasicMaterial
           map={glow}
           color="#f2b9a8"
-          opacity={0.12}
+          opacity={0.5}
           transparent
           blending={AdditiveBlending}
           depthWrite={false}

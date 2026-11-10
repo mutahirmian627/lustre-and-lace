@@ -6,15 +6,20 @@ import { test, expect, type Page } from "@playwright/test";
  * Runs against the hidden /immersive route.
  */
 
-/** Scrolls to a fraction (0..1) of the opening sequence and returns the page's own reading of it. */
-async function scrollToProgress(page: Page, fraction: number) {
-  await page.evaluate((p) => {
-    const run = document.getElementById("run")!;
-    window.scrollTo(0, Math.round((run.offsetHeight - window.innerHeight) * p));
-  }, fraction);
+/**
+ * Scrolls to a point in the experience, in "scenes": 0..1 across the opening (gallery to hall), then 1..2 across
+ * the services and the close. Waits until the page's own scroll variables agree.
+ */
+async function scrollToScene(page: Page, scene: number) {
+  await page.evaluate((g) => {
+    const vh = window.innerHeight;
+    // The opening is 2.3 screens of travel and the services 4.9 (RUN in lib/world.ts).
+    window.scrollTo(0, Math.round(g <= 1 ? g * 2.3 * vh : (2.3 + (g - 1) * 4.9) * vh));
+  }, scene);
+  const [name, expected] = scene <= 1 ? ["--p", scene] : ["--s", scene - 1];
   await expect
-    .poll(() => page.evaluate(() => Number(getComputedStyle(document.querySelector(".immersive-root")!).getPropertyValue("--p"))))
-    .toBeCloseTo(fraction, 1);
+    .poll(() => page.evaluate((n) => Number(getComputedStyle(document.querySelector(".immersive-root")!).getPropertyValue(n)), name))
+    .toBeCloseTo(expected as number, 1);
 }
 
 test.describe("immersive opening", () => {
@@ -33,13 +38,46 @@ test.describe("immersive opening", () => {
     await expect(opening).toBeVisible();
     await expect(approach).toBeHidden();
 
-    await scrollToProgress(page, 0.95);
+    await scrollToScene(page, 0.95);
     await expect(approach).toBeVisible();
     await expect(opening).toBeHidden(); // hidden from sight, keyboard and screen readers, not just faded
 
-    await scrollToProgress(page, 0);
+    await scrollToScene(page, 0);
     await expect(opening).toBeVisible();
     await expect(approach).toBeHidden();
+  });
+
+  test("the services appear one at a time as you pass down the hall, and the close offers a way to get in touch", async ({ page }) => {
+    await page.goto("/immersive");
+    const root = page.locator(".immersive-root");
+
+    await scrollToScene(page, 1.3);
+    await expect(root).toHaveAttribute("data-phase", "services");
+    await expect(page.getByText("Seven disciplines, one studio.")).toBeVisible();
+    const current = Number(await root.getAttribute("data-service"));
+    expect(current).toBeGreaterThanOrEqual(1);
+    // The service on show fades in over half a second, so wait for it rather than sampling mid-fade.
+    await expect(page.locator(`.imm-service[data-i="${current}"]`)).toHaveCSS("opacity", "1");
+
+    // Further down, a different service is on show.
+    await scrollToScene(page, 1.7);
+    const later = await page.evaluate(() => Number(document.querySelector(".immersive-root")!.getAttribute("data-service")));
+    expect(later).toBeGreaterThan(current);
+
+    await scrollToScene(page, 1.98);
+    await expect(root).toHaveAttribute("data-phase", "contact");
+    await expect(page.getByRole("heading", { level: 2, name: "Got a Business to Make Beautiful?" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Start a Conversation" })).toHaveAttribute("href", "/get-started");
+    await expect(page.getByRole("link", { name: /WhatsApp/ })).toHaveAttribute("href", /^https:\/\/wa\.me\/923236022290/);
+    await expect(page.getByRole("link", { name: /Instagram/ })).toHaveAttribute("href", "https://instagram.com/lustreandlacestudio");
+  });
+
+  test("all seven services are readable by assistive technology, whatever the scroll position", async ({ page }) => {
+    await page.goto("/immersive");
+    const list = page.getByRole("region", { name: "Services" }).getByRole("heading", { level: 3 });
+    await expect(list).toHaveCount(7);
+    await expect(list.first()).toHaveText("Website Development");
+    await expect(list.last()).toHaveText("AI & Business Automation");
   });
 
   test("the live 3D scene takes over from the picture when the device can run it", async ({ page }) => {
@@ -94,12 +132,21 @@ test.describe("immersive navigation", () => {
     const hrefs = await page.getByRole("dialog", { name: "Site menu" }).locator("nav a").evaluateAll((links) =>
       links.map((link) => link.getAttribute("href"))
     );
-    expect(hrefs).toEqual(["/immersive#approach", "/work", "/about", "/shop", "/get-started"]);
+    expect(hrefs).toEqual(["/immersive#approach", "/immersive#services", "/work", "/about", "/shop", "/get-started"]);
 
     for (const href of hrefs) {
       const response = await request.get((href ?? "").split("#")[0]);
       expect(response.status(), href ?? "").toBeLessThan(400);
     }
+  });
+
+  test("the Services entry scrolls to the first bay", async ({ page }) => {
+    await page.goto("/immersive");
+    await page.getByRole("button", { name: "Menu" }).click();
+    await page.getByRole("dialog", { name: "Site menu" }).getByRole("link", { name: /Services/ }).click();
+    await expect(page.getByRole("dialog", { name: "Site menu" })).toBeHidden();
+    await expect(page.locator(".immersive-root")).toHaveAttribute("data-phase", "services");
+    await expect(page.getByText("Seven disciplines, one studio.")).toBeVisible();
   });
 
   test("the Approach entry scrolls into the hall and the page turns to plum", async ({ page }) => {

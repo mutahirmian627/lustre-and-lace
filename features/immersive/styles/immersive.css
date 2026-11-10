@@ -19,6 +19,7 @@
   --night: #26122b;
 
   --p: 0;
+  --s: 0;
   --atmosphere: clamp(0, calc((var(--p) - 0.36) / 0.24), 1);
 
   --stage-bg: var(--ivory);
@@ -87,9 +88,9 @@
 
 /* ---- The pinned stage: text that stays put while the scene moves --------------------------------- */
 
+/* Its height is set inline by the page (it depends on RUN in lib/world.ts). */
 .imm-run {
   position: relative;
-  height: 330svh;
 }
 .imm-sticky {
   position: sticky;
@@ -98,11 +99,10 @@
   overflow: hidden;
   z-index: 1;
 }
-/* Where the menu's "Approach" entry scrolls to: a point 78% of the way through the sequence. */
+/* Where the menu's entries scroll to (each one's `top` is set inline by the page). */
 .imm-anchor {
   position: absolute;
   left: 0;
-  top: calc(0.78 * (100% - 100svh));
   width: 1px;
   height: 1px;
   pointer-events: none;
@@ -136,7 +136,7 @@
 .imm-scene--approach {
   bottom: max(3rem, 9svh);
   max-width: 30rem;
-  opacity: clamp(0, calc((var(--p) - 0.6) * 7), 1);
+  opacity: clamp(0, min(calc((var(--p) - 0.6) * 7), calc(1 - var(--s) * 33)), 1);
   transform: translate3d(0, calc((1 - clamp(0, (var(--p) - 0.6) * 5, 1)) * 1.6rem), 0);
   visibility: hidden;
 }
@@ -772,6 +772,238 @@ html[data-immersive-poster] nextjs-portal {
   .imm-pill-icon::after,
   .imm-menu-link,
   .imm-menu-contact {
+    transition: none;
+  }
+}
+
+/* ---- A soft scrim so text stays readable as pale arches pass behind it in the hall ----------------- */
+
+.imm-scrim {
+  /* Stronger once the services begin (--s > 0), because the hall's far door is bright and sits behind the text on tall screens. */
+  --scrim: calc(var(--atmosphere) * (0.66 + min(var(--s) * 20, 1) * 0.24));
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(0deg, rgb(30 12 36 / var(--scrim)) 0%, rgb(30 12 36 / calc(var(--scrim) * 0.68)) 42%, transparent 72%);
+}
+@media (min-width: 900px) {
+  .imm-scrim {
+    background: linear-gradient(90deg, rgb(30 12 36 / var(--scrim)) 0%, rgb(30 12 36 / calc(var(--scrim) * 0.5)) 34%, transparent 58%);
+  }
+}
+
+/* ---- Services: seven bays down the hall ---------------------------------------------------------- */
+
+.imm-scene--services,
+.imm-scene--contact {
+  --stage-soft: #e3d8e7; /* a little brighter than the day-side grey, since pale arches and the far door pass behind */
+}
+.imm-scene--services {
+  bottom: max(2.5rem, 6svh);
+  max-width: 34rem;
+  opacity: clamp(0, min(calc((var(--s) - 0.03) * 30), calc((0.88 - var(--s)) * 25)), 1);
+  visibility: hidden;
+}
+@media (min-width: 900px) {
+  .imm-scene--services {
+    bottom: auto;
+    top: 50%;
+    width: min(31rem, 36vw);
+    transform: translate3d(0, -50%, 0);
+  }
+}
+.immersive-root[data-phase="services"] .imm-scene--services {
+  visibility: visible;
+}
+
+.imm-services-title {
+  font-size: clamp(1.45rem, 1rem + 1.4vw, 2.1rem);
+  margin-top: 0.8rem;
+  padding-bottom: 1.1rem;
+  border-bottom: 1px solid var(--stage-line);
+}
+
+/* All seven sit in one grid cell, so the block is always as tall as the tallest and nothing jumps. */
+.imm-service-stack {
+  display: grid;
+  margin-top: 1.3rem;
+}
+.imm-service {
+  grid-area: 1 / 1;
+  opacity: 0;
+  transform: translate3d(0, 0.9rem, 0);
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.imm-service-no {
+  margin: 0 0 0.5rem;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.16em;
+  color: var(--lavender);
+}
+.imm-service-name {
+  margin: 0 0 0.7rem;
+  font-family: var(--serif);
+  font-size: clamp(1.7rem, 1.2rem + 1.5vw, 2.3rem);
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -0.012em;
+}
+.imm-service-summary {
+  margin: 0;
+  max-width: 28rem;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--stage-soft);
+}
+.imm-service-includes {
+  margin: 0.95rem 0 0;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  line-height: 1.7;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--stage-soft);
+  opacity: 0.85;
+}
+
+.imm-service-rail {
+  display: flex;
+  gap: 0.2rem;
+  margin: 1.5rem 0 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+}
+.imm-service-rail li {
+  padding: 0.35rem 0.5rem;
+  border-top: 1px solid var(--stage-line);
+  color: var(--stage-soft);
+  opacity: 0.55;
+  transition: opacity 0.4s ease, border-color 0.4s ease, color 0.4s ease;
+}
+
+/* The one on show: the matching service, and its tick in the rail. */
+.immersive-root[data-service="0"] .imm-service[data-i="0"] {
+  opacity: 1;
+  transform: none;
+}
+.immersive-root[data-service="0"] .imm-service-rail li[data-i="0"] {
+  opacity: 1;
+  color: var(--stage-fg);
+  border-top-color: var(--stage-fg);
+}
+.immersive-root[data-service="1"] .imm-service[data-i="1"] {
+  opacity: 1;
+  transform: none;
+}
+.immersive-root[data-service="1"] .imm-service-rail li[data-i="1"] {
+  opacity: 1;
+  color: var(--stage-fg);
+  border-top-color: var(--stage-fg);
+}
+.immersive-root[data-service="2"] .imm-service[data-i="2"] {
+  opacity: 1;
+  transform: none;
+}
+.immersive-root[data-service="2"] .imm-service-rail li[data-i="2"] {
+  opacity: 1;
+  color: var(--stage-fg);
+  border-top-color: var(--stage-fg);
+}
+.immersive-root[data-service="3"] .imm-service[data-i="3"] {
+  opacity: 1;
+  transform: none;
+}
+.immersive-root[data-service="3"] .imm-service-rail li[data-i="3"] {
+  opacity: 1;
+  color: var(--stage-fg);
+  border-top-color: var(--stage-fg);
+}
+.immersive-root[data-service="4"] .imm-service[data-i="4"] {
+  opacity: 1;
+  transform: none;
+}
+.immersive-root[data-service="4"] .imm-service-rail li[data-i="4"] {
+  opacity: 1;
+  color: var(--stage-fg);
+  border-top-color: var(--stage-fg);
+}
+.immersive-root[data-service="5"] .imm-service[data-i="5"] {
+  opacity: 1;
+  transform: none;
+}
+.immersive-root[data-service="5"] .imm-service-rail li[data-i="5"] {
+  opacity: 1;
+  color: var(--stage-fg);
+  border-top-color: var(--stage-fg);
+}
+.immersive-root[data-service="6"] .imm-service[data-i="6"] {
+  opacity: 1;
+  transform: none;
+}
+.immersive-root[data-service="6"] .imm-service-rail li[data-i="6"] {
+  opacity: 1;
+  color: var(--stage-fg);
+  border-top-color: var(--stage-fg);
+}
+
+/* ---- The close (provisional) --------------------------------------------------------------------- */
+
+.imm-scene--contact {
+  bottom: max(2.5rem, 6svh);
+  max-width: 32rem;
+  opacity: clamp(0, calc((var(--s) - 0.88) * 25), 1);
+  visibility: hidden;
+}
+@media (min-width: 900px) {
+  .imm-scene--contact {
+    bottom: auto;
+    top: 50%;
+    width: min(30rem, 36vw);
+    transform: translate3d(0, -50%, 0);
+  }
+}
+.immersive-root[data-phase="contact"] .imm-scene--contact {
+  visibility: visible;
+}
+.imm-scene--contact .imm-lead {
+  margin-top: 0.9rem;
+}
+.imm-contact-lines {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1.8rem;
+  margin: 1.4rem 0 0;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--stage-soft);
+}
+.imm-contact-lines a {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-height: 2.75rem;
+  transition: color 0.25s ease;
+}
+.imm-contact-lines a:hover {
+  color: var(--stage-fg);
+}
+.imm-contact-lines span {
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--stage-fg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .imm-service,
+  .imm-service-rail li {
     transition: none;
   }
 }

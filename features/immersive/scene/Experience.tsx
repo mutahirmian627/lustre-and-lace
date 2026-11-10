@@ -6,10 +6,10 @@ import { Color, Fog } from "three";
 import { createChromeCube, createRoomCube } from "@/features/immersive/lib/reflection-cubes";
 import { createMaterials } from "@/features/immersive/lib/materials";
 import { createGlowTexture, createJaliMask, createTileTexture } from "@/features/immersive/lib/textures";
-import { PORTAL, WALL } from "@/features/immersive/lib/world";
 import { stageState } from "@/features/immersive/lib/stage-state";
 import { Architecture } from "@/features/immersive/scene/Architecture";
 import { CameraRig } from "@/features/immersive/scene/CameraRig";
+import { HallLights } from "@/features/immersive/scene/HallLights";
 import { Dust } from "@/features/immersive/scene/Dust";
 import { JaliScreen } from "@/features/immersive/scene/JaliScreen";
 import { Ribbon } from "@/features/immersive/scene/Ribbon";
@@ -102,10 +102,8 @@ export function Experience({ lite, frozen, onCompiled, onReady }: ExperienceProp
       <ambientLight intensity={1.9} color="#fffdfa" />
       <directionalLight position={[-4, 7, 6]} intensity={2.2} color="#fff9f0" />
       <directionalLight position={[7, 3, 2]} intensity={0.65} color="#cfc2e8" />
-      {/* The hall: two rose lights high up its length, so the lacquer glows from within. */}
-      <pointLight position={[PORTAL.x, 5, WALL.z - 8]} intensity={9} distance={8.5} decay={1.4} color="#ff9db8" />
-      <pointLight position={[PORTAL.x, 5, WALL.z - 15]} intensity={9} distance={8.5} decay={1.4} color="#ff9db8" />
-      <pointLight position={[PORTAL.x, 5, WALL.z - 22]} intensity={9} distance={8.5} decay={1.4} color="#ff9db8" />
+      {/* The hall: soft lights high up its length, travelling with the camera once it is inside. */}
+      <HallLights />
 
       <Architecture materials={resources.materials} tileMap={resources.tileMap} glow={resources.glow} lite={lite} />
       <JaliScreen materials={resources.materials} jaliMask={resources.jaliMask} lite={lite} />

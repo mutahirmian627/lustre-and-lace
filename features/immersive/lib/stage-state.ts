@@ -3,7 +3,10 @@
  * moving the mouse never cause a re-render.
  */
 export const stageState = {
-  /** Where the scroll is, 0..1 across the opening sequence. Written by the scroll listener. */
+  /**
+   * Where the scroll is, in "scenes": 0..1 across the opening (gallery to hall), then 1..2 across the
+   * services and the close. Written by the scroll listener.
+   */
   target: 0,
   /** The same, eased: what the camera actually uses, so the scene has weight rather than snapping. */
   value: 0,
