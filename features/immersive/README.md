@@ -87,6 +87,16 @@ scripts/render-immersive-poster.mjs  renders the four fallback pictures from the
   opening has it until the camera is within about 40 m. The page turns from plum to ivory as the camera passes through
   the doorway (`--flip`, set by `ScrollDriver` from the camera's distance down the corridor), and the contact words
   arrive in the ivory hall (`--c`).
+- **The exhibition** (`scene/Gallery.tsx`, `lib/gallery.ts`). The studio's one finished project, the demo store, hangs on the
+  ivory hall's right wall as its real screenshots (`public/agency`, the same ones the Work page uses): two pages of the
+  store, then two phones, then an empty arch lit like an exhibit: "Next exhibit: yours". Nothing is invented. The camera
+  makes four stops along the hall (`WORK_STOPS`, slowing nearly to a stand at each), looking at the work on the wall, and
+  then turns to the sculpture for the contact. Its route here is keyed by distance (`galleryPose`) rather than being a curve,
+  because the view swings sideways. The ribbon runs over each work and dips between them, so it keeps threading the room.
+  The screenshots are fetched only once the visitor is well down the corridor. The words are the Work page's own copy
+  (`constants/agency.ts`), one stop at a time (`data-work`), with the links reachable only while their stop is on show.
+- **The services' index** (`sections/ServiceRail.tsx`): 01-07 are real buttons that scroll to where the camera stands before
+  that service's arch (`progressForSigma` inverts the scroll maths). The services show their four points only.
 - **Accessibility of the services.** The visual stage (one service at a time) is `aria-hidden`; a screen-reader-only
   list holds all seven in full, so nobody depends on scroll position to read them. The words are in
   `content.ts` (drafted for the owner's review).
@@ -103,7 +113,7 @@ scripts/render-immersive-poster.mjs  renders the four fallback pictures from the
     crash in the 3D (`StageBoundary`), a lost graphics context, or a scene that hasn't drawn within 30 s also fall back.
   - **None of it is silent or permanent.** `data-stage-reason` says why, a quiet note says it to the visitor, and a
     button ("Play 3D" / "Try 3D again", `StillNote`) starts the live scene again on the lighter tier.
-  - **The fallback is itself in motion** (`sections/StillJourney.tsx`): 44 frames of the real scene along the whole
+  - **The fallback is itself in motion** (`sections/StillJourney.tsx`): 56 frames of the real scene along the whole
     journey (`public/immersive/journey/`, each device loads only its own landscape or portrait cut), played by scroll,
     cross-faded, and never still: the picture drifts and breathes and follows the pointer (switched off for reduced
     motion). Only the ribbon's own movement is missing. Regenerate with `npm run dev`, then

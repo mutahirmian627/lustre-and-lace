@@ -24,8 +24,10 @@
   --flip: 0;
   /* How far the contact words have arrived (0..1). */
   --c: 0;
+  /* How far the exhibition's words are on show (0..1). */
+  --w: 0;
   /* Where the services end in the scroll (must equal SERVICES_END in lib/timeline.ts; a unit test checks it). */
-  --se: 0.5917;
+  --se: 0.4818;
   --atmosphere: calc(clamp(0, calc((var(--p) - 0.36) / 0.24), 1) * (1 - var(--flip)));
 
   --stage-bg: var(--ivory);
@@ -214,6 +216,13 @@
   font-size: 1.0625rem;
   line-height: 1.62;
   color: var(--stage-soft);
+}
+
+/* On small phones the title needs the room, so the line under it is left out: the doorway shows through behind the headline. */
+@media (max-width: 599px) {
+  .imm-scene--opening .imm-lead {
+    display: none;
+  }
 }
 
 .imm-actions {
@@ -802,7 +811,7 @@ html[data-immersive-poster] nextjs-portal {
 @media (min-width: 900px) {
   .imm-scrim {
     background:
-      linear-gradient(90deg, rgb(244 239 230 / calc(var(--cream) * 0.55)) 0%, rgb(244 239 230 / calc(var(--cream) * 0.3)) 34%, transparent 58%),
+      linear-gradient(90deg, rgb(244 239 230 / calc(var(--cream) * 1.1)) 0%, rgb(244 239 230 / calc(var(--cream) * 0.8)) 32%, rgb(244 239 230 / calc(var(--cream) * 0.25)) 48%, transparent 62%),
       linear-gradient(90deg, rgb(30 12 36 / var(--scrim)) 0%, rgb(30 12 36 / calc(var(--scrim) * 0.5)) 34%, transparent 58%);
   }
 }
@@ -863,13 +872,6 @@ html[data-immersive-poster] nextjs-portal {
   line-height: 1.1;
   letter-spacing: -0.012em;
 }
-.imm-service-summary {
-  margin: 0;
-  max-width: 28rem;
-  font-size: 1rem;
-  line-height: 1.6;
-  color: var(--stage-soft);
-}
 .imm-service-includes {
   margin: 0.95rem 0 0;
   font-family: var(--mono);
@@ -883,7 +885,7 @@ html[data-immersive-poster] nextjs-portal {
 
 .imm-service-rail {
   display: flex;
-  gap: 0.2rem;
+  gap: 0.1rem;
   margin: 1.5rem 0 0;
   padding: 0;
   list-style: none;
@@ -892,11 +894,34 @@ html[data-immersive-poster] nextjs-portal {
   letter-spacing: 0.12em;
 }
 .imm-service-rail li {
-  padding: 0.35rem 0.5rem;
   border-top: 1px solid var(--stage-line);
   color: var(--stage-soft);
   opacity: 0.55;
   transition: opacity 0.4s ease, border-color 0.4s ease, color 0.4s ease;
+}
+/* A real button, at least 44 px tall to touch. */
+.imm-service-jump {
+  display: block;
+  min-width: 2.25rem;
+  min-height: 2.75rem;
+  padding: 0.55rem 0.5rem;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+}
+.imm-service-jump:hover,
+.imm-service-jump:focus-visible {
+  color: var(--stage-fg);
+}
+.imm-service-rail li:hover {
+  opacity: 1;
+}
+.imm-service-jump:focus-visible {
+  outline: 2px solid var(--stage-fg);
+  outline-offset: -2px;
 }
 
 /* The one on show: the matching service, and its tick in the rail. */
@@ -962,6 +987,114 @@ html[data-immersive-poster] nextjs-portal {
   opacity: 1;
   color: var(--stage-fg);
   border-top-color: var(--stage-fg);
+}
+
+/* ---- The exhibition: the demo store on the ivory hall's wall -------------------------------------- */
+
+.imm-scene--work {
+  bottom: max(2.5rem, 6svh);
+  max-width: 34rem;
+  opacity: var(--w);
+  visibility: hidden;
+}
+@media (min-width: 900px) {
+  .imm-scene--work {
+    bottom: auto;
+    top: 50%;
+    width: min(31rem, 36vw);
+    transform: translate3d(0, -50%, 0);
+  }
+}
+.immersive-root[data-phase="work"] .imm-scene--work {
+  visibility: visible;
+}
+.imm-work-title {
+  font-size: clamp(1.45rem, 1rem + 1.4vw, 2.1rem);
+  margin-top: 0.8rem;
+  padding-bottom: 1.1rem;
+  border-bottom: 1px solid var(--stage-line);
+}
+/* The four stops share one grid cell, so the block is as tall as the tallest and nothing jumps. Only the one on show can be
+   reached with the keyboard: the others are hidden once their fade-out is over. */
+.imm-work-stack {
+  display: grid;
+  margin-top: 1.3rem;
+}
+.imm-work {
+  grid-area: 1 / 1;
+  opacity: 0;
+  visibility: hidden;
+  transform: translate3d(0, 0.9rem, 0);
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1), visibility 0s linear 0.5s;
+}
+.immersive-root[data-work="0"] .imm-work[data-i="0"],
+.immersive-root[data-work="1"] .imm-work[data-i="1"],
+.immersive-root[data-work="2"] .imm-work[data-i="2"],
+.immersive-root[data-work="3"] .imm-work[data-i="3"] {
+  opacity: 1;
+  /* Visible only while the whole exhibition is (its scene is hidden outside the work phase), so its links never get in the way. */
+  visibility: inherit;
+  transform: none;
+  transition-delay: 0s;
+}
+.imm-work-kind {
+  margin: 0 0 0.6rem;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--stage-soft);
+}
+.imm-work-name {
+  margin: 0 0 0.7rem;
+  font-family: var(--serif);
+  font-size: clamp(1.7rem, 1.2rem + 1.5vw, 2.3rem);
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -0.012em;
+}
+.imm-work-text {
+  margin: 0;
+  max-width: 28rem;
+  font-size: 0.97rem;
+  line-height: 1.6;
+  color: var(--stage-soft);
+}
+.imm-work-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 1.5rem;
+  margin-top: 1.2rem;
+}
+.imm-work-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-width: 28rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--stage-fg);
+}
+.imm-work-list li {
+  padding: 0.38rem 0;
+  border-top: 1px solid var(--stage-line);
+}
+.imm-work-list li:last-child {
+  border-bottom: 1px solid var(--stage-line);
+}
+@media (max-width: 599px) {
+  /* Phones: four lines are plenty, so the words stay clear of the picture. */
+  .imm-work-list {
+    font-size: 0.84rem;
+  }
+  .imm-work-list li:nth-child(n + 5) {
+    display: none;
+  }
+  .imm-work-text {
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
 }
 
 /* ---- The close: in the ivory hall, beyond the large doorway --------------------------------------------------------------------- */

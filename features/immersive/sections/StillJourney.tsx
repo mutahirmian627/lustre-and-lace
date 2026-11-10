@@ -5,7 +5,7 @@ import { pointer, trackPointer } from "@/features/immersive/lib/pointer";
 import { stageState } from "@/features/immersive/lib/stage-state";
 
 /** How many pre-rendered frames the journey is made of (see scripts/render-immersive-journey.mjs). */
-export const JOURNEY_FRAMES = 44;
+export const JOURNEY_FRAMES = 56;
 /** Scenes 0..2 run from the gallery's opening to the end of the corridor. */
 const SCENES = 2;
 

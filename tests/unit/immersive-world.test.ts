@@ -17,7 +17,16 @@ import {
   FLIP_SIGMA,
   CONTACT_SIGMA,
   SERVICES_END,
+  THRESHOLD_END_SIGMA,
+  WORK_STOPS,
+  WORK_COUNT,
+  WORK_END_SIGMA,
+  WORK_SIGMA,
+  WORK_REACH,
+  progressForSigma,
+  workIndexFromSigma,
 } from "@/features/immersive/lib/timeline";
+import { WALL_X, galleryPose } from "@/features/immersive/lib/gallery";
 import {
   cameraCurve,
   hallCameraCurve,
@@ -112,7 +121,7 @@ describe("the camera in the corridor", () => {
     hallLookCurve.getPointAt(0, previousLook);
     let previousDirection = previousLook.clone().sub(previous).normalize();
     const steps = 800;
-    const metresPerStep = (CLOSE_SIGMA - HALL_START_SIGMA) / steps;
+    const metresPerStep = (THRESHOLD_END_SIGMA - HALL_START_SIGMA) / steps;
     for (let i = 1; i <= steps; i++) {
       hallCameraCurve.getPointAt(i / steps, position);
       hallLookCurve.getPointAt(i / steps, look);
@@ -137,7 +146,7 @@ describe("the camera in the corridor", () => {
   it("passes close beside the ribbon at several arches (about a metre), and keeps well clear at others", () => {
     const length = ribbonCurve.getLength();
     const gaps = ARCHES.map((arch) => {
-      const u = (arch - HALL_START_SIGMA) / (CLOSE_SIGMA - HALL_START_SIGMA);
+      const u = (arch - HALL_START_SIGMA) / (THRESHOLD_END_SIGMA - HALL_START_SIGMA);
       hallCameraCurve.getPointAt(u, position);
       let nearest = 99;
       const point = new Vector3();
@@ -282,17 +291,19 @@ describe("the large doorway and the ivory hall", () => {
     }
   });
 
-  it("brings the camera through the doorway's middle and to rest where the whole sculpture is in front of it", () => {
+  it("brings the camera through the doorway's middle, and to rest where the whole sculpture is in front of it", () => {
     const position = new Vector3();
-    const u = (DOOR_SIGMA - HALL_START_SIGMA) / (CLOSE_SIGMA - HALL_START_SIGMA);
+    const u = (DOOR_SIGMA - HALL_START_SIGMA) / (THRESHOLD_END_SIGMA - HALL_START_SIGMA);
     hallCameraCurve.getPointAt(u, position);
     expect(Math.abs(position.x - PORTAL.x)).toBeLessThan(0.3);
     expect(position.y).toBeLessThan(BIG_DOOR.straight);
-    hallCameraCurve.getPointAt(1, position);
+    const rest = galleryPose(CLOSE_SIGMA);
+    position.set(rest.x, rest.y, zAt(CLOSE_SIGMA));
     let nearest = 99;
     for (const point of inHall) nearest = Math.min(nearest, point.distanceTo(position));
-    expect(nearest).toBeGreaterThan(1.2); // at rest the lens is clear of the ribbon, though it passes close overhead on the way in
-    for (const point of inHall.filter((p) => p.z < position.z - 3)) expect(point.z).toBeLessThan(position.z);
+    expect(nearest).toBeGreaterThan(1.2); // at rest the lens is clear of the ribbon
+    // And the sculpture, the part of the ribbon that is a loop, is in front of the camera, not beside or behind it.
+    for (const point of inHall.filter((p) => p.z < zAt(CLOSE_SIGMA + 5))) expect(point.z).toBeLessThan(position.z);
   });
 
   it("turns the page from plum to ivory as the camera goes through the doorway, and brings the contact words in after it", () => {
@@ -300,6 +311,7 @@ describe("the large doorway and the ivory hall", () => {
     expect(FLIP_SIGMA[1]).toBeGreaterThan(DOOR_SIGMA);
     expect(CONTACT_SIGMA[0]).toBeGreaterThanOrEqual(FLIP_SIGMA[1]);
     expect(CONTACT_SIGMA[1]).toBeLessThanOrEqual(CLOSE_SIGMA);
+    expect(CONTACT_SIGMA[0]).toBeGreaterThanOrEqual(WORK_SIGMA[3]);
     // The last scroll position: the page is fully ivory and the contact words are fully there.
     expect(hallSigma(1)).toBeGreaterThanOrEqual(CONTACT_SIGMA[1]);
   });
@@ -308,5 +320,85 @@ describe("the large doorway and the ivory hall", () => {
     const css = readFileSync("features/immersive/styles/immersive.css", "utf8");
     const declared = Number(/--se:\s*([0-9.]+);/.exec(css)?.[1]);
     expect(declared).toBeCloseTo(SERVICES_END, 3);
+  });
+});
+
+describe("the exhibition", () => {
+  it("makes four stops, one work each, in order, and shows each stop's words once", () => {
+    expect(WORK_COUNT).toBe(4);
+    const seen: number[] = [];
+    for (let s = 0; s <= 1; s += 0.001) {
+      const index = workIndexFromSigma(hallSigma(s));
+      if (index >= 0 && seen[seen.length - 1] !== index) seen.push(index);
+    }
+    expect(seen).toEqual([0, 1, 2, 3]);
+    expect(workIndexFromSigma(THRESHOLD_END_SIGMA - 1)).toBe(-1);
+  });
+
+  it("slows nearly to a stand at each stop and walks on between them", () => {
+    const speed = (sigma: number) => {
+      const s = progressForSigma(sigma);
+      return (hallSigma(s + 0.0005) - hallSigma(s - 0.0005)) / 0.001;
+    };
+    for (let i = 0; i < WORK_STOPS.length - 1; i++) {
+      const middle = (WORK_STOPS[i] + WORK_STOPS[i + 1]) / 2;
+      expect(speed(WORK_STOPS[i])).toBeLessThan(speed(middle) * 0.6);
+    }
+  });
+
+  it("finds the scroll position for a distance down the hall, and back again", () => {
+    for (const sigma of [12, 30, 58, 72, 80, 95, 103]) expect(hallSigma(progressForSigma(sigma))).toBeCloseTo(sigma, 2);
+  });
+
+  it("joins the corridor's route without a seam, and glides along the hall", () => {
+    const corridor = new Vector3();
+    const corridorLook = new Vector3();
+    hallCameraCurve.getPointAt(1, corridor);
+    hallLookCurve.getPointAt(1, corridorLook);
+    const pose = galleryPose(THRESHOLD_END_SIGMA);
+    expect(Math.hypot(pose.x - corridor.x, pose.y - corridor.y)).toBeLessThan(0.05);
+    expect(Math.hypot(pose.lx - corridorLook.x, pose.ly - corridorLook.y, zAt(pose.lsigma) - corridorLook.z)).toBeLessThan(0.3);
+
+    let previous = new Vector3();
+    let previousDirection = new Vector3();
+    for (let sigma = THRESHOLD_END_SIGMA; sigma <= CLOSE_SIGMA; sigma += 0.05) {
+      const p = galleryPose(sigma);
+      const position = new Vector3(p.x, p.y, zAt(sigma));
+      const direction = new Vector3(p.lx, p.ly, zAt(p.lsigma)).sub(position).normalize();
+      if (sigma > THRESHOLD_END_SIGMA) {
+        expect(position.distanceTo(previous)).toBeLessThan(0.08);
+        // No sudden swing of the view: under 3.5 degrees per 5 cm of walking (the turn to the sculpture is the quickest).
+        expect((Math.acos(Math.min(1, direction.dot(previousDirection))) * 180) / Math.PI).toBeLessThan(3.5);
+      }
+      previous = position;
+      previousDirection = direction;
+    }
+  });
+
+  it("looks at the work on the wall at each stop, and keeps the camera clear of the walls and the ribbon", () => {
+    for (const stop of WORK_STOPS) {
+      const pose = galleryPose(stop);
+      expect(pose.lx).toBeCloseTo(WALL_X, 0);
+      expect(Math.abs(pose.lsigma - (stop + WORK_REACH))).toBeLessThan(1);
+      expect(pose.y).toBeGreaterThan(1.3);
+      expect(pose.y).toBeLessThan(1.9);
+    }
+    const length = ribbonCurve.getLength();
+    const ribbon: Vector3[] = [];
+    for (let s = 0; s <= length; s += 0.05) ribbon.push(ribbonCurve.getPointAt(s / length));
+    for (let sigma = THRESHOLD_END_SIGMA; sigma <= CLOSE_SIGMA; sigma += 0.25) {
+      const pose = galleryPose(sigma);
+      expect(Math.abs(pose.x - PORTAL.x)).toBeLessThan(1.2);
+      const position = new Vector3(pose.x, pose.y, zAt(sigma));
+      let nearest = 99;
+      for (const point of ribbon) if (Math.abs(point.z - position.z) < 3) nearest = Math.min(nearest, point.distanceTo(position));
+      expect(nearest).toBeGreaterThan(1.1); // the ribbon also sways about a quarter of a metre
+    }
+  });
+
+  it("ends the exhibition at the last stop and turns to the sculpture in the close", () => {
+    expect(WORK_END_SIGMA).toBe(WORK_STOPS[WORK_STOPS.length - 1]);
+    expect(hallSigma(1)).toBeCloseTo(CLOSE_SIGMA, 5);
+    expect(WORK_SIGMA[3]).toBeGreaterThan(WORK_END_SIGMA);
   });
 });

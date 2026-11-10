@@ -9,33 +9,47 @@
 
 /**
  * How tall the scroll run is, in screens: the opening (gallery to hall), then everything after it: the seven bays of
- * services, the threshold (down the corridor's last stretch, through the large lattice doorway) and the ivory hall where
- * the camera comes to rest. Both the page's CSS height and the scroll maths read these, so they can't disagree.
+ * services, the threshold (down the corridor's last stretch, through the large lattice doorway), the exhibition (four
+ * stops along the ivory hall) and the close, where the camera comes to rest before the sculpture. Both the page's CSS
+ * height and the scroll maths read these, so they can't disagree.
  */
 const BAYS_SCREENS = 4.928;
-const THRESHOLD_SCREENS = 2.1;
-const HALL_SCREENS = 1.3;
-export const RUN = { opening: 2.3, services: BAYS_SCREENS + THRESHOLD_SCREENS + HALL_SCREENS } as const;
+const THRESHOLD_SCREENS = 1.3;
+const WORK_SCREENS = 3.2;
+const CLOSE_SCREENS = 0.8;
+export const RUN = { opening: 2.3, services: BAYS_SCREENS + THRESHOLD_SCREENS + WORK_SCREENS + CLOSE_SCREENS } as const;
 
-/** Of the services run (0..1), where the seven bays end, where the threshold ends (the camera is inside the ivory hall), and the end. */
+/** Of the run after the opening (0..1): where the seven bays end, where the threshold ends (the camera is inside the ivory hall), where the exhibition ends. */
 export const SERVICES_END = BAYS_SCREENS / RUN.services;
 export const THRESHOLD_END = (BAYS_SCREENS + THRESHOLD_SCREENS) / RUN.services;
+export const WORK_END = (BAYS_SCREENS + THRESHOLD_SCREENS + WORK_SCREENS) / RUN.services;
 
 export const SERVICE_COUNT = 7;
 
-/** Where the camera is when the opening ends, where the seven bays end, where the threshold ends, and where it comes to rest. */
+/** Where the camera is when the opening ends, where the seven bays end, where the threshold ends, where the exhibition ends, and where it comes to rest. */
 export const HALL_START_SIGMA = 7.6;
 export const SERVICES_END_SIGMA = 59;
 export const THRESHOLD_END_SIGMA = 73;
-export const CLOSE_SIGMA = 75.5;
+export const WORK_END_SIGMA = 98;
+export const CLOSE_SIGMA = 104;
 /** The far end of the corridor: the large lattice doorway into the ivory hall. */
 export const DOOR_SIGMA = 70;
 /** The ivory hall beyond the doorway: how long it is. */
-export const IVORY_LENGTH = 34;
+export const IVORY_LENGTH = 54;
 /** Between these two distances down the hall the page turns from plum to ivory: the camera is passing through the doorway. */
 export const FLIP_SIGMA = [66, 72] as const;
-/** Where the contact words arrive: the camera has come through into the ivory hall. */
-export const CONTACT_SIGMA = [73, 75] as const;
+
+/**
+ * The exhibition: the stops the camera makes along the ivory hall's right wall, as distances down the hall, and the
+ * distance (along the hall) from each stop to the work it looks at.
+ */
+export const WORK_STOPS = [77, 84, 91, 98] as const;
+export const WORK_REACH = 3;
+export const WORK_COUNT = WORK_STOPS.length;
+/** The exhibition's words arrive as the camera comes into the hall and give way as it turns to the sculpture. */
+export const WORK_SIGMA = [73.6, 75.4, 99, 100.4] as const;
+/** Where the contact words arrive: the camera has turned to the sculpture. */
+export const CONTACT_SIGMA = [100.6, 102.6] as const;
 
 /** The hall's ribs stand every 4 m from 2.2: exactly the approved opening's grid. */
 export const RIB_EVERY = 4;
@@ -68,41 +82,73 @@ export function pace(sigma: number): number {
   return 0.7 + 0.62 * Math.exp(-((d / 2.3) ** 2));
 }
 
-// Scroll-time for each step of σ: the integral of 1 / pace. Built once; it is a few hundred numbers.
-const STEP = 0.1;
-const TABLE_END = SERVICES_END_SIGMA;
-const COUNT = Math.round((TABLE_END - HALL_START_SIGMA) / STEP);
-const elapsed = new Float64Array(COUNT + 1);
-for (let i = 1; i <= COUNT; i++) {
-  const sigma = HALL_START_SIGMA + (i - 0.5) * STEP;
-  elapsed[i] = elapsed[i - 1] + STEP / pace(sigma);
-}
-const TOTAL_TIME = elapsed[COUNT];
-
-/** Services run progress (0..1) -> how far down the hall the camera is (σ, in metres). */
-export function hallSigma(s: number): number {
-  if (s <= 0) return HALL_START_SIGMA;
-  if (s <= SERVICES_END) {
-    const target = (s / SERVICES_END) * TOTAL_TIME;
+/**
+ * A map from "scroll time" to σ for a stretch of the hall where the camera's speed varies: the integral of 1 / pace,
+ * built once (a few hundred numbers). `sigmaAt(f)` takes f in 0..1 across the stretch.
+ */
+function stretch(from: number, to: number, speed: (sigma: number) => number) {
+  const STEP = 0.1;
+  const count = Math.round((to - from) / STEP);
+  const elapsed = new Float64Array(count + 1);
+  for (let i = 1; i <= count; i++) elapsed[i] = elapsed[i - 1] + STEP / speed(from + (i - 0.5) * STEP);
+  const total = elapsed[count];
+  return (f: number) => {
+    const target = clamp01(f) * total;
     let lo = 0;
-    let hi = COUNT;
+    let hi = count;
     while (hi - lo > 1) {
       const mid = (lo + hi) >> 1;
       if (elapsed[mid] <= target) lo = mid;
       else hi = mid;
     }
     const span = elapsed[hi] - elapsed[lo] || 1;
-    return HALL_START_SIGMA + (lo + (target - elapsed[lo]) / span) * STEP;
-  }
+    return from + (lo + (target - elapsed[lo]) / span) * STEP;
+  };
+}
+
+const baySigma = stretch(HALL_START_SIGMA, SERVICES_END_SIGMA, pace);
+
+/** How fast the camera moves along the exhibition: unhurried between the works, and nearly still at each stop. */
+function workPace(sigma: number): number {
+  let d = Infinity;
+  for (const stop of WORK_STOPS) d = Math.min(d, Math.abs(sigma - stop));
+  return 1.15 - 0.8 * Math.exp(-((d / 2.2) ** 2));
+}
+const workSigma = stretch(THRESHOLD_END_SIGMA, WORK_END_SIGMA, workPace);
+
+/** Run progress after the opening (0..1) -> how far down the hall the camera is (σ, in metres). */
+export function hallSigma(s: number): number {
+  if (s <= 0) return HALL_START_SIGMA;
+  if (s <= SERVICES_END) return baySigma(s / SERVICES_END);
   if (s <= THRESHOLD_END) {
     // The threshold: down the last stretch of the corridor, slowly, to the doorway and through it. A little linear
     // travel keeps the camera moving from the last arch, and the rest eases in and out.
     const t = clamp01((s - SERVICES_END) / (THRESHOLD_END - SERVICES_END));
     return SERVICES_END_SIGMA + (THRESHOLD_END_SIGMA - SERVICES_END_SIGMA) * (0.3 * t + 0.7 * smoothstep(0, 1, t));
   }
-  // The ivory hall: a slow, easing-out glide to rest in front of the sculpture.
-  const t = clamp01((s - THRESHOLD_END) / (1 - THRESHOLD_END));
-  return THRESHOLD_END_SIGMA + (CLOSE_SIGMA - THRESHOLD_END_SIGMA) * (1 - (1 - t) * (1 - t));
+  if (s <= WORK_END) return workSigma((s - THRESHOLD_END) / (WORK_END - THRESHOLD_END));
+  // The close: a short, easing-out glide to rest in front of the sculpture.
+  const t = clamp01((s - WORK_END) / (1 - WORK_END));
+  return WORK_END_SIGMA + (CLOSE_SIGMA - WORK_END_SIGMA) * (1 - (1 - t) * (1 - t));
+}
+
+/** The reverse of hallSigma: the run progress (0..1) at which the camera is at σ. (hallSigma never goes backwards, so this is a search.) */
+export function progressForSigma(sigma: number): number {
+  let lo = 0;
+  let hi = 1;
+  for (let i = 0; i < 32; i++) {
+    const mid = (lo + hi) / 2;
+    if (hallSigma(mid) < sigma) lo = mid;
+    else hi = mid;
+  }
+  return (lo + hi) / 2;
+}
+
+/** Which of the exhibition's four stops is on show, from where the camera is (-1 before the exhibition begins). */
+export function workIndexFromSigma(sigma: number): number {
+  let count = 0;
+  for (const stop of WORK_STOPS) if (stop - 3 <= sigma) count++;
+  return count - 1;
 }
 
 /**

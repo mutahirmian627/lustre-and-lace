@@ -20,9 +20,13 @@ interface IvoryHallProps {
 const TILE = 1.6;
 const doorZ = zAt(DOOR_SIGMA);
 const endZ = doorZ - IVORY.length;
-/** Where the lattice windows stand down the room (σ), and the ribs between them. */
-const WINDOWS = [78.5, 85.5, 92.5, 99.5] as const;
-const RIBS = [82, 89, 96] as const;
+/**
+ * Where the lattice windows stand down the room (σ): all down the left wall, level with the camera's stops; on the right
+ * wall, where the works hang, only beyond them, round the sculpture. The ribs stand between the works.
+ */
+const WINDOWS_LEFT = [77, 84, 91, 98, 105, 112, 119] as const;
+const WINDOWS_RIGHT = [112, 119] as const;
+const RIBS = [83.5, 90.5, 97.5, 107.5, 114.5, 121.5] as const;
 const WINDOW = { width: 2.2, straight: 2.7, sill: 0.45 } as const;
 
 /**
@@ -133,7 +137,8 @@ export function IvoryHall({ materials, tileMap, jaliMask, glow, lite }: IvoryHal
       {RIBS.map((sigma) => (
         <mesh key={sigma} geometry={parts.rib} material={parts.ribMaterial} position={[PORTAL.x, 0, zAt(sigma)]} />
       ))}
-      {WINDOWS.map((sigma) => [sideWindow(sigma, -1), sideWindow(sigma, 1)])}
+      {WINDOWS_LEFT.map((sigma) => sideWindow(sigma, -1))}
+      {WINDOWS_RIGHT.map((sigma) => sideWindow(sigma, 1))}
 
       {/* The far end: one tall lattice window, the room's brightest place. */}
       <group position={[PORTAL.x, 0, endZ + 0.02]}>

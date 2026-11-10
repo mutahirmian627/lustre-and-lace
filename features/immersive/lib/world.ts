@@ -1,5 +1,5 @@
 import { CatmullRomCurve3, Vector3 } from "three";
-import { CLOSE_SIGMA, DOOR_SIGMA, HALL_START_SIGMA, IVORY_LENGTH, RIB_EVERY } from "@/features/immersive/lib/timeline";
+import { DOOR_SIGMA, HALL_START_SIGMA, IVORY_LENGTH, RIB_EVERY, THRESHOLD_END_SIGMA } from "@/features/immersive/lib/timeline";
 
 // The pure scroll numbers live in timeline.ts (no 3D), and are re-exported here for the scene's convenience.
 export { RUN, SERVICES_END, THRESHOLD_END, SERVICE_COUNT, clamp01, smoothstep, serviceIndexAt } from "@/features/immersive/lib/timeline";
@@ -68,22 +68,32 @@ const RIBBON_POINTS = [
   [PORTAL.x, 2.7, -65],
   [PORTAL.x, 2.6, -69.5],
   [PORTAL.x, 2.9, -74],
-  // --- through the large doorway (its plane is at z = -76.8) and into the ivory hall: the sculpture ---
-  // It rises on the right, crosses high above, comes back down on the left and sweeps round the front to land on the
-  // floor, as one loop hung in the middle of the room. No stretch of it is steeper than the ribbon's own opening.
+  // --- through the large doorway (its plane is at z = -76.8) and into the ivory hall ---
+  // First it runs the length of the exhibition: over each work (above its frame) and down between the works (in front of
+  // the blank wall between them), so it keeps threading the room as the camera walks along it; then, at the far end,
+  // it hangs as a sculpture: it rises on the right, crosses high above, comes back down on the left and sweeps round the
+  // front to land on the floor, one loop in the middle of the room. No stretch of it is steeper than the ribbon's own opening.
   [PORTAL.x, 3.0, -78.6],
-  [2.9, 3.5, -84],
-  [4.1, 4.5, -89.5],
-  [4.0, 5.5, -95],
-  [2.6, 6.1, -98],
-  [0.9, 5.7, -99],
-  [-0.2, 4.7, -97],
-  [0.2, 3.6, -94],
-  [1.5, 2.8, -92],
-  [3.0, 2.2, -92.5],
-  [3.9, 1.4, -94.5],
-  [3.5, 0.6, -97],
-  [2.4, 0.1, -98.5],
+  [3.0, 3.8, -83.8],
+  [5.2, 4.8, -86.8],
+  [6.0, 2.6, -90.3],
+  [5.4, 4.9, -93.8],
+  [6.0, 2.5, -97.3],
+  [5.2, 4.9, -100.8],
+  [5.8, 2.7, -104.3],
+  [4.8, 4.6, -107.8],
+  [3.2, 4.1, -112.5],
+  [4.1, 4.5, -117.5],
+  [4.0, 5.5, -123],
+  [2.6, 6.1, -126],
+  [0.9, 5.7, -127],
+  [-0.2, 4.7, -125],
+  [0.2, 3.6, -122],
+  [1.5, 2.8, -120],
+  [3.0, 2.2, -120.5],
+  [3.9, 1.4, -122.5],
+  [3.5, 0.6, -125],
+  [2.4, 0.1, -126.5],
 ] as const;
 
 export const ribbonCurve = new CatmullRomCurve3(
@@ -133,11 +143,11 @@ export const hallCameraCurve = new CatmullRomCurve3(
     new Vector3(2.7, 1.3, zAt(42.2)),
     new Vector3(1.8, 1.55, zAt(50.2)),
     new Vector3(2.2, 1.5, zAt(58.2)),
-    // The threshold: on down the corridor's last stretch, through the large doorway, and into the ivory hall.
+    // The threshold: on down the corridor's last stretch, through the large doorway, and just inside the ivory hall,
+    // where the exhibition's route (lib/gallery.ts) takes over.
     new Vector3(2.2, 1.5, zAt(65)),
     new Vector3(2.2, 1.5, zAt(DOOR_SIGMA)),
-    new Vector3(2.3, 1.6, zAt(73)),
-    new Vector3(2.2, 1.65, zAt(CLOSE_SIGMA)),
+    new Vector3(2.3, 1.6, zAt(THRESHOLD_END_SIGMA)),
   ],
   false,
   "centripetal"
@@ -155,8 +165,7 @@ export const hallLookCurve = new CatmullRomCurve3(
     new Vector3(2.2, 2.0, zAt(58.2 + 8)),
     new Vector3(2.2, 2.1, zAt(65 + 8)),
     new Vector3(2.2, 2.4, zAt(DOOR_SIGMA + 8)),
-    new Vector3(2.2, 3.0, zAt(80)),
-    new Vector3(2.0, 3.5, zAt(86)),
+    new Vector3(2.2, 2.9, zAt(THRESHOLD_END_SIGMA + 7)),
   ],
   false,
   "centripetal"

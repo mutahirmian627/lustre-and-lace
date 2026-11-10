@@ -2,7 +2,18 @@
 
 import { useEffect } from "react";
 import { stageState } from "@/features/immersive/lib/stage-state";
-import { CONTACT_SIGMA, FLIP_SIGMA, RUN, SERVICES_END, hallSigma, serviceIndexAt, smoothstep } from "@/features/immersive/lib/timeline";
+import {
+  CONTACT_SIGMA,
+  FLIP_SIGMA,
+  RUN,
+  SERVICES_END,
+  THRESHOLD_END,
+  WORK_SIGMA,
+  hallSigma,
+  serviceIndexAt,
+  smoothstep,
+  workIndexFromSigma,
+} from "@/features/immersive/lib/timeline";
 
 /**
  * Turns the page's scroll position into numbers and shares them two ways: as `stageState.target` for the 3D
@@ -12,7 +23,9 @@ import { CONTACT_SIGMA, FLIP_SIGMA, RUN, SERVICES_END, hallSigma, serviceIndexAt
  *   --p       0..1 across the opening (gallery to hall)
  *   --s       0..1 across the services, the threshold and the ivory hall
  *   --flip    0..1 as the camera passes through the large doorway: the page turns from plum back to ivory
+ *   --w       0..1 while the exhibition's words are on show (it fades in as the camera comes inside, out as it turns to the sculpture)
  *   --c       0..1 as the contact words arrive in the ivory hall
+ *   data-work     which of the exhibition's four stops is on show
  *   data-phase    which text is meant to be readable now: opening, transit, approach, services, contact
  *   data-service  which of the seven services is on show (while in the services phase)
  *
@@ -51,14 +64,18 @@ export function ScrollDriver({ runId }: { runId: string }) {
       const contact = smoothstep(CONTACT_SIGMA[0], CONTACT_SIGMA[1], sigma);
       root.style.setProperty("--flip", flip.toFixed(4));
       root.style.setProperty("--c", contact.toFixed(4));
+      const work = smoothstep(WORK_SIGMA[0], WORK_SIGMA[1], sigma) * (1 - smoothstep(WORK_SIGMA[2], WORK_SIGMA[3], sigma));
+      root.style.setProperty("--w", work.toFixed(4));
 
       const phase =
         s > 0.03
           ? s < SERVICES_END
             ? "services"
-            : contact > 0.02
-              ? "contact"
-              : "threshold"
+            : s < THRESHOLD_END
+              ? "threshold"
+              : contact > 0.02
+                ? "contact"
+                : "work"
           : p < 0.2
             ? "opening"
             : p < 0.56
@@ -68,6 +85,8 @@ export function ScrollDriver({ runId }: { runId: string }) {
 
       const service = String(serviceIndexAt(s));
       if (root.dataset.service !== service) root.dataset.service = service;
+      const stop = String(Math.max(0, workIndexFromSigma(sigma)));
+      if (root.dataset.work !== stop) root.dataset.work = stop;
     };
     const schedule = () => {
       if (!frame) frame = window.requestAnimationFrame(measure);
@@ -84,8 +103,10 @@ export function ScrollDriver({ runId }: { runId: string }) {
       root.style.removeProperty("--s");
       root.style.removeProperty("--flip");
       root.style.removeProperty("--c");
+      root.style.removeProperty("--w");
       delete root.dataset.phase;
       delete root.dataset.service;
+      delete root.dataset.work;
       stageState.target = 0;
     };
   }, [runId]);

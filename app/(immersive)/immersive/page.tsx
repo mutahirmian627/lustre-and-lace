@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { CASE_STUDY } from "@/constants/agency";
 import { SERVICES } from "@/features/immersive/content";
 import {
   IMMERSIVE_INSTAGRAM_HANDLE,
@@ -8,11 +9,12 @@ import {
   IMMERSIVE_WHATSAPP_DISPLAY,
   IMMERSIVE_WHATSAPP_NUMBER,
 } from "@/features/immersive/constants";
-import { RUN, THRESHOLD_END } from "@/features/immersive/lib/timeline";
+import { RUN, THRESHOLD_END, WORK_END } from "@/features/immersive/lib/timeline";
 import { ImmersiveNav } from "@/features/immersive/nav/ImmersiveNav";
 import { StageLoader } from "@/features/immersive/scene/StageLoader";
 import { Backdrop } from "@/features/immersive/sections/Backdrop";
 import { ScrollDriver } from "@/features/immersive/sections/ScrollDriver";
+import { ServiceRail } from "@/features/immersive/sections/ServiceRail";
 import { StillNote } from "@/features/immersive/sections/StillNote";
 import { TierBadge } from "@/features/immersive/sections/TierBadge";
 
@@ -55,7 +57,8 @@ export default function ImmersivePage() {
           {/* Where the menu's entries scroll to. */}
           <span id="approach" className="imm-anchor" style={{ top: anchorTop(0, 0.78) }} aria-hidden="true" />
           <span id="services" className="imm-anchor" style={{ top: anchorTop(0.07) }} aria-hidden="true" />
-          <span id="contact" className="imm-anchor" style={{ top: anchorTop(THRESHOLD_END + 0.03) }} aria-hidden="true" />
+          <span id="work" className="imm-anchor" style={{ top: anchorTop(THRESHOLD_END + 0.01) }} aria-hidden="true" />
+          <span id="contact" className="imm-anchor" style={{ top: anchorTop(WORK_END + 0.03) }} aria-hidden="true" />
           <div className="imm-sticky">
             <div className="imm-scrim" aria-hidden="true" />
             <section className="imm-scene imm-scene--opening" aria-labelledby="opening-title">
@@ -92,28 +95,74 @@ export default function ImmersivePage() {
             </section>
 
             {/* The services: seven bays down the hall. The camera passes one rib per service, and the stage shows
-                the one it has just passed. The words are repeated in full in the screen-reader list below, so this
-                visual stage is hidden from assistive technology rather than read twice. */}
-            <section className="imm-scene imm-scene--services" aria-hidden="true">
-              <p className="imm-label">03 &mdash; Services</p>
-              <p className="imm-statement imm-services-title">Seven disciplines, one studio.</p>
-              <div className="imm-service-stack">
-                {SERVICES.map((service, i) => (
-                  <article key={service.name} className="imm-service" data-i={i}>
-                    <p className="imm-service-no">{String(i + 1).padStart(2, "0")}</p>
-                    <h3 className="imm-service-name">{service.name}</h3>
-                    <p className="imm-service-summary">{service.summary}</p>
-                    <p className="imm-service-includes">{service.includes.join(" · ")}</p>
-                  </article>
-                ))}
+                the one it has just passed. The words are repeated in full in the screen-reader list below, so the
+                visual words are hidden from assistive technology rather than read twice; the 01-07 index is real
+                buttons, so it is not. */}
+            <section className="imm-scene imm-scene--services">
+              <div aria-hidden="true">
+                <p className="imm-label">03 &mdash; Services</p>
+                <p className="imm-statement imm-services-title">Seven disciplines, one studio.</p>
+                <div className="imm-service-stack">
+                  {SERVICES.map((service, i) => (
+                    <article key={service.name} className="imm-service" data-i={i}>
+                      <p className="imm-service-no">{String(i + 1).padStart(2, "0")}</p>
+                      <h3 className="imm-service-name">{service.name}</h3>
+                      <p className="imm-service-includes">{service.includes.join(" · ")}</p>
+                    </article>
+                  ))}
+                </div>
               </div>
-              <ol className="imm-service-rail">
-                {SERVICES.map((service, i) => (
-                  <li key={service.name} data-i={i}>
-                    {String(i + 1).padStart(2, "0")}
-                  </li>
-                ))}
-              </ol>
+              <ServiceRail names={SERVICES.map((service) => service.name)} />
+            </section>
+
+            {/* The exhibition: the studio's one finished project, on the ivory hall's wall, then an empty arch. The words
+                are repeated in the screen-reader list below; the links are real and only reachable while their stop is on show. */}
+            <section className="imm-scene imm-scene--work">
+              <div aria-hidden="true">
+                <p className="imm-label">04 &mdash; Work</p>
+                <p className="imm-statement imm-work-title">One finished project you can actually use.</p>
+              </div>
+              <div className="imm-work-stack">
+                <article className="imm-work" data-i={0}>
+                  <div aria-hidden="true">
+                    <p className="imm-work-kind">{CASE_STUDY.kind}</p>
+                    <h3 className="imm-work-name">{CASE_STUDY.name}</h3>
+                    <p className="imm-work-text">{CASE_STUDY.summary}</p>
+                  </div>
+                  <div className="imm-work-links">
+                    <Link href="/shop" className="imm-btn">
+                      Open the demo store
+                    </Link>
+                    <Link href="/get-started?service=ecommerce" className="imm-link">
+                      I want a store like this <span aria-hidden="true">&rarr;</span>
+                    </Link>
+                  </div>
+                </article>
+                <article className="imm-work" data-i={1} aria-hidden="true">
+                  <p className="imm-work-kind">What your customers get</p>
+                  <ul className="imm-work-list">
+                    {CASE_STUDY.storeFeatures.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </article>
+                <article className="imm-work" data-i={2} aria-hidden="true">
+                  <p className="imm-work-kind">On a phone, and what you get to run it</p>
+                  <ul className="imm-work-list">
+                    {CASE_STUDY.adminFeatures.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </article>
+                <article className="imm-work" data-i={3} aria-hidden="true">
+                  <p className="imm-work-kind">Next exhibit</p>
+                  <h3 className="imm-work-name">Yours.</h3>
+                  <p className="imm-work-text">
+                    This is the first project in the exhibition. Client work will hang here as we finish it, with permission. Until
+                    then, the demo store is the honest measure of what we build.
+                  </p>
+                </article>
+              </div>
             </section>
 
             {/* The close, in the ivory hall beyond the large doorway. Later stages place the work and the process before it. */}
@@ -163,11 +212,33 @@ export default function ImmersivePage() {
             {SERVICES.map((service) => (
               <li key={service.name}>
                 <h3>{service.name}</h3>
-                <p>{service.summary}</p>
                 <p>Includes: {service.includes.join(", ")}.</p>
               </li>
             ))}
           </ol>
+        </section>
+        <section className="sr-only" aria-labelledby="work-title">
+          <h2 id="work-title">Our work</h2>
+          <h3>{CASE_STUDY.name}</h3>
+          <p>
+            {CASE_STUDY.kind}. {CASE_STUDY.summary}
+          </p>
+          <h4>What your customers get</h4>
+          <ul>
+            {CASE_STUDY.storeFeatures.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+          <h4>What you get to run it</h4>
+          <ul>
+            {CASE_STUDY.adminFeatures.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+          <p>
+            Next exhibit: yours. Client work will be added here as we finish it, with permission. Until then, the demo store is the
+            honest measure of what we build.
+          </p>
         </section>
       </main>
 

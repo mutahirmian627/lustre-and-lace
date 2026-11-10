@@ -4,8 +4,9 @@ import { useMemo } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { MathUtils, PerspectiveCamera, Vector3 } from "three";
 import { applyFrame } from "@/features/immersive/lib/frame";
-import { HALL_START_SIGMA, CLOSE_SIGMA, hallSigma } from "@/features/immersive/lib/timeline";
-import { cameraCurve, hallCameraCurve, hallLookCurve, journey, lookCurve } from "@/features/immersive/lib/world";
+import { HALL_START_SIGMA, THRESHOLD_END_SIGMA, hallSigma } from "@/features/immersive/lib/timeline";
+import { galleryPose } from "@/features/immersive/lib/gallery";
+import { cameraCurve, hallCameraCurve, hallLookCurve, journey, lookCurve, zAt } from "@/features/immersive/lib/world";
 import { pointer } from "@/features/immersive/lib/pointer";
 import { stageState } from "@/features/immersive/lib/stage-state";
 
@@ -36,9 +37,16 @@ export function CameraRig({ frozen }: { frozen: boolean }) {
       // The same recipe down the corridor: scroll -> distance down the hall (quickest under each arch) -> two curves.
       const sigma = hallSigma(progress - 1);
       stageState.sigma = sigma;
-      const u = (sigma - HALL_START_SIGMA) / (CLOSE_SIGMA - HALL_START_SIGMA);
-      hallCameraCurve.getPointAt(u, scratch.position);
-      hallLookCurve.getPointAt(u, scratch.target);
+      if (sigma <= THRESHOLD_END_SIGMA) {
+        const u = (sigma - HALL_START_SIGMA) / (THRESHOLD_END_SIGMA - HALL_START_SIGMA);
+        hallCameraCurve.getPointAt(u, scratch.position);
+        hallLookCurve.getPointAt(u, scratch.target);
+      } else {
+        // The ivory hall: the exhibition's route, keyed by distance (lib/gallery.ts).
+        const pose = galleryPose(sigma);
+        scratch.position.set(pose.x, pose.y, zAt(sigma));
+        scratch.target.set(pose.lx, pose.ly, zAt(pose.lsigma));
+      }
     }
 
     scratch.px = MathUtils.damp(scratch.px, frozen ? 0 : pointer.x, 3, dt);

@@ -9,6 +9,7 @@ import { createGlowTexture, createJaliMask, createTileTexture } from "@/features
 import { stageState } from "@/features/immersive/lib/stage-state";
 import { Architecture } from "@/features/immersive/scene/Architecture";
 import { EndCurtain } from "@/features/immersive/scene/EndCurtain";
+import { Gallery } from "@/features/immersive/scene/Gallery";
 import { IvoryHall } from "@/features/immersive/scene/IvoryHall";
 import { ArchVeils } from "@/features/immersive/scene/ArchVeils";
 import { CameraRig } from "@/features/immersive/scene/CameraRig";
@@ -112,6 +113,7 @@ export function Experience({ lite, frozen, onCompiled, onReady }: ExperienceProp
       <Architecture materials={resources.materials} tileMap={resources.tileMap} glow={resources.glow} lite={lite} />
       <EndCurtain glow={resources.glow} lite={lite} />
       <IvoryHall materials={resources.materials} tileMap={resources.tileMap} jaliMask={resources.jaliMask} glow={resources.glow} lite={lite} />
+      <Gallery materials={resources.materials} jaliMask={resources.jaliMask} glow={resources.glow} lite={lite} frozen={frozen} />
       <JaliScreen materials={resources.materials} jaliMask={resources.jaliMask} lite={lite} />
       <ArchVeils materials={resources.materials} jaliMask={resources.jaliMask} glow={resources.glow} lite={lite} />
       <Ribbon materials={resources.materials} segments={ribbonSegments(lite)} halfRate={lite} frozen={frozen} />
