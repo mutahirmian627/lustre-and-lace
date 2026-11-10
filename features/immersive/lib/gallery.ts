@@ -1,4 +1,4 @@
-import { CLOSE_SIGMA, PROCESS_STOPS, THRESHOLD_END_SIGMA, WORK_END_SIGMA, WORK_REACH, WORK_STOPS } from "@/features/immersive/lib/timeline";
+import { CLOSE_SIGMA, PROCESS_STOPS, THRESHOLD_END_SIGMA, WORK_REACH, WORK_STOPS } from "@/features/immersive/lib/timeline";
 import { PORTAL } from "@/features/immersive/lib/world";
 
 /**
@@ -94,6 +94,3 @@ export function galleryPose(sigma: number): Pose {
   }
   return pose;
 }
-
-/** The last stop's σ, for the tests. */
-export const GALLERY_LAST_STOP = WORK_END_SIGMA;

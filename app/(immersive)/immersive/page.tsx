@@ -271,7 +271,10 @@ export default function ImmersivePage() {
         </section>
       </main>
 
-      <div className="imm-chrome pointer-events-none fixed bottom-3 right-3 z-50 rounded-full bg-black/70 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-white">
+      <div
+        aria-hidden="true"
+        className="imm-chrome pointer-events-none fixed bottom-3 right-3 z-50 rounded-full bg-black/70 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-white"
+      >
         Experimental preview · stage 3 · opening, services and close
       </div>
       <StillNote />

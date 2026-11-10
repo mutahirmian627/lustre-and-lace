@@ -131,6 +131,19 @@ scripts/render-immersive-poster.mjs  renders the four fallback pictures from the
   and fails unless every load reaches the live scene and is moving on its own (no scrolling, no pointer) at the opening
   and deep in the corridor. The e2e suite checks the same on every run. Use it on the hosted build before calling
   anything ready.
+- **Accessibility, and how it is kept** (`tests/e2e/immersive-a11y.spec.ts`, `scripts/check-immersive-layout.mjs`):
+  - The visual words are mostly `aria-hidden`; the same words are in screen-reader-only sections (services, work, process),
+    so no one depends on scroll position. Real controls (the 01-07 index, the exhibition's links, the contact) are never inside
+    an `aria-hidden` block, and the ones for a stop that is not on show are `visibility: hidden`, so the keyboard only ever
+    lands on something visible. The page's one `h1` stays in the accessibility tree at every scroll position.
+  - An axe scan (WCAG 2.2 AA + best practice) runs at the opening, approach, services, corridor's end, exhibition, process
+    and contact, on a laptop and a phone, plus the open menu. Controls are at least 44 px tall.
+  - `npm run check:immersive-layout` visits every stop (services, work, process, contact...) on 14 screen shapes, from a
+    320 px phone to a 1920 px desktop, including phones on their side and desktops zoomed to 200%, and fails if any line of
+    text is off the screen, under the bar or under the preview label, or if the page scrolls sideways. Short screens
+    (`max-height: 520px`) put the words in a column at the left with their large headings left out.
+  - Reduced motion shows the pictures (never a dead page) with a way back to the live scene; the stops' transitions stop too.
+  - The gallery captions ("Fig. 01...") are decoration and are shown only from 1280 px wide, where they fit beside the art.
 - **Reflections are painted, not processed.** `lib/reflection-cubes.ts` draws two small "photo studios" into
   six-face cubes in code (one for the room, a brighter one for the chrome) and the materials read them directly.
   The usual environment helper converts a scene into a blurred reflection map on the graphics card, and compiling

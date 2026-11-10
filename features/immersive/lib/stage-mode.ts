@@ -20,7 +20,6 @@ export function setStageMode(mode: StageMode["mode"], reason: StillReason | null
   listeners.forEach((listener) => listener());
 }
 
-export const getStageMode = () => state;
 const server: StageMode = { mode: "loading", reason: null };
 
 export function useStageMode(): StageMode {

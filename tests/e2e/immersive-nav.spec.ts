@@ -54,7 +54,10 @@ test.describe("immersive opening", () => {
 
     await scrollToScene(page, 0.95);
     await expect(approach).toBeVisible();
-    await expect(opening).toBeHidden(); // hidden from sight, keyboard and screen readers, not just faded
+    // The opening's words are gone from sight and its links from the keyboard; only the page's heading stays in the accessibility tree.
+    await expect(page.locator(".imm-scene--opening")).toHaveCSS("opacity", "0");
+    await expect(page.getByRole("link", { name: "Let’s Talk" })).toBeHidden();
+    await expect(opening).toHaveCount(1);
 
     await scrollToScene(page, 0);
     await expect(opening).toBeVisible();

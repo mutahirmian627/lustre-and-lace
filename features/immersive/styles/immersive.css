@@ -167,6 +167,11 @@
 .immersive-root:not([data-phase="opening"]) .imm-scene--opening {
   visibility: hidden;
 }
+/* ...except the page's one heading, which is invisible (the scene is faded out) but stays in the accessibility tree, so the
+   page always has its level-one heading however far down it has been scrolled. */
+.immersive-root:not([data-phase="opening"]) .imm-scene--opening .imm-title {
+  visibility: visible;
+}
 
 /* ---- Typography ----------------------------------------------------------------------------------- */
 
@@ -302,7 +307,7 @@
   pointer-events: none;
   display: none;
 }
-@media (min-width: 1000px) and (min-height: 560px) {
+@media (min-width: 1280px) and (min-height: 560px) {
   .imm-placard {
     display: block;
   }
@@ -553,6 +558,9 @@ html[data-immersive-poster] nextjs-portal {
 }
 
 .imm-wordmark {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
   font-family: var(--serif);
   font-size: 1.4rem;
   line-height: 1;
@@ -810,7 +818,7 @@ html[data-immersive-poster] nextjs-portal {
     linear-gradient(0deg, rgb(244 239 230 / var(--cream)) 0%, rgb(244 239 230 / calc(var(--cream) * 0.8)) 40%, transparent 70%),
     linear-gradient(0deg, rgb(30 12 36 / var(--scrim)) 0%, rgb(30 12 36 / calc(var(--scrim) * 0.68)) 42%, transparent 72%);
 }
-@media (min-width: 900px) {
+@media (min-width: 900px), (max-height: 520px) {
   .imm-scrim {
     background:
       linear-gradient(90deg, rgb(244 239 230 / calc(var(--cream) * 1.1)) 0%, rgb(244 239 230 / calc(var(--cream) * 0.8)) 32%, rgb(244 239 230 / calc(var(--cream) * 0.25)) 48%, transparent 62%),
@@ -898,7 +906,7 @@ html[data-immersive-poster] nextjs-portal {
 .imm-service-rail li {
   border-top: 1px solid var(--stage-line);
   color: var(--stage-soft);
-  opacity: 0.55;
+  opacity: 0.72;
   transition: opacity 0.4s ease, border-color 0.4s ease, color 0.4s ease;
 }
 /* A real button, at least 44 px tall to touch. */
@@ -1053,6 +1061,9 @@ html[data-immersive-poster] nextjs-portal {
   transform: none;
   transition-delay: 0s;
 }
+.imm-step .imm-service-no {
+  color: var(--stage-soft);
+}
 .imm-work-kind {
   margin: 0 0 0.6rem;
   font-family: var(--mono);
@@ -1166,8 +1177,11 @@ html[data-immersive-poster] nextjs-portal {
 
 @media (prefers-reduced-motion: reduce) {
   .imm-service,
+  .imm-work,
+  .imm-step,
   .imm-service-rail li {
     transition: none;
+    transform: none;
   }
 }
 
@@ -1207,4 +1221,98 @@ html[data-immersive-poster] nextjs-portal {
   letter-spacing: inherit;
   text-transform: inherit;
   cursor: pointer;
+}
+
+/* ---- Small screens and short screens ------------------------------------------------------------- */
+
+/* The preview label is for reviewers; on a small phone it would sit over the words. */
+@media (max-width: 599px), (max-height: 520px) {
+  .imm-chrome {
+    display: none;
+  }
+}
+
+/* Short screens (a phone on its side, a desktop zoomed in to 200%): the words go in a column at the left, set a little
+   smaller, with their larger headings left out, so nothing runs under the navigation bar. */
+@media (max-height: 520px) {
+  .imm-scene--approach,
+  .imm-scene--services,
+  .imm-scene--work,
+  .imm-scene--process,
+  .imm-scene--contact {
+    top: calc(50% + 2.2rem);
+    bottom: auto;
+    width: min(27rem, 52vw);
+    max-width: none;
+    margin-top: 0;
+    transform: translate3d(0, -50%, 0);
+  }
+  .imm-scene--opening {
+    top: calc(50% + 2.2rem);
+    bottom: auto;
+    width: min(26rem, 52vw);
+    margin-top: calc(var(--p) * -9rem);
+    transform: translate3d(0, -48%, 0);
+  }
+  .imm-scene--opening .imm-title {
+    margin: 0.6rem 0 0.8rem;
+    font-size: clamp(1.7rem, 9vh, 2.6rem);
+  }
+  .imm-scene--opening .imm-lead {
+    display: none;
+  }
+  .imm-scene--opening .imm-actions {
+    margin-top: 0.9rem;
+  }
+  .imm-statement {
+    margin-top: 0.6rem;
+    font-size: clamp(1.4rem, 7vh, 2rem);
+  }
+  .imm-services-title,
+  .imm-work-title {
+    display: none;
+  }
+  .imm-service-stack,
+  .imm-work-stack {
+    margin-top: 0.7rem;
+  }
+  .imm-service-name,
+  .imm-work-name {
+    margin-bottom: 0.35rem;
+    font-size: 1.5rem;
+  }
+  .imm-service-no {
+    margin-bottom: 0.3rem;
+  }
+  .imm-work-text,
+  .imm-scene--contact .imm-lead {
+    font-size: 0.82rem;
+    line-height: 1.45;
+  }
+  .imm-work-list {
+    font-size: 0.8rem;
+    line-height: 1.4;
+  }
+  .imm-work-list li {
+    padding: 0.25rem 0;
+  }
+  .imm-work-list li:nth-child(n + 5) {
+    display: none;
+  }
+  .imm-work-links,
+  .imm-scene--contact .imm-actions {
+    margin-top: 0.7rem;
+  }
+  .imm-service-rail {
+    margin-top: 0.7rem;
+  }
+  .imm-scene--contact .imm-lead {
+    margin-top: 0.5rem;
+  }
+  .imm-contact-lines {
+    margin-top: 0.7rem;
+  }
+  .imm-placard {
+    display: none;
+  }
 }
