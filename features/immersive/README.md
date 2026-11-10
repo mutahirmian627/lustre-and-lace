@@ -7,8 +7,9 @@ Nothing here touches the live site: its styles are scoped to `.immersive-root`, 
 `constants.ts`, its three typefaces load in the route group's own layout, and the route has its own layout
 (`app/(immersive)/`).
 
-**Status: stage 1.** Only the opening sequence exists: the gallery, the doorway with its lattice screen,
-the scroll through it into the hall, and the first words of the next space. The other sections come after review.
+**Status: stage 2.** The stage 1 art direction is approved and locked. The experience now runs: opening gallery,
+doorway and lattice screen, the hall, the approach line, the **seven services** (one bay of the hall each), and a
+provisional close (contact). The work exhibition and the process come next, between the services and the close.
 
 ## The idea
 
@@ -38,7 +39,8 @@ features/immersive/
   scene/      The 3D. Stage.tsx (canvas) > Experience.tsx (lights, resources, compile) >
               Architecture, JaliScreen, Ribbon, Dust, CameraRig, Placards.
               StageLoader.tsx decides picture-or-3D and mounts the canvas after idle.
-  lib/        world.ts (measurements, the ribbon's route, the camera's route, scroll -> journey)
+  content.ts  the seven services (words)
+  lib/        world.ts (measurements, the ribbon's route, the camera's routes), timeline.ts (scroll maths, no 3D)
               arch.ts, materials.ts, textures.ts, reflection-cubes.ts (the painted light-worlds)
               frame.ts (lens shift per screen shape), tiers.ts (device sorting), stage-state.ts
               pointer.ts, menu-store.ts, when-needed.ts
@@ -57,10 +59,20 @@ scripts/render-immersive-poster.mjs  renders the four fallback pictures from the
   exactly like `object-fit: cover`, so the live scene lines up with the fallback pictures.
 - **Gallery labels** (`Placards.tsx`) are real HTML captions pinned to points in the scene each frame, the way a
   museum label sits beside an object. They name the materials and fade at the first scroll.
-- **One number drives everything: `--p`**, the scroll position across the opening (0..1), set on the page root by
-  `ScrollDriver` (no re-renders; scrolling stays native). CSS derives the text fades and `--atmosphere`
-  (ivory 0 → plum 1) from it, and `stageState.target` feeds the camera, which eases towards it. The landmarks
-  (`journey()` and `TIMELINE` in `lib/world.ts`) say where the screen opens and when the camera is through.
+- **Scroll is two numbers.** One tall "run" holds everything, pinned stage inside. `ScrollDriver` turns the scroll
+  position into `--p` (0..1 across the opening) and `--s` (0..1 across the services and the close), plus
+  `data-phase` (opening, transit, approach, services, contact) and `data-service` (0..6) on the page root. No
+  re-renders; scrolling stays native. CSS derives the text fades and `--atmosphere` (ivory 0 → plum 1) from them.
+  `stageState.target` is `p + s` (0..2) and feeds the camera, which eases towards it: 0..1 rides the opening
+  route, 1..2 the hall route (`lib/world.ts`), and the two join at the same point. The sizes of the two parts
+  (`RUN`) and the pure scroll maths (`hallJourney`, `serviceIndexAt`) are in `lib/timeline.ts`, which has no 3D
+  import so the page's scroll listener doesn't pull the 3D library into the first load.
+- **One service per rib.** The hall has a rib every 4 m and the camera passes one per service, so the architecture
+  itself paces the list. The hall's lanterns travel with the camera and drift from rose to gold the deeper it goes;
+  nothing new is added to the space. The hall ends in an arched door of light, the same silhouette again.
+- **Accessibility of the services.** The visual stage (one service at a time) is `aria-hidden`; a screen-reader-only
+  list holds all seven in full, so nobody depends on scroll position to read them. The words are in
+  `content.ts` (drafted for the owner's review).
 - **The picture is always there first.** `public/immersive/opening-*.webp` (landscape and portrait, ~30 KB each)
   are frames of the real scene and are in the server HTML, so the first paint already looks finished. The live
   canvas takes over in the same framing when it has compiled and drawn its first frames

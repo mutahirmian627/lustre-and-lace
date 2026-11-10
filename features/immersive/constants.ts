@@ -19,6 +19,7 @@ export const IMMERSIVE_INSTAGRAM_HANDLE = "@lustreandlacestudio";
  */
 export const IMMERSIVE_MENU = [
   { label: "Approach", href: "/immersive#approach", note: "How we work" },
+  { label: "Services", href: "/immersive#services", note: "What we build" },
   { label: "Work", href: "/work", note: "The live demo store" },
   { label: "About", href: "/about", note: "How we think" },
   { label: "Demo store", href: "/shop", note: "Try it yourself" },

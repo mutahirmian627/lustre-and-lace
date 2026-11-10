@@ -1,6 +1,19 @@
 import { describe, expect, it } from "vitest";
 import { frameFor } from "@/features/immersive/lib/frame";
-import { cameraCurve, journey, ribbonCurve, smoothstep, SCREEN_GAP, PORTAL } from "@/features/immersive/lib/world";
+import {
+  cameraCurve,
+  hallCameraCurve,
+  hallJourney,
+  journey,
+  lookCurve,
+  hallLookCurve,
+  PORTAL,
+  ribbonCurve,
+  SCREEN_GAP,
+  SERVICE_COUNT,
+  serviceIndexAt,
+  smoothstep,
+} from "@/features/immersive/lib/world";
 
 describe("journey (scroll position -> how far the camera has travelled)", () => {
   it("holds still at the start so the opening stays put, and rests at the end", () => {
@@ -74,5 +87,44 @@ describe("smoothstep", () => {
     expect(smoothstep(0.2, 0.6, 0)).toBe(0);
     expect(smoothstep(0.2, 0.6, 1)).toBe(1);
     expect(smoothstep(0.2, 0.6, 0.4)).toBeCloseTo(0.5, 5);
+  });
+});
+
+describe("the services run down the hall", () => {
+  it("joins the opening route without a seam", () => {
+    expect(hallCameraCurve.getPointAt(0).distanceTo(cameraCurve.getPointAt(1))).toBeLessThan(0.01);
+    expect(hallLookCurve.getPointAt(0).distanceTo(lookCurve.getPointAt(1))).toBeLessThan(0.01);
+  });
+
+  it("moves the camera steadily forward as the services scroll past, and rests at the end", () => {
+    let previous = 0;
+    for (let s = 0; s <= 1; s += 0.01) {
+      const u = hallJourney(s);
+      expect(u).toBeGreaterThanOrEqual(previous);
+      previous = u;
+    }
+    expect(hallJourney(1)).toBeCloseTo(1, 5);
+  });
+
+  it("shows every service in order, first to last, one rib apart", () => {
+    const seen: number[] = [];
+    for (let s = 0; s <= 1; s += 0.005) {
+      const index = serviceIndexAt(s);
+      if (seen[seen.length - 1] !== index) seen.push(index);
+    }
+    expect(seen).toEqual(Array.from({ length: SERVICE_COUNT }, (_, i) => i));
+  });
+
+  it("agrees with the 3D route: the camera really is where the service count thinks it is", () => {
+    for (let s = 0; s <= 1; s += 0.05) {
+      const z = hallCameraCurve.getPointAt(hallJourney(s)).z;
+      const expected = -14.4 + (-46 + 14.4) * hallJourney(s);
+      expect(Math.abs(z - expected)).toBeLessThan(0.3);
+    }
+  });
+
+  it("starts on the first service and ends on the last", () => {
+    expect(serviceIndexAt(0)).toBe(0);
+    expect(serviceIndexAt(1)).toBe(SERVICE_COUNT - 1);
   });
 });
