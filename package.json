@@ -19,7 +19,9 @@
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
     "test:e2e": "dotenv -e .env.local -- playwright test",
-    "poster:immersive": "node scripts/render-immersive-poster.mjs"
+    "poster:immersive": "node scripts/render-immersive-poster.mjs",
+    "journey:immersive": "node scripts/render-immersive-journey.mjs",
+    "check:immersive": "node scripts/check-immersive-live.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

@@ -1,8 +1,8 @@
 /**
- * Renders the fallback pictures of the immersive scene into public/immersive/:
+ * Renders the first-paint pictures of the immersive scene into public/immersive/ (the rest of the fallback, the
+ * whole journey as frames, is made by scripts/render-immersive-journey.mjs):
  *
  *   opening-landscape.webp   opening-portrait.webp   the gallery, as the page first appears
- *   hall-landscape.webp      hall-portrait.webp      the hall, for devices that never load the live 3D
  *
  * Each is a frame of the real scene. The script opens the running site at /immersive?poster=1&p=<scroll>,
  * a mode in which the page strips itself down to just the 3D canvas, frozen at a fixed moment, waits for
@@ -27,8 +27,6 @@ const outDir = path.join(process.cwd(), "public", "immersive");
 const shots = [
   { name: "opening-landscape", width: 1600, height: 900, p: 0 },
   { name: "opening-portrait", width: 750, height: 1500, p: 0 },
-  { name: "hall-landscape", width: 1600, height: 900, p: 0.95 },
-  { name: "hall-portrait", width: 750, height: 1500, p: 0.95 },
 ];
 
 async function launch() {

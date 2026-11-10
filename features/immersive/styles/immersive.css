@@ -81,9 +81,12 @@
   opacity: 0;
   transition: opacity 0.7s ease;
 }
-/* Without the live scene, the second picture (the hall) fades in as you scroll through the doorway. */
-.imm-still--hall {
-  opacity: clamp(0, calc((var(--p) - 0.42) / 0.22), 1);
+
+.imm-journey {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
 }
 
 /* ---- The pinned stage: text that stays put while the scene moves --------------------------------- */
@@ -1006,4 +1009,42 @@ html[data-immersive-poster] nextjs-portal {
   .imm-service-rail li {
     transition: none;
   }
+}
+
+/* ---- The quiet note shown only while pictures stand in for the live scene ------------------------- */
+
+.imm-still-note {
+  position: fixed;
+  left: max(1rem, 2vw);
+  bottom: 3.4rem;
+  z-index: 45;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.35rem 0.4rem 0.35rem 0.9rem;
+  border: 1px solid var(--stage-line);
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--stage-bg) 82%, transparent);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--stage-soft);
+}
+.imm-still-note:not(:has(button)) {
+  padding-right: 0.9rem;
+}
+.imm-still-note button {
+  min-height: 2rem;
+  padding: 0 0.9rem;
+  border: 0;
+  border-radius: 9999px;
+  background: var(--stage-btn-bg);
+  color: var(--stage-btn-fg);
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
 }

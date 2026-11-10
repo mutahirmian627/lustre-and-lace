@@ -1,10 +1,24 @@
 import { test, expect, type Page } from "@playwright/test";
+import sharp from "sharp";
 
 /**
  * The immersive homepage (stage 1: the opening sequence): the bar, the full-screen menu, what happens to
  * focus and scrolling while it is open, and the scroll-driven hand-over from the opening to the next thought.
  * Runs against the hidden /immersive route.
  */
+
+/** The share of the 3D area that changes over `ms`, with nothing scrolled and no pointer movement. */
+async function changeOver(page: Page, ms: number) {
+  const size = page.viewportSize()!;
+  const clip = { x: Math.round(size.width * 0.42), y: 80, width: Math.round(size.width * 0.56), height: Math.min(700, size.height - 120) };
+  const grab = async () => sharp(await page.screenshot({ clip })).resize(240).greyscale().raw().toBuffer();
+  const first = await grab();
+  await page.waitForTimeout(ms);
+  const second = await grab();
+  let changed = 0;
+  for (let i = 0; i < first.length; i++) if (Math.abs(first[i] - second[i]) > 12) changed++;
+  return changed / first.length;
+}
 
 /**
  * Scrolls to a point in the experience, in "scenes": 0..1 across the opening (gallery to hall), then 1..2 across
@@ -80,17 +94,26 @@ test.describe("immersive opening", () => {
     await expect(list.last()).toHaveText("AI & Business Automation");
   });
 
-  test("the live 3D scene takes over from the picture when the device can run it", async ({ page }) => {
+  test("a browser that can run 3D always gets the live scene, never the picture", async ({ page }) => {
     await page.goto("/immersive");
-    // Either the device is judged capable (the canvas appears and the page reports "live"), or it was sorted
-    // into the picture-only tier. Both are valid outcomes; a stuck "loading" state is not.
-    await expect
-      .poll(() => page.evaluate(() => document.querySelector<HTMLElement>(".immersive-root")?.dataset.stage), { timeout: 60_000 })
-      .not.toBe("loading");
-    const stage = await page.evaluate(() => document.querySelector<HTMLElement>(".immersive-root")?.dataset.stage);
-    const canvases = await page.locator("canvas").count();
-    if (stage === "live") expect(canvases).toBe(1);
-    else expect(canvases).toBe(0);
+    const hasWebgl2 = await page.evaluate(() => !!document.createElement("canvas").getContext("webgl2"));
+    test.skip(!hasWebgl2, "this browser has no WebGL 2, so pictures are the correct outcome here");
+    await expect(page.locator(".immersive-root")).toHaveAttribute("data-stage", "live", { timeout: 30_000 });
+    await expect(page.locator("canvas")).toHaveCount(1);
+    await expect(page.locator(".imm-still-note")).toHaveCount(0); // and nothing is apologising for pictures
+  });
+
+  test("it is alive on its own: with nothing scrolled or touched, the scene keeps moving at the opening and deep in the corridor", async ({ page }) => {
+    await page.goto("/immersive");
+    const hasWebgl2 = await page.evaluate(() => !!document.createElement("canvas").getContext("webgl2"));
+    test.skip(!hasWebgl2, "needs WebGL 2");
+    await expect(page.locator(".immersive-root")).toHaveAttribute("data-stage", "live", { timeout: 30_000 });
+    await page.waitForTimeout(1500);
+    // The approved Stage 1 opening changed about 4% of the scene in 0.4 s; demand 1% over 1.2 s, at both ends of the journey.
+    expect(await changeOver(page, 1200)).toBeGreaterThan(0.01);
+    await scrollToScene(page, 1.4);
+    await page.waitForTimeout(3500);
+    expect(await changeOver(page, 1200)).toBeGreaterThan(0.01);
   });
 });
 
@@ -178,18 +201,39 @@ test.describe("immersive navigation", () => {
   test.describe("with reduced motion", () => {
     test.use({ reducedMotion: "reduce" });
 
-    test("the menu still works, no 3D scene is loaded, and the pictures stand in for it", async ({ page }) => {
+    test("the menu still works, no live 3D is loaded, and the pictures stand in for it, with a reason and a way back", async ({ page }) => {
       await page.goto("/immersive");
       await page.getByRole("button", { name: "Menu" }).click();
       await expect(page.getByRole("dialog", { name: "Site menu" })).toBeVisible();
       await page.keyboard.press("Escape");
       await expect(page.getByRole("dialog", { name: "Site menu" })).toBeHidden();
-      await page.waitForTimeout(1500);
-      expect(await page.locator("canvas").count()).toBe(0);
       await expect(page.locator(".immersive-root")).toHaveAttribute("data-stage", "static");
-      // The opening picture is in the page, and the hall picture is fetched because this device will never get the live scene.
+      await expect(page.locator(".immersive-root")).toHaveAttribute("data-stage-reason", "reduced-motion");
+      expect(await page.locator("canvas:not(.imm-journey)").count()).toBe(0);
       await expect(page.locator(".imm-still--opening img")).toHaveCount(1);
-      await expect(page.locator(".imm-still--hall img")).toHaveCount(1);
+      // It says why, and offers the live scene back.
+      await expect(page.locator(".imm-still-note")).toContainText("Reduced motion is on");
+      await expect(page.getByRole("button", { name: "Play 3D" })).toBeVisible();
+    });
+
+    test("the pictures still travel: scrolling plays the journey frame by frame", async ({ page }) => {
+      await page.goto("/immersive");
+      await expect(page.locator(".imm-journey")).toHaveCount(1);
+      await page.waitForTimeout(2500); // let some frames arrive
+      const before = await page.locator(".imm-journey").screenshot();
+      await scrollToScene(page, 1.4);
+      await page.waitForTimeout(2500);
+      const after = await page.locator(".imm-journey").screenshot();
+      expect(Buffer.compare(before, after)).not.toBe(0);
+    });
+
+    test("'Play 3D' starts the live scene for someone who chose reduced motion but wants it", async ({ page }) => {
+      await page.goto("/immersive");
+      const hasWebgl2 = await page.evaluate(() => !!document.createElement("canvas").getContext("webgl2"));
+      test.skip(!hasWebgl2, "needs WebGL 2");
+      await page.getByRole("button", { name: "Play 3D" }).click();
+      await expect(page.locator(".immersive-root")).toHaveAttribute("data-stage", "live", { timeout: 45_000 });
+      await expect(page.locator(".imm-still-note")).toHaveCount(0);
     });
   });
 });

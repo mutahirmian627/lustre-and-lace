@@ -18,7 +18,8 @@ export function TierBadge() {
     if (!show) return;
     const timer = window.setInterval(() => {
       setFps(document.documentElement.dataset.fps ?? "–");
-      setStage(document.querySelector<HTMLElement>(".immersive-root")?.dataset.stage ?? "–");
+      const root = document.querySelector<HTMLElement>(".immersive-root");
+      setStage(`${root?.dataset.stage ?? "–"}${root?.dataset.stageReason ? ` (${root.dataset.stageReason})` : ""}`);
     }, 500);
     return () => window.clearInterval(timer);
   }, [show]);

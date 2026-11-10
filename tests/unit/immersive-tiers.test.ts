@@ -18,31 +18,25 @@ describe("classifyTier", () => {
     expect(classifyTier(desktop).tier).toBe("full");
   });
 
-  it("falls back to the static picture without WebGL 2", () => {
-    expect(classifyTier({ ...desktop, webgl2: false }).tier).toBe("static");
+  it("falls back to pictures only for the things nobody can change: no WebGL 2, reduced motion, data saver", () => {
+    expect(classifyTier({ ...desktop, webgl2: false })).toMatchObject({ tier: "static", stillReason: "no-webgl2" });
+    expect(classifyTier({ ...desktop, reducedMotion: true })).toMatchObject({ tier: "static", stillReason: "reduced-motion" });
+    expect(classifyTier({ ...desktop, saveData: true })).toMatchObject({ tier: "static", stillReason: "save-data" });
   });
 
-  it("respects reduced motion and data saver", () => {
-    expect(classifyTier({ ...desktop, reducedMotion: true }).tier).toBe("static");
-    expect(classifyTier({ ...desktop, saveData: true }).tier).toBe("static");
-  });
-
-  it("keeps slow networks off the 3D download", () => {
-    for (const effectiveType of ["slow-2g", "2g"]) {
-      expect(classifyTier({ ...desktop, effectiveType }).tier).toBe("static");
+  it("never judges by the browser's guess about the network", () => {
+    // A browser labels a link '2g' or '3g' from latency alone, and a wrong guess at load once left a capable machine
+    // with a dead page for the whole visit. The network label must not change the decision at all.
+    for (const effectiveType of ["slow-2g", "2g", "3g", "4g", undefined]) {
+      for (const downlink of [0.1, 1, 10, undefined]) {
+        expect(classifyTier({ ...desktop, effectiveType, downlink }).tier).toBe("full");
+      }
     }
-    expect(classifyTier({ ...desktop, effectiveType: "4g" }).tier).toBe("full");
   });
 
-  it("does not mistake a fast but distant link for a slow one: '3g' means slow only when the bandwidth is low too", () => {
-    expect(classifyTier({ ...desktop, effectiveType: "3g", downlink: 0.7 }).tier).toBe("static");
-    expect(classifyTier({ ...desktop, effectiveType: "3g" }).tier).toBe("static"); // unknown bandwidth: be cautious
-    expect(classifyTier({ ...desktop, effectiveType: "3g", downlink: 8 }).tier).toBe("full");
-  });
-
-  it("treats very weak hardware as static", () => {
-    expect(classifyTier({ ...desktop, cores: 2 }).tier).toBe("static");
-    expect(classifyTier({ ...desktop, memoryGb: 2 }).tier).toBe("static");
+  it("starts modest hardware on the lighter live scene rather than the pictures; the watchdog decides from there", () => {
+    expect(classifyTier({ ...desktop, cores: 2 }).tier).toBe("lite");
+    expect(classifyTier({ ...desktop, memoryGb: 2 }).tier).toBe("lite");
   });
 
   it("caps phones at the lite scene, however strong they are", () => {
@@ -59,9 +53,16 @@ describe("classifyTier", () => {
     expect(classifyTier({ ...desktop, cores: undefined, memoryGb: undefined }).tier).toBe("full");
   });
 
-  it("always explains its decision", () => {
+  it("always explains its decision, and names the reason whenever it picks pictures", () => {
     expect(classifyTier(desktop).reason).not.toBe("");
     expect(classifyTier({ ...desktop, webgl2: false }).reason).toMatch(/WebGL/);
+    const results = [
+      classifyTier({ ...desktop, webgl2: false }),
+      classifyTier({ ...desktop, reducedMotion: true }),
+      classifyTier({ ...desktop, saveData: true }),
+    ];
+    for (const result of results) expect(result.stillReason).toBeDefined();
+    expect(classifyTier(desktop).stillReason).toBeUndefined();
   });
 });
 

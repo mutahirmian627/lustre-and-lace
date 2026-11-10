@@ -73,16 +73,30 @@ scripts/render-immersive-poster.mjs  renders the four fallback pictures from the
 - **Accessibility of the services.** The visual stage (one service at a time) is `aria-hidden`; a screen-reader-only
   list holds all seven in full, so nobody depends on scroll position to read them. The words are in
   `content.ts` (drafted for the owner's review).
-- **The picture is always there first.** `public/immersive/opening-*.webp` (landscape and portrait, ~30 KB each)
-  are frames of the real scene and are in the server HTML, so the first paint already looks finished. The live
-  canvas takes over in the same framing when it has compiled and drawn its first frames
-  (`.immersive-root[data-stage="live"]`). Devices that never get 3D (reduced motion, weak, data-saving) also fetch
-  the hall picture, and the two crossfade as you scroll.
-  Regenerate all four whenever the scene's look changes: `npm run dev`, then `npm run poster:immersive`.
-- **Three tiers** (`lib/tiers.ts`): `full`, `lite`, `static`. Phones are capped at `lite` (fewer segments, no
-  dust, no second lattice, ribbon updated at half rate, lower resolution). Weak devices, slow networks, data-saver
-  and reduced-motion get `static`: no 3D code is downloaded. If a device can't hold its frame rate the scene steps
-  itself down one tier.
+- **The live scene is the experience; the picture is a last resort, and never a dead one.** (`lib/tiers.ts`,
+  `scene/StageLoader.tsx`) The first paint is a picture of the opening (`public/immersive/opening-*.webp`, in the
+  server HTML), and the live canvas takes over in the same framing once it has compiled and drawn
+  (`.immersive-root[data-stage="live"]`).
+  - **Only three things put a visitor on pictures straight away:** no WebGL 2, reduced motion, data saver. Weak
+    hardware, phones and slow or distant connections all start **live**, on the lighter `lite` tier where it makes
+    sense. The browser's guess about the network is **never** used: it labels a link from latency alone, and a wrong
+    guess at load once left a capable machine on a dead page for the whole visit.
+  - **After that it only steps down, by steps, for a real reason:** the frame-rate watchdog moves `full` to `lite`
+    (under 30 fps for several seconds, after a 4 s grace), and `lite` to pictures only if even that is under 18 fps. A
+    crash in the 3D (`StageBoundary`), a lost graphics context, or a scene that hasn't drawn within 30 s also fall back.
+  - **None of it is silent or permanent.** `data-stage-reason` says why, a quiet note says it to the visitor, and a
+    button ("Play 3D" / "Try 3D again", `StillNote`) starts the live scene again on the lighter tier.
+  - **The fallback is itself in motion** (`sections/StillJourney.tsx`): 32 frames of the real scene along the whole
+    journey (`public/immersive/journey/`, each device loads only its own landscape or portrait cut), played by scroll,
+    cross-faded, and never still: the picture drifts and breathes and follows the pointer (switched off for reduced
+    motion). Only the ribbon's own movement is missing. Regenerate with `npm run dev`, then
+    `npm run poster:immersive` and `npm run journey:immersive`.
+- **Two tiers of live 3D** (`full` and `lite`): phones and modest hardware start on `lite` (fewer segments, no dust,
+  no second lattice, ribbon updated at half rate, lower resolution).
+- **A smoke test for exactly this.** `npm run check:immersive -- <url>` loads a running or deployed site several times
+  and fails unless every load reaches the live scene and is moving on its own (no scrolling, no pointer) at the opening
+  and deep in the corridor. The e2e suite checks the same on every run. Use it on the hosted build before calling
+  anything ready.
 - **Reflections are painted, not processed.** `lib/reflection-cubes.ts` draws two small "photo studios" into
   six-face cubes in code (one for the room, a brighter one for the chrome) and the materials read them directly.
   The usual environment helper converts a scene into a blurred reflection map on the graphics card, and compiling
@@ -103,5 +117,5 @@ scripts/render-immersive-poster.mjs  renders the four fallback pictures from the
 
 ## Removing it
 
-Delete `app/(immersive)/`, `features/immersive/`, `public/immersive/`, the `poster:immersive` script and
+Delete `app/(immersive)/`, `features/immersive/`, `public/immersive/`, the `poster:immersive`, `journey:immersive` and `check:immersive` scripts and
 `scripts/render-immersive-poster.mjs`, and the `tests/*/immersive-*` files. Nothing else depends on them.

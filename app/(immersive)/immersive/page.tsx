@@ -13,6 +13,7 @@ import { ImmersiveNav } from "@/features/immersive/nav/ImmersiveNav";
 import { StageLoader } from "@/features/immersive/scene/StageLoader";
 import { Backdrop } from "@/features/immersive/sections/Backdrop";
 import { ScrollDriver } from "@/features/immersive/sections/ScrollDriver";
+import { StillNote } from "@/features/immersive/sections/StillNote";
 import { TierBadge } from "@/features/immersive/sections/TierBadge";
 
 // An experiment under review: keep it out of search results until it replaces the homepage.
@@ -173,6 +174,7 @@ export default function ImmersivePage() {
       <div className="imm-chrome pointer-events-none fixed bottom-3 right-3 z-50 rounded-full bg-black/70 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-white">
         Experimental preview · stage 2 · opening and services
       </div>
+      <StillNote />
       <TierBadge />
       <StageLoader />
     </>

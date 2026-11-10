@@ -16,6 +16,8 @@ interface StageProps {
   onReady: () => void;
   /** The scene could not keep its frame rate: ask for a cheaper tier. */
   onDecline: () => void;
+  /** The graphics context was lost (the driver reset, or the browser reclaimed it). */
+  onLost: () => void;
 }
 
 /**
@@ -24,9 +26,11 @@ interface StageProps {
  * the device), and "struggling" means under 30 fps, not merely under the display's 60.
  */
 const WATCH_AFTER_MS = 4000;
-const FPS_BOUNDS = () => [30, 120] as [number, number];
+/** The full scene steps down below 30 fps. The lighter one is only given up (for pictures) below 18, which is very slow. */
+const FULL_BOUNDS = () => [30, 120] as [number, number];
+const LITE_BOUNDS = () => [18, 120] as [number, number];
 
-export default function Stage({ tier, active, frozen, onCompiled, onReady, onDecline }: StageProps) {
+export default function Stage({ tier, active, frozen, onCompiled, onReady, onDecline, onLost }: StageProps) {
   const lite = tier === "lite";
   const [watching, setWatching] = useState(false);
   const [drawn, setDrawn] = useState(false);
@@ -59,13 +63,20 @@ export default function Stage({ tier, active, frozen, onCompiled, onReady, onDec
         powerPreference: lite ? "default" : "high-performance",
         preserveDrawingBuffer: frozen,
       }}
+      onCreated={({ gl }) => {
+        // A lost context leaves a blank canvas; hand the visitor the pictures (and the way back) instead.
+        gl.domElement.addEventListener("webglcontextlost", (event) => {
+          event.preventDefault();
+          onLost();
+        });
+      }}
       camera={{ position: [0.1, 1.5, 7.6], fov: 32, near: 0.1, far: 90 }}
       style={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none" }}
     >
       <Suspense fallback={null}>
         <Experience lite={lite} frozen={frozen} onCompiled={onCompiled} onReady={handleReady} />
       </Suspense>
-      {watching && <PerformanceMonitor bounds={FPS_BOUNDS} flipflops={3} onDecline={onDecline} />}
+      {watching && <PerformanceMonitor bounds={lite ? LITE_BOUNDS : FULL_BOUNDS} flipflops={3} onDecline={onDecline} />}
     </Canvas>
   );
 }

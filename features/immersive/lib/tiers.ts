@@ -1,22 +1,32 @@
 /**
  * Decides how much 3D a visitor's device should get.
  *
- *  - "static": no WebGL at all. The page shows a pre-rendered picture of the gem.
- *  - "lite":   WebGL with cheaper rendering (no antialiasing, lower resolution, simpler lighting).
+ *  - "static": no live 3D. The page shows pre-rendered pictures of the scene (see StillJourney).
+ *  - "lite":   live WebGL with cheaper rendering (fewer segments, lower resolution, no dust, half-rate ribbon).
  *  - "full":   the complete scene.
+ *
+ * The rule is deliberately generous. The live scene is the experience; a picture is a last resort. So the only
+ * things that put a visitor on the picture straight away are the ones they or their browser cannot change:
+ * no WebGL 2, or an explicit request for reduced motion or data saving. Everything else (weak hardware, a slow
+ * or distant connection, a phone) starts live, on the lighter tier where it makes sense, and the scene's own
+ * frame-rate watchdog steps it down if it truly struggles. A browser's guess about the network is never used:
+ * it labels a link from latency alone, and a wrong guess at load used to leave a capable machine with a dead page.
  *
  * The decision is a pure function of a few facts about the device (`classifyTier`), kept separate from
  * reading those facts out of the browser (`readTierSignals`) so the rules can be unit tested.
  */
 export type Tier = "static" | "lite" | "full";
 
+/** Why a visitor is looking at pictures, if they are. Shown in the page (`data-stage-reason`) and as a quiet note. */
+export type StillReason = "no-webgl2" | "reduced-motion" | "save-data" | "slow-frames" | "error";
+
 export interface TierSignals {
   webgl2: boolean;
   reducedMotion: boolean;
   saveData: boolean;
-  /** Network Information API value such as "4g" or "3g". Undefined where the browser doesn't expose it. */
+  /** Network Information API value such as "4g". Shown in the debug badge only; never used to decide. */
   effectiveType?: string;
-  /** Estimated bandwidth in Mbit/s (Network Information API). Undefined where the browser doesn't expose it. */
+  /** Estimated bandwidth in Mbit/s. Shown in the debug badge only; never used to decide. */
   downlink?: number;
   /** Logical CPU cores. Undefined where hidden. */
   cores?: number;
@@ -32,27 +42,20 @@ export interface TierResult {
   tier: Tier;
   /** A short human-readable explanation, shown in the ?debug badge. */
   reason: string;
+  /** Set when the tier is "static". */
+  stillReason?: StillReason;
 }
 
 export function classifyTier(s: TierSignals): TierResult {
-  if (!s.webgl2) return { tier: "static", reason: "WebGL 2 is not available" };
-  if (s.reducedMotion) return { tier: "static", reason: "Reduced motion is on" };
-  if (s.saveData) return { tier: "static", reason: "Data saver is on" };
-  if (s.effectiveType && /^(slow-2g|2g)$/.test(s.effectiveType)) {
-    return { tier: "static", reason: `Slow network (${s.effectiveType})` };
-  }
-  // Browsers label a link "3g" from its latency alone, so a fast connection to a distant server can look like one.
-  // Only treat it as slow if its bandwidth is low too (the 3D code is about a third of a megabyte).
-  if (s.effectiveType === "3g" && (s.downlink === undefined || s.downlink < 1.5)) {
-    return { tier: "static", reason: `Slow network (3g, ${s.downlink ?? "?"} Mbps)` };
-  }
-  if ((s.cores !== undefined && s.cores <= 2) || (s.memoryGb !== undefined && s.memoryGb <= 2)) {
-    return { tier: "static", reason: "Low-end device" };
-  }
+  if (!s.webgl2) return { tier: "static", reason: "WebGL 2 is not available", stillReason: "no-webgl2" };
+  if (s.reducedMotion) return { tier: "static", reason: "Reduced motion is on", stillReason: "reduced-motion" };
+  if (s.saveData) return { tier: "static", reason: "Data saver is on", stillReason: "save-data" };
 
   const phone = s.coarsePointer && s.screenWidth < 768;
+  const weak = (s.cores !== undefined && s.cores <= 2) || (s.memoryGb !== undefined && s.memoryGb <= 2);
   const midRange = (s.cores !== undefined && s.cores <= 4) || (s.memoryGb !== undefined && s.memoryGb <= 4);
   if (phone) return { tier: "lite", reason: "Phone" };
+  if (weak) return { tier: "lite", reason: "Modest hardware: starts light, the watchdog decides" };
   if (midRange) return { tier: "lite", reason: "Mid-range device" };
 
   return { tier: "full", reason: "Capable desktop-class device" };
