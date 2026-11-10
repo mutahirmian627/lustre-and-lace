@@ -107,7 +107,7 @@ export function Experience({ lite, frozen, onCompiled, onReady }: ExperienceProp
 
       <Architecture materials={resources.materials} tileMap={resources.tileMap} glow={resources.glow} lite={lite} />
       <JaliScreen materials={resources.materials} jaliMask={resources.jaliMask} lite={lite} />
-      <Ribbon materials={resources.materials} segments={lite ? 130 : 220} halfRate={lite} frozen={frozen} />
+      <Ribbon materials={resources.materials} segments={lite ? 200 : 360} halfRate={lite} frozen={frozen} />
       {!lite && <Dust glow={resources.glow} frozen={frozen} />}
 
       <CameraRig frozen={frozen} />

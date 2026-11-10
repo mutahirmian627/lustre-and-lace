@@ -10,6 +10,12 @@ export const stageState = {
   target: 0,
   /** The same, eased: what the camera actually uses, so the scene has weight rather than snapping. */
   value: 0,
+  /** How far down the corridor the camera is (σ, metres); the opening's end point until the corridor begins. */
+  sigma: 7.6,
+  /** Where the camera is, in the world (written by the camera rig; the ribbon gives way to it). */
+  camera: { x: 0, y: 1.5, z: 7.6 },
+  /** How fast the visitor is scrolling, in scenes per second, smoothed. The ribbon ripples faster when it is high. */
+  speed: 0,
   /** Frames per second over the last second, for the `?debug` readout. */
   fps: 0,
 };

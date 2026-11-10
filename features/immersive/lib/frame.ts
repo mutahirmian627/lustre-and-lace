@@ -25,10 +25,10 @@ export function frameFor(aspect: number) {
 }
 
 /** Applies the framing to a camera: field of view, then the lens shift on top of the usual projection. */
-export function applyFrame(camera: PerspectiveCamera, width: number, height: number) {
+export function applyFrame(camera: PerspectiveCamera, width: number, height: number, extraFov = 0) {
   const aspect = width / height;
   const frame = frameFor(aspect);
-  camera.fov = frame.fov;
+  camera.fov = frame.fov + extraFov;
   camera.aspect = aspect;
   camera.updateProjectionMatrix();
   camera.projectionMatrix.elements[8] = -(frame.vpx * 2 - 1);

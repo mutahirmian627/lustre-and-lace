@@ -2,21 +2,29 @@
 
 import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import { BufferAttribute, BufferGeometry, DynamicDrawUsage, Mesh, Vector3 } from "three";
+import { BufferAttribute, BufferGeometry, DynamicDrawUsage, Vector3 } from "three";
 import type { Materials } from "@/features/immersive/lib/materials";
+import { RIBBON_ARCH_ARCS, RIBBON_LENGTH, RIBBON_STEP, ribbonArcAt, ribbonTable } from "@/features/immersive/lib/ribbon-path";
 import { createSoftBandTexture } from "@/features/immersive/lib/textures";
-import { WALL, ribbonCurve, smoothstep } from "@/features/immersive/lib/world";
-import { POSTER_TIME } from "@/features/immersive/lib/stage-state";
+import { clamp01, smoothstep } from "@/features/immersive/lib/timeline";
+import { WALL } from "@/features/immersive/lib/world";
+import { POSTER_TIME, stageState } from "@/features/immersive/lib/stage-state";
 
 const HALF_WIDTH = 0.3;
 /** How far the strip bows across its width. A flat mirror reflects one colour; a gently bowed one reflects a gradient, which is what makes it read as polished metal. */
 const CAMBER = 0.09;
 /** Vertices across the width of each face. */
 const ACROSS = 7;
-const UP = new Vector3(0, 1, 0);
+/** How far ahead of the camera the ribbon's head runs, in the corridor. */
+const LEAD = 16;
+/** The ribbon keeps at least this far from the camera (metres), easing aside rather than passing through the lens. */
+const GIVE_WAY = 3.0;
+/** Spacing of the rings along the ribbon, in metres, when the budget allows. */
+const RING_SPACING = 0.22;
 
 interface RibbonProps {
   materials: Materials;
+  /** The most rings the ribbon may have. */
   segments: number;
   /** Draw every frame (false) or every other frame (true). The ribbon moves slowly, so half the rate is invisible. */
   halfRate: boolean;
@@ -24,44 +32,40 @@ interface RibbonProps {
   frozen: boolean;
 }
 
+const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+
 /**
- * The ribbon: a long, thin strip of mirror chrome that is the spine of the whole piece.
+ * The ribbon: a long, thin strip of mirror chrome that is the spine of the whole piece, and the visitor's guide.
  *
- * Its route is fixed (the curve in lib/world.ts); what moves is how it turns and sways along that route.
- * Twist travels down its length like a slow wave, so it catches the studio's lights in turn: flat to the
- * viewer it reflects one softbox, edge-on a hairline, turned over a different light. A gentle sideways sway
- * keeps it alive, and it holds perfectly still where it passes through the screen so it never touches it.
+ * Its route is fixed (lib/ribbon-path.ts); what moves is how it turns and sways along that route, and how much
+ * of it is drawn. In the opening the whole ribbon is there, as approved. Once the visitor is in the corridor only
+ * a stretch of it is drawn: its head runs about fifteen metres ahead of the camera and narrows to a point, so it
+ * seems to draw the way forward as you scroll, and it is never left hanging where you have already been.
  *
- * It is rebuilt on the CPU each frame (a few thousand vertices, well under a millisecond) because the shape
- * depends on time and on nothing the graphics card could do more cheaply without extra code to compile.
- * A soft shadow on the gallery floor, drawn from the same numbers, ties it to the room.
+ * It is alive in three ways. A slow wave of twist travels down it, so it catches the studio's lights in turn.
+ * It sways, more freely in the corridor than in the gallery, on several slow rhythms at once so it never repeats
+ * obviously. And it responds to the visitor: it turns over as it passes through each arch, and the faster you scroll
+ * the faster it ripples, settling again when you stop.
+ *
+ * It is rebuilt on the CPU each frame (a few thousand vertices, well under a millisecond). A soft shadow on the
+ * gallery floor, drawn from the same numbers, ties it to the room.
  */
 export function Ribbon({ materials, segments, halfRate, frozen }: RibbonProps) {
-  const meshRef = useRef<Mesh>(null);
-  const shadowRef = useRef<Mesh>(null);
   const frame = useRef(0);
+  const time = useRef(POSTER_TIME);
 
   const rig = useMemo(() => {
-    const count = segments + 1;
-    const length = ribbonCurve.getLength();
-
-    const points = ribbonCurve.getSpacedPoints(segments);
-    const tangents = points.map((_, i) => ribbonCurve.getTangentAt(i / segments));
-    const widthAxis = tangents.map((t) => new Vector3().crossVectors(UP, t).normalize());
-    const normalAxis = tangents.map((t, i) => new Vector3().crossVectors(t, widthAxis[i]).normalize());
-
-    // Ribbon: each ring is a lens-shaped cross-section, a bowed top face and a bowed bottom face meeting at
-    // the two edges, with ACROSS vertices on each so the bow shades smoothly.
-    const ring = ACROSS * 2;
-    const positions = new Float32Array(count * ring * 3);
-    const normals = new Float32Array(count * ring * 3);
+    const rings = segments + 1;
+    const ringSize = ACROSS * 2;
+    const positions = new Float32Array(rings * ringSize * 3);
+    const normals = new Float32Array(rings * ringSize * 3);
     const indices: number[] = [];
-    for (let i = 0; i < count - 1; i++) {
+    for (let i = 0; i < rings - 1; i++) {
       for (let face = 0; face < 2; face++) {
         for (let k = 0; k < ACROSS - 1; k++) {
-          const a = i * ring + face * ACROSS + k;
+          const a = i * ringSize + face * ACROSS + k;
           const b = a + 1;
-          const c = a + ring;
+          const c = a + ringSize;
           const d = c + 1;
           indices.push(a, c, b, b, c, d);
         }
@@ -75,12 +79,12 @@ export function Ribbon({ materials, segments, halfRate, frozen }: RibbonProps) {
     geometry.setIndex(indices);
 
     // Shadow: a flat strip, 2 vertices per ring, with the soft band as its alpha across the width.
-    const shadowPositions = new Float32Array(count * 2 * 3);
-    const shadowUv = new Float32Array(count * 2 * 2);
+    const shadowPositions = new Float32Array(rings * 2 * 3);
+    const shadowUv = new Float32Array(rings * 2 * 2);
     const shadowIndices: number[] = [];
-    for (let i = 0; i < count; i++) {
+    for (let i = 0; i < rings; i++) {
       shadowUv.set([0, i / segments, 1, i / segments], i * 4);
-      if (i < count - 1) {
+      if (i < rings - 1) {
         const a = i * 2;
         shadowIndices.push(a, a + 2, a + 1, a + 1, a + 2, a + 3);
       }
@@ -91,69 +95,114 @@ export function Ribbon({ materials, segments, halfRate, frozen }: RibbonProps) {
     shadowGeometry.setAttribute("uv", new BufferAttribute(shadowUv, 2));
     shadowGeometry.setIndex(shadowIndices);
 
-    // How much each sample may sway: none where it threads the screen, full elsewhere.
-    const sway = points.map((p) => 1 - Math.exp(-(((p.z - (WALL.z - 0.6)) / 2.2) ** 2)));
-
-    return {
-      count,
-      length,
-      points,
-      tangents,
-      widthAxis,
-      normalAxis,
-      sway,
-      geometry,
-      positions,
-      normals,
-      positionAttribute,
-      normalAttribute,
-      shadowGeometry,
-      shadowPositions,
-      shadowAttribute,
-    };
+    return { rings, positions, normals, positionAttribute, normalAttribute, geometry, shadowGeometry, shadowPositions, shadowAttribute };
   }, [segments]);
 
-  const shadowMaterial = useMemo(() => {
-    const band = createSoftBandTexture();
-    return { band };
-  }, []);
+  const band = useMemo(() => createSoftBandTexture(), []);
+  const scratch = useMemo(
+    () => ({ w: new Vector3(), n: new Vector3(), c: new Vector3(), w0: new Vector3(), n0: new Vector3(), p: new Vector3() }),
+    []
+  );
 
-  const scratch = useMemo(() => ({ w: new Vector3(), n: new Vector3(), c: new Vector3() }), []);
-
-  useFrame((state) => {
+  useFrame((state, delta) => {
+    // Time moves on every frame, faster while the visitor is scrolling quickly.
+    if (!frozen) time.current += Math.min(delta, 0.1) * (1 + Math.min(2.5, stageState.speed * 2));
     frame.current += 1;
     if (halfRate && frame.current % 2 === 0) return;
-    const t = frozen ? POSTER_TIME : POSTER_TIME + state.clock.elapsedTime;
-    const { count, length, points, tangents, widthAxis, normalAxis, sway, positions, normals, shadowPositions } = rig;
-    const { w, n, c } = scratch;
 
-    for (let i = 0; i < count; i++) {
-      const s = (i / (count - 1)) * length;
-      const theta = 0.9 + 1.35 * Math.sin(0.36 * s - 0.42 * t) + 0.12 * s;
+    const t = time.current;
+    const g = stageState.value;
+    // On a tall (phone) screen the same ribbon would fill far more of the view, so it is slimmer and keeps further away there.
+    const tall = state.size.width / state.size.height < 0.85;
+    const slim = tall ? 0.6 : 1;
+    const keepAway = tall ? GIVE_WAY + 0.9 : GIVE_WAY;
+    const { rings, positions, normals, shadowPositions } = rig;
+    const { w, n, c, w0, n0, p } = scratch;
+    const { position, widthAxis, faceAxis, count } = ribbonTable;
+
+    // Which stretch of the ribbon is drawn. In the opening, all of it. Once the camera is in the corridor, from just behind
+    // it to a head fifteen metres ahead; the change happens as the camera goes through the doorway, out of sight.
+    const sCamera = ribbonArcAt(stageState.sigma);
+    // The head draws in from the far end to its place ahead of the camera as the corridor begins, after the approved opening.
+    const toCorridor = smoothstep(1.0, 1.25, g);
+    const giveWay = smoothstep(1.0, 1.1, g);
+    const sHead = lerp(RIBBON_LENGTH, sCamera + LEAD, toCorridor);
+    const sTail = lerp(0, sCamera - 0.3, smoothstep(1.0, 1.15, g));
+    const length = sHead - sTail;
+    const used = Math.max(24, Math.min(rings, Math.ceil(length / RING_SPACING)));
+    const headTaper = Math.min(13, Math.max(5, length * 0.35));
+    const tailTaper = sTail > 0.5 ? 1.4 : 0;
+    // The first bay stays exactly as the approved opening shows it; the ribbon loosens from the second arch on.
+    const corridorStart = RIBBON_ARCH_ARCS[1];
+    const corridorEnd = RIBBON_ARCH_ARCS[2];
+
+    for (let i = 0; i < rings; i++) {
+      // Rings beyond those in use sit on the last used ring, so they draw nothing.
+      const ring = Math.min(i, used - 1);
+      const s = sTail + (length * ring) / (used - 1);
+
+      const x = Math.min(count - 2, s / RIBBON_STEP);
+      const i0 = Math.max(0, Math.floor(x));
+      const f = x - i0;
+      const a = i0 * 3;
+      const b = a + 3;
+      p.set(lerp(position[a], position[b], f), lerp(position[a + 1], position[b + 1], f), lerp(position[a + 2], position[b + 2], f));
+      w0.set(lerp(widthAxis[a], widthAxis[b], f), lerp(widthAxis[a + 1], widthAxis[b + 1], f), lerp(widthAxis[a + 2], widthAxis[b + 2], f)).normalize();
+      n0.set(lerp(faceAxis[a], faceAxis[b], f), lerp(faceAxis[a + 1], faceAxis[b + 1], f), lerp(faceAxis[a + 2], faceAxis[b + 2], f)).normalize();
+
+      // Twist: a slow wave down the ribbon, plus a half-turn at each arch it threads.
+      let theta = 0.9 + 1.35 * Math.sin(0.36 * s - 0.42 * t) + 0.12 * s;
+      for (let k = 2; k < RIBBON_ARCH_ARCS.length; k++) {
+        const d = (s - RIBBON_ARCH_ARCS[k]) / 1.8;
+        if (d > -3 && d < 3) theta += (k % 2 ? 0.8 : -0.8) * Math.exp(-d * d);
+      }
       const cos = Math.cos(theta);
       const sin = Math.sin(theta);
-      const W0 = widthAxis[i];
-      const N0 = normalAxis[i];
+      w.set(w0.x * cos + n0.x * sin, w0.y * cos + n0.y * sin, w0.z * cos + n0.z * sin);
+      n.set(-w0.x * sin + n0.x * cos, -w0.y * sin + n0.y * cos, -w0.z * sin + n0.z * cos);
 
-      w.set(W0.x * cos + N0.x * sin, W0.y * cos + N0.y * sin, W0.z * cos + N0.z * sin);
-      n.set(-W0.x * sin + N0.x * cos, -W0.y * sin + N0.y * cos, -W0.z * sin + N0.z * cos);
-
-      const sideways = 0.24 * sway[i] * Math.sin(0.55 * s - 0.8 * t);
-      const lift = 0.14 * sway[i] * Math.sin(0.37 * s - 0.6 * t + 1.3);
+      // Sway: none where it threads the screen, gentle in the gallery, freer in the corridor, on several rhythms at once.
+      const gallery = 1 - Math.exp(-(((p.z - (WALL.z - 0.6)) / 2.2) ** 2));
+      const corridor = smoothstep(corridorStart, corridorEnd, s);
+      const amount = gallery * (1 + 1.1 * corridor);
+      const sideways =
+        amount * (0.24 * Math.sin(0.55 * s - 0.8 * t) + corridor * 0.12 * Math.sin(1.31 * s - 1.1 * t + 0.7));
+      const lift =
+        amount * (0.14 * Math.sin(0.37 * s - 0.6 * t + 1.3) + corridor * 0.07 * Math.sin(0.93 * s - 0.9 * t));
       c.set(
-        points[i].x + W0.x * sideways + N0.x * lift,
-        points[i].y + W0.y * sideways + N0.y * lift,
-        points[i].z + W0.z * sideways + N0.z * lift
+        p.x + w0.x * sideways + n0.x * lift,
+        p.y + w0.y * sideways + n0.y * lift,
+        p.z + w0.z * sideways + n0.z * lift
       );
 
-      // It narrows to a point over its last stretch, so it dissolves into the light at the end of the hall.
-      const hw = HALF_WIDTH * (1 - 0.94 * smoothstep(length - 13, length, s));
+      // It eases away from the camera if they ever come close, and slims as it nears the lens so it never swamps the view.
+      let nearness = 1;
+      if (giveWay > 0) {
+        const dx = c.x - stageState.camera.x;
+        const dy = c.y - stageState.camera.y;
+        const dz = c.z - stageState.camera.z;
+        const distance = Math.hypot(dx, dy, dz) || 0.001;
+        if (distance < keepAway) {
+          const push = ((keepAway - distance) * 0.85 * giveWay) / distance;
+          c.x += dx * push;
+          c.y += dy * push;
+          c.z += dz * push;
+        }
+        nearness = 1 - giveWay * 0.5 * (1 - smoothstep(2.5, 8, distance));
+      }
+
+      // It narrows to a point at its head, and (once the camera is inside) at its tail; a little slimmer in the corridor.
+      let narrow = (1 - 0.94 * smoothstep(sHead - headTaper, sHead, s)) * (1 - 0.3 * corridor) * nearness;
+      if (tailTaper > 0) narrow *= 0.06 + 0.94 * smoothstep(sTail, sTail + tailTaper, s);
+      narrow = tall && giveWay > 0 ? narrow * (1 - giveWay * (1 - slim)) : narrow;
+      const hw = HALF_WIDTH * narrow;
+
       for (let face = 0; face < 2; face++) {
         const flip = face === 0 ? 1 : -1; // the top bows towards +n, the bottom towards -n
         for (let k = 0; k < ACROSS; k++) {
           const u = -1 + (2 * k) / (ACROSS - 1);
-          const bulge = CAMBER * (1 - u * u) * flip;
-          const lean = (2 * CAMBER * u) / hw;
+          const bulge = CAMBER * narrow * (1 - u * u) * flip;
+          const lean = (2 * CAMBER * u) / HALF_WIDTH;
           const base = (i * ACROSS * 2 + face * ACROSS + k) * 3;
           positions[base] = c.x + w.x * hw * u + n.x * bulge;
           positions[base + 1] = c.y + w.y * hw * u + n.y * bulge;
@@ -172,21 +221,22 @@ export function Ribbon({ materials, segments, halfRate, frozen }: RibbonProps) {
       const sb = i * 6;
       if (c.z > WALL.z + 0.2) {
         const h = Math.max(0, c.y);
-        const tx = tangents[i].x;
-        const tz = tangents[i].z;
+        // The direction of travel, flat: the ribbon's width axis crossed with its face gives it; the plan-view normal is its perpendicular.
+        const tx = w0.y * n0.z - w0.z * n0.y;
+        const tz = w0.x * n0.y - w0.y * n0.x;
         const planLength = Math.hypot(tx, tz) || 1;
         const px = -tz / planLength;
         const pz = tx / planLength;
         const across = Math.abs(w.x * px + w.z * pz);
-        const half = hw * across + 0.1 + 0.2 * h;
-        const x = c.x + 0.42 * h;
-        const z = c.z - 0.24 * h;
-        shadowPositions[sb] = x + px * half;
+        const half = (hw * across + 0.1 + 0.2 * h) * clamp01(narrow * 2);
+        const sx = c.x + 0.42 * h;
+        const sz = c.z - 0.24 * h;
+        shadowPositions[sb] = sx + px * half;
         shadowPositions[sb + 1] = 0.014;
-        shadowPositions[sb + 2] = z + pz * half;
-        shadowPositions[sb + 3] = x - px * half;
+        shadowPositions[sb + 2] = sz + pz * half;
+        shadowPositions[sb + 3] = sx - px * half;
         shadowPositions[sb + 4] = 0.014;
-        shadowPositions[sb + 5] = z - pz * half;
+        shadowPositions[sb + 5] = sz - pz * half;
       } else {
         shadowPositions[sb] = shadowPositions[sb + 3] = c.x;
         shadowPositions[sb + 1] = shadowPositions[sb + 4] = 0.014;
@@ -201,13 +251,13 @@ export function Ribbon({ materials, segments, halfRate, frozen }: RibbonProps) {
 
   return (
     <>
-      <mesh ref={meshRef} geometry={rig.geometry} material={materials.chrome} frustumCulled={false} />
-      <mesh ref={shadowRef} geometry={rig.shadowGeometry} frustumCulled={false} renderOrder={1}>
+      <mesh geometry={rig.geometry} material={materials.chrome} frustumCulled={false} />
+      <mesh geometry={rig.shadowGeometry} frustumCulled={false} renderOrder={1}>
         <meshBasicMaterial
           color="#2a1230"
           transparent
           opacity={0.16}
-          alphaMap={shadowMaterial.band}
+          alphaMap={band}
           depthWrite={false}
           polygonOffset
           polygonOffsetFactor={-2}

@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Vector3 } from "three";
-import { PORTAL, WALL, ribbonCurve, smoothstep } from "@/features/immersive/lib/world";
+import { ribbonCurve, RIBBON_LENGTH } from "@/features/immersive/lib/ribbon-path";
+import { PORTAL, WALL, smoothstep } from "@/features/immersive/lib/world";
 import { stageState } from "@/features/immersive/lib/stage-state";
 
 /**
@@ -15,7 +16,8 @@ import { stageState } from "@/features/immersive/lib/stage-state";
  * typography to the scene. They fade as soon as the visitor starts to scroll.
  */
 const ANCHORS: Record<string, Vector3> = {
-  ribbon: ribbonCurve.getPointAt(0.085),
+  // 4.55 m along the ribbon: where the approved opening pins its first label.
+  ribbon: ribbonCurve.getPointAt(4.55 / RIBBON_LENGTH),
   portal: new Vector3(PORTAL.x + PORTAL.width / 2 + 0.12, PORTAL.straight + 0.2, WALL.z),
 };
 

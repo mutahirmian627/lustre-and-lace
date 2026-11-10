@@ -1,12 +1,17 @@
 "use client";
 
 import { useMemo } from "react";
+import { useFrame } from "@react-three/fiber";
+import { smoothstep } from "@/features/immersive/lib/timeline";
+import { stageState } from "@/features/immersive/lib/stage-state";
 import {
   AdditiveBlending,
   BufferAttribute,
   Color,
   CatmullRomCurve3,
   ExtrudeGeometry,
+  Group,
+  Mesh,
   ShapeGeometry,
   Texture,
   TubeGeometry,
@@ -14,6 +19,8 @@ import {
 } from "three";
 import { toCreasedNormals } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { archRing, archShape, wallWithArch } from "@/features/immersive/lib/arch";
+import { buildHallGeometry, hallScale, HEAVY_ARCHES, ribMatrices, spineFrame, THIN_RIBS } from "@/features/immersive/lib/corridor";
+import { DOOR_SIGMA } from "@/features/immersive/lib/timeline";
 import { createContactShadeTexture } from "@/features/immersive/lib/textures";
 import type { Materials } from "@/features/immersive/lib/materials";
 import { HALL, PORTAL, WALL } from "@/features/immersive/lib/world";
@@ -25,11 +32,9 @@ interface ArchitectureProps {
   lite: boolean;
 }
 
-const hallStartZ = WALL.z - WALL.depth;
 const TILE = 1.6;
 /** The door of light at the far end of the hall. */
 const DOOR = { width: 2.6, straight: 1.9 } as const;
-const endZ = hallStartZ - HALL.length;
 const FLOOR = { width: 120, depth: 60 } as const;
 
 /** The stretches of wall either side of the doorway. */
@@ -53,8 +58,10 @@ function doorwayOutline(width: number, straight: number, grow: number) {
  * the doorway, and behind it the hall: an arch-section tunnel in plum lacquer with ivory arches (ribs)
  * every few metres, and a rose-gold light at the far end.
  *
- * Everything is the one arch silhouette. The hall is a single extruded shape seen from inside, so its floor,
- * walls and vault are one mesh.
+ * Everything is the one arch silhouette. The hall is that silhouette swept along the corridor's centre line
+ * (lib/corridor.ts) and seen from inside, so its floor, walls and vault are one mesh; it runs straight for its
+ * first dozen metres, as the approved opening shows, then makes a gentle S-bend. Two kinds of arch stand in it:
+ * thin ribs, and the seven heavier service arches.
  */
 export function Architecture({ materials, tileMap, glow, lite }: ArchitectureProps) {
   const parts = useMemo(() => {
@@ -69,18 +76,16 @@ export function Architecture({ materials, tileMap, glow, lite }: ArchitecturePro
       bevelEnabled: false,
       curveSegments,
     });
-    // Cut into 2 m lengths: one 32 m quad per face shades in visible diagonal bands under a nearby light.
-    const hall = new ExtrudeGeometry(archShape(HALL.width, HALL.straight), {
-      depth: HALL.length,
-      steps: Math.round(HALL.length / 2),
-      bevelEnabled: false,
-      curveSegments,
-    });
-    const rib = new ExtrudeGeometry(archRing(HALL.width + 0.12, HALL.straight, HALL.width - 0.7, HALL.straight), {
-      depth: 0.34,
-      bevelEnabled: false,
-      curveSegments,
-    });
+    const hall = buildHallGeometry(lite);
+    // Each arch ring is built about its own middle, so it can stand on the centre line.
+    const centred = (shape: ReturnType<typeof archRing>, depth: number) => {
+      const geometry = new ExtrudeGeometry(shape, { depth, bevelEnabled: false, curveSegments });
+      geometry.translate(0, 0, -depth / 2);
+      return toCreasedNormals(geometry, Math.PI / 9);
+    };
+    const rib = centred(archRing(HALL.width + 0.12, HALL.straight, HALL.width - 0.7, HALL.straight), 0.34);
+    // The service arches are heavier and deeper than the ribs between them, so they read as the ones that matter.
+    const heroRib = centred(archRing(HALL.width + 0.34, HALL.straight, HALL.width - 1.25, HALL.straight), 0.72);
     // The end of the hall: a dark wall with one arched door of light in it, the same silhouette as everything else.
     const endWall = new ShapeGeometry(archShape(HALL.width - 0.02, HALL.straight), curveSegments);
     const door = new ShapeGeometry(archShape(DOOR.width, DOOR.straight), curveSegments);
@@ -109,10 +114,40 @@ export function Architecture({ materials, tileMap, glow, lite }: ArchitecturePro
     ribMaterial.fog = false;
     ribMaterial.color.set(0xa398a6); // a lilac-tinted ivory, so the ribs belong to the hall's light rather than the gallery's
     const contact = createContactShadeTexture();
-    return { wall: smooth(wall), hall: smooth(hall), rib: smooth(rib), endWall, door, inlay, wallMaterial, floorMaterial, ribMaterial, contact };
+
+    // The arches stand on the centre line: one instanced draw for the thin ribs, one for the service arches.
+    const standing = (geometry: typeof rib, material: typeof ribMaterial, sigmas: readonly number[]) => {
+      const group = new Group();
+      ribMatrices(sigmas).forEach((matrix) => {
+        const mesh = new Mesh(geometry, material);
+        mesh.matrixAutoUpdate = false;
+        mesh.matrix.copy(matrix);
+        mesh.frustumCulled = false;
+        group.add(mesh);
+      });
+      return group;
+    };
+    const thinRibs = standing(rib, ribMaterial, THIN_RIBS);
+    // Heavier collars round the service arches, drawn once the visitor is inside the hall.
+    const collarMaterial = ribMaterial.clone();
+    collarMaterial.color.set(0xa99dac);
+    collarMaterial.transparent = true;
+    collarMaterial.opacity = 0;
+    collarMaterial.depthWrite = false;
+    const serviceArches = standing(heroRib, collarMaterial, HEAVY_ARCHES);
+    serviceArches.visible = false;
+
+    const end = spineFrame(DOOR_SIGMA);
+    const endScale = hallScale(DOOR_SIGMA);
+    return { collarMaterial, wall: smooth(wall), hall, endWall, door, inlay, wallMaterial, floorMaterial, contact, thinRibs, serviceArches, end, endScale };
   }, [materials, tileMap, lite]);
 
-  const ribCount = Math.floor((HALL.length - 1) / HALL.ribEvery);
+  // The collars appear as the camera goes through the doorway, out of sight of the gallery's view of the hall.
+  useFrame(() => {
+    const amount = smoothstep(0.62, 0.95, stageState.value);
+    parts.collarMaterial.opacity = amount;
+    parts.serviceArches.visible = amount > 0.01;
+  });
 
   return (
     <group>
@@ -142,30 +177,20 @@ export function Architecture({ materials, tileMap, glow, lite }: ArchitecturePro
       <mesh geometry={parts.inlay} material={materials.chrome} position={[PORTAL.x, 0, WALL.z + 0.012]} />
 
       {/* The hall, seen from inside. */}
-      <mesh
-        geometry={parts.hall}
-        material={materials.lacquerInside}
-        position={[PORTAL.x, 0, hallStartZ - HALL.length]}
-      />
+      <mesh geometry={parts.hall} material={materials.lacquerInside} frustumCulled={false} />
 
-      {/* Ivory ribs along the hall. */}
-      {Array.from({ length: ribCount }, (_, k) => (
-        <mesh
-          key={k}
-          geometry={parts.rib}
-          material={parts.ribMaterial}
-          position={[PORTAL.x, 0, hallStartZ - 2.2 - k * HALL.ribEvery]}
-        />
-      ))}
+      {/* Ribs along the hall, and the seven service arches. */}
+      <primitive object={parts.thinRibs} />
+      <primitive object={parts.serviceArches} />
 
       {/* The end of the hall: a dark wall, an arched door of light, and a halo round it. */}
-      <mesh geometry={parts.endWall} position={[PORTAL.x, 0, endZ + 0.02]}>
+      <mesh geometry={parts.endWall} position={[parts.end.point.x, 0, parts.end.point.z + 0.02]} scale={parts.endScale}>
         <meshBasicMaterial color="#1b0c22" fog={false} toneMapped={false} />
       </mesh>
-      <mesh geometry={parts.door} position={[PORTAL.x, 0, endZ + 0.04]}>
+      <mesh geometry={parts.door} position={[parts.end.point.x, 0, parts.end.point.z + 0.04]} scale={parts.endScale}>
         <meshBasicMaterial vertexColors fog={false} toneMapped={false} />
       </mesh>
-      <mesh position={[PORTAL.x, 2.2, endZ + 0.06]}>
+      <mesh position={[parts.end.point.x, 2.2 * parts.endScale, parts.end.point.z + 0.06]}>
         <planeGeometry args={[7.5, 7.5]} />
         <meshBasicMaterial
           map={glow}

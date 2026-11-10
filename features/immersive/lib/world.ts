@@ -1,8 +1,7 @@
 import { CatmullRomCurve3, Vector3 } from "three";
-import { HALL_ROUTE, RIB_EVERY } from "@/features/immersive/lib/timeline";
 
 // The pure scroll numbers live in timeline.ts (no 3D), and are re-exported here for the scene's convenience.
-export { RUN, SERVICES_END, SERVICE_COUNT, clamp01, smoothstep, hallJourney, serviceIndexAt } from "@/features/immersive/lib/timeline";
+export { RUN, SERVICES_END, SERVICE_COUNT, clamp01, smoothstep } from "@/features/immersive/lib/timeline";
 
 /**
  * The installation's measurements and the paths through it. Units are roughly metres; the floor is y = 0
@@ -19,15 +18,19 @@ export const PORTAL = { x: 2.2, width: 3.0, straight: 3.0 } as const;
 export const WALL = { z: -6, depth: 0.8, width: 60, height: 10 } as const;
 
 /** The hall behind the wall: an arch-section tunnel, wider than the doorway that leads into it. */
-export const HALL = { width: 6.4, straight: 3.2, length: 48, ribEvery: RIB_EVERY } as const;
+export const HALL = { width: 6.4, straight: 3.2, ribEvery: 4 } as const;
 
 /** Half the gap left between the two screen leaves while they are closed (the ribbon passes through it). */
 export const SCREEN_GAP = 0.62;
 /** Where the screen's leaves sit, inside the thickness of the wall. */
 export const SCREEN_Z = WALL.z - 0.5;
 
-/** The ribbon's control points: the shape of the spine. */
-const RIBBON_POINTS = [
+/**
+ * The first part of the ribbon's route: from the top of the gallery, through the doorway, and into the hall as
+ * far as z = -19. This is exactly the approved opening. The rest of its route (the weave down the corridor)
+ * is built in corridor.ts and joins on after the last of these points.
+ */
+export const RIBBON_OPENING_POINTS: readonly (readonly [number, number, number])[] = [
   [1.3, 6.0, -1.8],
   [0.85, 4.5, -2.3],
   [0.1, 3.5, -2.9],
@@ -38,18 +41,7 @@ const RIBBON_POINTS = [
   [PORTAL.x, 3.0, -8.6],
   [PORTAL.x, 3.25, -13],
   [PORTAL.x, 3.05, -19],
-  [PORTAL.x, 2.8, -25],
-  [PORTAL.x, 3.1, -31],
-  [PORTAL.x, 2.8, -38],
-  [PORTAL.x, 3.0, -45],
-  [PORTAL.x, 2.7, -52],
-] as const;
-
-export const ribbonCurve = new CatmullRomCurve3(
-  RIBBON_POINTS.map(([x, y, z]) => new Vector3(x, y, z)),
-  false,
-  "centripetal"
-);
+];
 
 /** The camera's route and where it looks as it goes, both parametrised 0..1 by the scroll. */
 export const cameraCurve = new CatmullRomCurve3(
@@ -75,32 +67,6 @@ export const lookCurve = new CatmullRomCurve3(
   false,
   "centripetal"
 );
-
-/**
- * The camera's route down the hall, for the services (and what follows). It starts exactly where the opening
- * route ends, so the two join without a seam. Like the first, it is parametrised by distance.
- */
-export const hallCameraCurve = new CatmullRomCurve3(
-  [
-    new Vector3(PORTAL.x, 1.42, HALL_ROUTE.from),
-    new Vector3(PORTAL.x, 1.4, -26),
-    new Vector3(PORTAL.x, 1.4, -38),
-    new Vector3(PORTAL.x, 1.4, HALL_ROUTE.to),
-  ],
-  false,
-  "centripetal"
-);
-export const hallLookCurve = new CatmullRomCurve3(
-  [
-    new Vector3(PORTAL.x, 2.4, -22),
-    new Vector3(PORTAL.x, 2.5, -34),
-    new Vector3(PORTAL.x, 2.5, -46),
-    new Vector3(PORTAL.x, 2.5, -54),
-  ],
-  false,
-  "centripetal"
-);
-
 
 /**
  * Scroll position -> how far along the camera's route (0..1, by distance), as straight segments between

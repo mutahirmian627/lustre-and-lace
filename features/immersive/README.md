@@ -65,11 +65,27 @@ scripts/render-immersive-poster.mjs  renders the four fallback pictures from the
   re-renders; scrolling stays native. CSS derives the text fades and `--atmosphere` (ivory 0 → plum 1) from them.
   `stageState.target` is `p + s` (0..2) and feeds the camera, which eases towards it: 0..1 rides the opening
   route, 1..2 the hall route (`lib/world.ts`), and the two join at the same point. The sizes of the two parts
-  (`RUN`) and the pure scroll maths (`hallJourney`, `serviceIndexAt`) are in `lib/timeline.ts`, which has no 3D
+  (`RUN`) and the pure scroll maths (`hallSigma`, `pace`, `serviceIndexAt`) are in `lib/timeline.ts`, which has no 3D
   import so the page's scroll listener doesn't pull the 3D library into the first load.
-- **One service per rib.** The hall has a rib every 4 m and the camera passes one per service, so the architecture
-  itself paces the list. The hall's lanterns travel with the camera and drift from rose to gold the deeper it goes;
-  nothing new is added to the space. The hall ends in an arched door of light, the same silhouette again.
+- **The corridor is a place you travel through, not a backdrop.** (`lib/corridor.ts`) The hall is the one arch
+  silhouette swept along a centre line that runs straight for the opening's whole view and then makes a gentle S-bend
+  (at most about 27 degrees), opening out very slightly with depth, so you never see all of it at once. Distances down
+  it are σ, metres from the doorway. The seven service arches stand on the approved opening's rib grid for the first four
+  and tighten from 8 m to 6 m bays after that; heavier collars fade onto them once you are inside.
+- **The camera is framed per arch.** Between arches its sideways offset, height, look-ahead, aim, lens and tilt glide
+  (`lib/spline.ts`) from one hand-set framing to the next: calm and frontal at the first, drifting left at the
+  second, looking down from above at the third, low and looking up at the fifth, a long diagonal at the sixth, centred,
+  high and wide at the last. It banks a touch into the bends. Scroll maps to distance with a rhythm
+  (`pace` in `lib/timeline.ts`): quickest under an arch, easing through each bay, so each service is a beat.
+- **The ribbon guides.** (`lib/ribbon-path.ts`, `scene/Ribbon.tsx`) In the opening the whole ribbon is drawn, exactly as
+  approved. Once you are in the corridor only a stretch is drawn: a head about 16 m ahead of the camera that narrows to a
+  point, so it seems to draw the way forward. It threads each arch low and to one side, then rises and crosses over
+  between arches; turns over as it passes through each; sways on several rhythms; ripples faster the faster you scroll;
+  and eases away (and slims, on a phone) rather than ever filling the lens.
+- **Each arch has its own light.** (`LIGHT_SIGNATURES`, `scene/HallLights.tsx`) Rose from overhead, amber from the side,
+  cool white from above, rose-gold low left, a gold uplight, lilac from the right, a broad gold at the last. Three lamps
+  cycle through them, brightening as you approach an arch and fading as you leave, fixed in the corridor rather than
+  carried with the camera, so you pass through pools of light and shade.
 - **Accessibility of the services.** The visual stage (one service at a time) is `aria-hidden`; a screen-reader-only
   list holds all seven in full, so nobody depends on scroll position to read them. The words are in
   `content.ts` (drafted for the owner's review).
