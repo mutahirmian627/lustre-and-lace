@@ -95,6 +95,13 @@ scripts/render-immersive-poster.mjs  renders the four fallback pictures from the
   because the view swings sideways. The ribbon runs over each work and dips between them, so it keeps threading the room.
   The screenshots are fetched only once the visitor is well down the corridor. The words are the Work page's own copy
   (`constants/agency.ts`), one stop at a time (`data-work`), with the links reachable only while their stop is on show.
+- **The process: five gates** (`scene/IvoryHall.tsx`, `scene/ArchVeils.tsx`). Beyond the exhibition the ivory hall is
+  crossed by five walls, each with the great doorway in it (`GATES`): Talk, Plan, Build, Launch, Grow, the studio's own five
+  steps (`PROCESS_STEPS` in `constants/agency.ts`). Looking down the hall they stack into an enfilade of nested arches, with
+  the sculpture at the end. Each gate holds a lattice veil like the others that parts as the camera comes up, but the
+  lattice is broader and the glass lighter at every step, until the last is nearly open: the process as something that
+  clears. The ribbon threads each gate's middle, a metre and a half above the camera. The camera stops five metres before
+  each gate (`PROCESS_STOPS`) and looks through it; the words follow the stop (`data-process`), as the exhibition's do.
 - **The services' index** (`sections/ServiceRail.tsx`): 01-07 are real buttons that scroll to where the camera stands before
   that service's arch (`progressForSigma` inverts the scroll maths). The services show their four points only.
 - **Accessibility of the services.** The visual stage (one service at a time) is `aria-hidden`; a screen-reader-only
@@ -113,7 +120,7 @@ scripts/render-immersive-poster.mjs  renders the four fallback pictures from the
     crash in the 3D (`StageBoundary`), a lost graphics context, or a scene that hasn't drawn within 30 s also fall back.
   - **None of it is silent or permanent.** `data-stage-reason` says why, a quiet note says it to the visitor, and a
     button ("Play 3D" / "Try 3D again", `StillNote`) starts the live scene again on the lighter tier.
-  - **The fallback is itself in motion** (`sections/StillJourney.tsx`): 56 frames of the real scene along the whole
+  - **The fallback is itself in motion** (`sections/StillJourney.tsx`): 60 frames of the real scene along the whole
     journey (`public/immersive/journey/`, each device loads only its own landscape or portrait cut), played by scroll,
     cross-faded, and never still: the picture drifts and breathes and follows the pointer (switched off for reduced
     motion). Only the ribbon's own movement is missing. Regenerate with `npm run dev`, then

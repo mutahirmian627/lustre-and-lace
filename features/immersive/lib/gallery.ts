@@ -1,4 +1,4 @@
-import { CLOSE_SIGMA, THRESHOLD_END_SIGMA, WORK_END_SIGMA, WORK_REACH, WORK_STOPS } from "@/features/immersive/lib/timeline";
+import { CLOSE_SIGMA, PROCESS_STOPS, THRESHOLD_END_SIGMA, WORK_END_SIGMA, WORK_REACH, WORK_STOPS } from "@/features/immersive/lib/timeline";
 import { PORTAL } from "@/features/immersive/lib/world";
 
 /**
@@ -56,7 +56,16 @@ export const GALLERY_KEYS: readonly Key[] = [
   at(WORK_STOPS[2], 1.5, 1.6, WALL_X, 2.6),
   between(WORK_STOPS[2], WORK_STOPS[3]),
   at(WORK_STOPS[3], 1.6),
-  // The close: the camera comes to the middle of the room and looks down it at the sculpture.
+  // The turn from the wall to the hall: the camera comes to the middle of the room and looks down it, at the first gate.
+  { sigma: 101, x: 2.0, y: 1.62, lx: 4.2, ly: 2.4, lsigma: 109 },
+  // The process: at each stop the camera stands in the middle of the hall, five metres before a gate, and looks through it.
+  ...PROCESS_STOPS.flatMap((stop, i): Key[] => {
+    const stand = { sigma: stop, x: i % 2 ? 2.4 : 2.0, y: 1.6, lx: 2.2, ly: 2.35, lsigma: stop + 10 };
+    const next = PROCESS_STOPS[i + 1];
+    return next === undefined ? [stand] : [stand, { sigma: (stop + next) / 2, x: 2.2, y: 1.63, lx: 2.2, ly: 2.5, lsigma: (stop + next) / 2 + 9 }];
+  }),
+  // The close: through the last gate and on to rest, looking down the room at the sculpture.
+  { sigma: 136, x: 2.2, y: 1.62, lx: 2.1, ly: 3.0, lsigma: 146 },
   { sigma: CLOSE_SIGMA, x: PORTAL.x, y: 1.65, lx: 2.0, ly: 3.5, lsigma: CLOSE_SIGMA + 11 },
 ];
 

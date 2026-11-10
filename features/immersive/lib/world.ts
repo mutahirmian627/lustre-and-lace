@@ -70,7 +70,7 @@ const RIBBON_POINTS = [
   [PORTAL.x, 2.9, -74],
   // --- through the large doorway (its plane is at z = -76.8) and into the ivory hall ---
   // First it runs the length of the exhibition: over each work (above its frame) and down between the works (in front of
-  // the blank wall between them), so it keeps threading the room as the camera walks along it; then, at the far end,
+  // the blank wall between them), so it keeps threading the room as the camera walks along it; then through the five gates of the process; then, at the far end,
   // it hangs as a sculpture: it rises on the right, crosses high above, comes back down on the left and sweeps round the
   // front to land on the floor, one loop in the middle of the room. No stretch of it is steeper than the ribbon's own opening.
   [PORTAL.x, 3.0, -78.6],
@@ -82,18 +82,32 @@ const RIBBON_POINTS = [
   [5.2, 4.9, -100.8],
   [5.8, 2.7, -104.3],
   [4.8, 4.6, -107.8],
-  [3.2, 4.1, -112.5],
-  [4.1, 4.5, -117.5],
-  [4.0, 5.5, -123],
-  [2.6, 6.1, -126],
-  [0.9, 5.7, -127],
-  [-0.2, 4.7, -125],
-  [0.2, 3.6, -122],
-  [1.5, 2.8, -120],
-  [3.0, 2.2, -120.5],
-  [3.9, 1.4, -122.5],
-  [3.5, 0.6, -125],
-  [2.4, 0.1, -126.5],
+  // The process: through the middle of each of the five gates (z = -115.8, -122.8, -129.8, -136.8, -143.8), a little under
+  // the height of the doorway, so it passes a metre and a half above the camera at each.
+  [3.4, 3.7, -111.5],
+  [2.2, 3.2, -115.8],
+  [2.2, 3.5, -119.3],
+  [2.2, 3.1, -122.8],
+  [2.2, 3.4, -126.3],
+  [2.2, 3.2, -129.8],
+  [2.2, 3.5, -133.3],
+  [2.2, 3.1, -136.8],
+  [2.2, 3.4, -140.3],
+  [2.2, 3.2, -143.8],
+  [2.6, 3.6, -146.2],
+  // The sculpture.
+  [3.2, 4.1, -148.5],
+  [4.1, 4.5, -153.5],
+  [4.0, 5.5, -159],
+  [2.6, 6.1, -162],
+  [0.9, 5.7, -163],
+  [-0.2, 4.7, -161],
+  [0.2, 3.6, -158],
+  [1.5, 2.8, -156],
+  [3.0, 2.2, -156.5],
+  [3.9, 1.4, -158.5],
+  [3.5, 0.6, -161],
+  [2.4, 0.1, -162.5],
 ] as const;
 
 export const ribbonCurve = new CatmullRomCurve3(

@@ -65,7 +65,7 @@ try {
     for (const g of POSITIONS) {
       await page.evaluate((scene) => {
         const vh = window.innerHeight;
-        window.scrollTo(0, Math.round(scene <= 1 ? scene * 2.3 * vh : (2.3 + (scene - 1) * 10.228) * vh));
+        window.scrollTo(0, Math.round(scene <= 1 ? scene * 2.3 * vh : (2.3 + (scene - 1) * 13.628) * vh));
       }, g);
       await page.waitForTimeout(3500); // let the camera settle completely: from here nothing is scrolling
       motion.push({ g, share: await changedShare(page) });

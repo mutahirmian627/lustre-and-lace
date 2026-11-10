@@ -8,8 +8,10 @@ import {
   RUN,
   SERVICES_END,
   THRESHOLD_END,
+  PROCESS_SIGMA,
   WORK_SIGMA,
   hallSigma,
+  processIndexFromSigma,
   serviceIndexAt,
   smoothstep,
   workIndexFromSigma,
@@ -24,7 +26,9 @@ import {
  *   --s       0..1 across the services, the threshold and the ivory hall
  *   --flip    0..1 as the camera passes through the large doorway: the page turns from plum back to ivory
  *   --w       0..1 while the exhibition's words are on show (it fades in as the camera comes inside, out as it turns to the sculpture)
+ *   --pr      the same for the process's words, at the gates further down the hall
  *   --c       0..1 as the contact words arrive in the ivory hall
+ *   data-process  which of the process's five steps is on show
  *   data-work     which of the exhibition's four stops is on show
  *   data-phase    which text is meant to be readable now: opening, transit, approach, services, contact
  *   data-service  which of the seven services is on show (while in the services phase)
@@ -66,6 +70,8 @@ export function ScrollDriver({ runId }: { runId: string }) {
       root.style.setProperty("--c", contact.toFixed(4));
       const work = smoothstep(WORK_SIGMA[0], WORK_SIGMA[1], sigma) * (1 - smoothstep(WORK_SIGMA[2], WORK_SIGMA[3], sigma));
       root.style.setProperty("--w", work.toFixed(4));
+      const process = smoothstep(PROCESS_SIGMA[0], PROCESS_SIGMA[1], sigma) * (1 - smoothstep(PROCESS_SIGMA[2], PROCESS_SIGMA[3], sigma));
+      root.style.setProperty("--pr", process.toFixed(4));
 
       const phase =
         s > 0.03
@@ -75,7 +81,9 @@ export function ScrollDriver({ runId }: { runId: string }) {
               ? "threshold"
               : contact > 0.02
                 ? "contact"
-                : "work"
+                : sigma >= WORK_SIGMA[3]
+                  ? "process"
+                  : "work"
           : p < 0.2
             ? "opening"
             : p < 0.56
@@ -87,6 +95,8 @@ export function ScrollDriver({ runId }: { runId: string }) {
       if (root.dataset.service !== service) root.dataset.service = service;
       const stop = String(Math.max(0, workIndexFromSigma(sigma)));
       if (root.dataset.work !== stop) root.dataset.work = stop;
+      const step = String(Math.max(0, processIndexFromSigma(sigma)));
+      if (root.dataset.process !== step) root.dataset.process = step;
     };
     const schedule = () => {
       if (!frame) frame = window.requestAnimationFrame(measure);
@@ -104,9 +114,11 @@ export function ScrollDriver({ runId }: { runId: string }) {
       root.style.removeProperty("--flip");
       root.style.removeProperty("--c");
       root.style.removeProperty("--w");
+      root.style.removeProperty("--pr");
       delete root.dataset.phase;
       delete root.dataset.service;
       delete root.dataset.work;
+      delete root.dataset.process;
       stageState.target = 0;
     };
   }, [runId]);

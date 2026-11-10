@@ -5,7 +5,7 @@ import { AdditiveBlending, BackSide, Color, DoubleSide, ExtrudeGeometry, MeshBas
 import { toCreasedNormals } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { archRing, archShape } from "@/features/immersive/lib/arch";
 import type { Materials } from "@/features/immersive/lib/materials";
-import { DOOR_SIGMA } from "@/features/immersive/lib/timeline";
+import { DOOR_SIGMA, GATES } from "@/features/immersive/lib/timeline";
 import { BIG_DOOR, HALL, IVORY, PORTAL, zAt } from "@/features/immersive/lib/world";
 import { doorwayOutline } from "@/features/immersive/scene/Architecture";
 
@@ -22,11 +22,13 @@ const doorZ = zAt(DOOR_SIGMA);
 const endZ = doorZ - IVORY.length;
 /**
  * Where the lattice windows stand down the room (σ): all down the left wall, level with the camera's stops; on the right
- * wall, where the works hang, only beyond them, round the sculpture. The ribs stand between the works.
+ * wall, where the works hang, none until the process begins; then in each room between the gates, and round the sculpture.
+ * The ribs stand between the works. (The gates themselves are the ribs of the process.)
  */
-const WINDOWS_LEFT = [77, 84, 91, 98, 105, 112, 119] as const;
-const WINDOWS_RIGHT = [112, 119] as const;
-const RIBS = [83.5, 90.5, 97.5, 107.5, 114.5, 121.5] as const;
+const ROOMS = [112.5, 119.5, 126.5, 133.5, 141, 148, 155] as const;
+const WINDOWS_LEFT = [77, 84, 91, 98, 105, ...ROOMS] as const;
+const WINDOWS_RIGHT = [...ROOMS] as const;
+const RIBS = [83.5, 90.5, 97.5] as const;
 const WINDOW = { width: 2.2, straight: 2.7, sill: 0.45 } as const;
 
 /**
@@ -51,6 +53,10 @@ export function IvoryHall({ materials, tileMap, jaliMask, glow, lite }: IvoryHal
       new ExtrudeGeometry(archRing(HALL.width + 0.12, HALL.straight, BIG_DOOR.width, BIG_DOOR.straight), { depth: 0.34, bevelEnabled: false, curveSegments: segments })
     );
     const inlay = new TubeGeometry(doorwayOutline(BIG_DOOR.width, BIG_DOOR.straight, 0.06), lite ? 90 : 160, 0.016, 6, false);
+    // The process's gates: a wall across the whole room with the same great doorway in it.
+    const gate = smooth(
+      new ExtrudeGeometry(archRing(IVORY.width + 0.1, IVORY.straight, BIG_DOOR.width, BIG_DOOR.straight), { depth: 0.34, bevelEnabled: false, curveSegments: segments })
+    );
 
     const windowShape = new ShapeGeometry(archShape(WINDOW.width, WINDOW.straight), segments);
     const windowFrame = smooth(
@@ -68,6 +74,9 @@ export function IvoryHall({ materials, tileMap, jaliMask, glow, lite }: IvoryHal
     floorMaterial.map = floorMap;
     floorMaterial.color.set(0xffffff);
     const ribMaterial = materials.ceramic.clone();
+    // The gates are a shade deeper than the room, so each doorway reads against the light behind it.
+    const gateMaterial = materials.ceramic.clone();
+    gateMaterial.color.set(0xb5a9a3);
     const windowGlass = new MeshBasicMaterial({ color: "#fff1dc", fog: false, toneMapped: false });
     // The lattice: bars in warm shade over the bright window.
     const bars = jaliMask.clone();
@@ -80,7 +89,7 @@ export function IvoryHall({ materials, tileMap, jaliMask, glow, lite }: IvoryHal
     poolPattern.needsUpdate = true;
     poolPattern.repeat.set(4.2 / 0.5, 3.4 / 0.5);
     const poolBars = new MeshBasicMaterial({ color: new Color("#8a7585"), alphaMap: poolPattern, transparent: true, opacity: 0.1, depthWrite: false, fog: false, toneMapped: false });
-    return { shell, rib, frame, inlay, windowShape, windowFrame, endShape, shellMaterial, floorMaterial, ribMaterial, windowGlass, barMaterial, lightMaterial, poolMaterial, poolBars, bars, poolPattern, floorMap };
+    return { shell, rib, frame, inlay, gate, windowShape, windowFrame, endShape, shellMaterial, floorMaterial, ribMaterial, gateMaterial, windowGlass, barMaterial, lightMaterial, poolMaterial, poolBars, bars, poolPattern, floorMap };
   }, [materials, tileMap, jaliMask, glow, lite]);
 
   useEffect(
@@ -134,6 +143,13 @@ export function IvoryHall({ materials, tileMap, jaliMask, glow, lite }: IvoryHal
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[PORTAL.x, 0.004, doorZ - IVORY.length / 2]} material={parts.floorMaterial}>
         <planeGeometry args={[IVORY.width, IVORY.length]} />
       </mesh>
+      {/* The process's gates, and the chrome line round each doorway. */}
+      {GATES.map((sigma) => (
+        <group key={sigma}>
+          <mesh geometry={parts.gate} material={parts.gateMaterial} position={[PORTAL.x, 0, zAt(sigma)]} />
+          <mesh geometry={parts.inlay} material={materials.chrome} position={[PORTAL.x, 0, zAt(sigma) + 0.352]} />
+        </group>
+      ))}
       {RIBS.map((sigma) => (
         <mesh key={sigma} geometry={parts.rib} material={parts.ribMaterial} position={[PORTAL.x, 0, zAt(sigma)]} />
       ))}

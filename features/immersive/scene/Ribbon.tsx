@@ -6,7 +6,7 @@ import { BufferAttribute, BufferGeometry, DynamicDrawUsage, Mesh, Vector3 } from
 import type { Materials } from "@/features/immersive/lib/materials";
 import { createSoftBandTexture } from "@/features/immersive/lib/textures";
 import { WALL, ribbonCurve, smoothstep, zAt } from "@/features/immersive/lib/world";
-import { ARCHES, DOOR_SIGMA } from "@/features/immersive/lib/timeline";
+import { ARCHES, DOOR_SIGMA, GATES } from "@/features/immersive/lib/timeline";
 import { POSTER_TIME, stageState } from "@/features/immersive/lib/stage-state";
 
 const HALF_WIDTH = 0.3;
@@ -20,7 +20,7 @@ const UP = new Vector3(0, 1, 0);
  * How far the ribbon swings, in metres, in each bay of the corridor (from the second service arch on; the approved
  * opening's stretch is left exactly as it was). Sideways; it also swings up and down by 40% of this.
  */
-const BAY_SWING = [1.6, 1.9, 1.7, 2.0, 1.7, 1.5];
+const BAY_SWING = [1.6, 1.9, 1.7, 2.0, 1.7, 1.5, 0, 1.2, 1.2, 1.2, 1.2];
 
 /**
  * The ribbon keeps at least this far (centre line, metres) from the camera, so the lens can never pass through it.
@@ -114,7 +114,7 @@ export function Ribbon({ materials, segments, halfRate, frozen }: RibbonProps) {
     // The weave: down the corridor the ribbon swings like a rope threaded through the arches. Its swing is nil at every
     // arch plane (so it always goes through the opening, in the middle) and greatest mid-bay. The bay a sample is in,
     // and how far across it, is fixed by where it is on the route, so this is computed once.
-    const nodes = [...ARCHES.map(zAt), zAt(DOOR_SIGMA)]; // z of each arch, then of the corridor's end (descending)
+    const nodes = [...ARCHES.map(zAt), zAt(DOOR_SIGMA), ...GATES.map(zAt)]; // z of each arch, the corridor's end, then each gate (descending)
     const weaveSideways = new Float32Array(count);
     const weaveVertical = new Float32Array(count);
     const weaveBay = new Float32Array(count);

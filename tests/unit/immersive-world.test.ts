@@ -23,6 +23,11 @@ import {
   WORK_END_SIGMA,
   WORK_SIGMA,
   WORK_REACH,
+  GATES,
+  PROCESS_STOPS,
+  PROCESS_SIGMA,
+  PROCESS_COUNT,
+  processIndexFromSigma,
   progressForSigma,
   workIndexFromSigma,
 } from "@/features/immersive/lib/timeline";
@@ -311,7 +316,7 @@ describe("the large doorway and the ivory hall", () => {
     expect(FLIP_SIGMA[1]).toBeGreaterThan(DOOR_SIGMA);
     expect(CONTACT_SIGMA[0]).toBeGreaterThanOrEqual(FLIP_SIGMA[1]);
     expect(CONTACT_SIGMA[1]).toBeLessThanOrEqual(CLOSE_SIGMA);
-    expect(CONTACT_SIGMA[0]).toBeGreaterThanOrEqual(WORK_SIGMA[3]);
+    expect(CONTACT_SIGMA[0]).toBeGreaterThanOrEqual(PROCESS_SIGMA[3]);
     // The last scroll position: the page is fully ivory and the contact words are fully there.
     expect(hallSigma(1)).toBeGreaterThanOrEqual(CONTACT_SIGMA[1]);
   });
@@ -400,5 +405,56 @@ describe("the exhibition", () => {
     expect(WORK_END_SIGMA).toBe(WORK_STOPS[WORK_STOPS.length - 1]);
     expect(hallSigma(1)).toBeCloseTo(CLOSE_SIGMA, 5);
     expect(WORK_SIGMA[3]).toBeGreaterThan(WORK_END_SIGMA);
+  });
+});
+
+describe("the process", () => {
+  it("has five gates down the ivory hall, each with a stop five metres before it, and shows each step once, in order", () => {
+    expect(PROCESS_COUNT).toBe(5);
+    expect(GATES.length).toBe(5);
+    PROCESS_STOPS.forEach((stop, i) => expect(GATES[i] - stop).toBe(5));
+    const seen: number[] = [];
+    for (let s = 0; s <= 1; s += 0.001) {
+      const index = processIndexFromSigma(hallSigma(s));
+      if (index >= 0 && seen[seen.length - 1] !== index) seen.push(index);
+    }
+    expect(seen).toEqual([0, 1, 2, 3, 4]);
+  });
+
+  it("keeps the gates between the exhibition and the sculpture, inside the room, clear of the works", () => {
+    expect(GATES[0] - 3).toBeGreaterThan(WORK_END_SIGMA + 3);
+    for (const gate of GATES) {
+      expect(gate).toBeLessThan(DOOR_SIGMA + IVORY.length - 15);
+    }
+    const sculpture = ribbonCurve.getPointAt(1);
+    expect(sculpture.z).toBeLessThan(zAt(GATES[GATES.length - 1] + 3));
+  });
+
+  it("threads the ribbon through the middle of every gate, a metre and a half above the camera, and the camera through the opening", () => {
+    const length = ribbonCurve.getLength();
+    for (const gate of GATES) {
+      let nearest = 99;
+      let height = 0;
+      for (let s = 0; s <= length; s += 0.02) {
+        const point = ribbonCurve.getPointAt(s / length);
+        if (Math.abs(point.z - (zAt(gate) + 0.17)) < 0.05 && Math.abs(point.x - PORTAL.x) < nearest) {
+          nearest = Math.abs(point.x - PORTAL.x);
+          height = point.y;
+        }
+      }
+      expect(nearest).toBeLessThan(0.3);
+      expect(height).toBeGreaterThan(2.9);
+      expect(height).toBeLessThan(BIG_DOOR.straight + 0.2);
+      const pose = galleryPose(gate);
+      expect(Math.abs(pose.x - PORTAL.x)).toBeLessThan(BIG_DOOR.width / 2 - 1.2);
+      expect(pose.y).toBeLessThan(2);
+    }
+  });
+
+  it("brings in the words of each step with its gate, and the contact words after the last", () => {
+    expect(PROCESS_SIGMA[0]).toBeGreaterThan(WORK_SIGMA[3]);
+    expect(PROCESS_SIGMA[1]).toBeLessThanOrEqual(PROCESS_STOPS[0]);
+    expect(PROCESS_SIGMA[3]).toBeLessThanOrEqual(CONTACT_SIGMA[0]);
+    expect(CONTACT_SIGMA[1]).toBeLessThanOrEqual(CLOSE_SIGMA);
   });
 });

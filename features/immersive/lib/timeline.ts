@@ -10,19 +10,21 @@
 /**
  * How tall the scroll run is, in screens: the opening (gallery to hall), then everything after it: the seven bays of
  * services, the threshold (down the corridor's last stretch, through the large lattice doorway), the exhibition (four
- * stops along the ivory hall) and the close, where the camera comes to rest before the sculpture. Both the page's CSS
- * height and the scroll maths read these, so they can't disagree.
+ * stops along the ivory hall), the process (five gates further down the hall) and the close, where the camera comes to
+ * rest before the sculpture. Both the page's CSS height and the scroll maths read these, so they can't disagree.
  */
 const BAYS_SCREENS = 4.928;
 const THRESHOLD_SCREENS = 1.3;
 const WORK_SCREENS = 3.2;
+const PROCESS_SCREENS = 3.4;
 const CLOSE_SCREENS = 0.8;
-export const RUN = { opening: 2.3, services: BAYS_SCREENS + THRESHOLD_SCREENS + WORK_SCREENS + CLOSE_SCREENS } as const;
+export const RUN = { opening: 2.3, services: BAYS_SCREENS + THRESHOLD_SCREENS + WORK_SCREENS + PROCESS_SCREENS + CLOSE_SCREENS } as const;
 
 /** Of the run after the opening (0..1): where the seven bays end, where the threshold ends (the camera is inside the ivory hall), where the exhibition ends. */
 export const SERVICES_END = BAYS_SCREENS / RUN.services;
 export const THRESHOLD_END = (BAYS_SCREENS + THRESHOLD_SCREENS) / RUN.services;
 export const WORK_END = (BAYS_SCREENS + THRESHOLD_SCREENS + WORK_SCREENS) / RUN.services;
+export const PROCESS_END = (BAYS_SCREENS + THRESHOLD_SCREENS + WORK_SCREENS + PROCESS_SCREENS) / RUN.services;
 
 export const SERVICE_COUNT = 7;
 
@@ -31,11 +33,12 @@ export const HALL_START_SIGMA = 7.6;
 export const SERVICES_END_SIGMA = 59;
 export const THRESHOLD_END_SIGMA = 73;
 export const WORK_END_SIGMA = 98;
-export const CLOSE_SIGMA = 104;
+export const PROCESS_END_SIGMA = 132;
+export const CLOSE_SIGMA = 140;
 /** The far end of the corridor: the large lattice doorway into the ivory hall. */
 export const DOOR_SIGMA = 70;
 /** The ivory hall beyond the doorway: how long it is. */
-export const IVORY_LENGTH = 54;
+export const IVORY_LENGTH = 91;
 /** Between these two distances down the hall the page turns from plum to ivory: the camera is passing through the doorway. */
 export const FLIP_SIGMA = [66, 72] as const;
 
@@ -48,8 +51,18 @@ export const WORK_REACH = 3;
 export const WORK_COUNT = WORK_STOPS.length;
 /** The exhibition's words arrive as the camera comes into the hall and give way as it turns to the sculpture. */
 export const WORK_SIGMA = [73.6, 75.4, 99, 100.4] as const;
-/** Where the contact words arrive: the camera has turned to the sculpture. */
-export const CONTACT_SIGMA = [100.6, 102.6] as const;
+
+/**
+ * The process: five gates across the ivory hall beyond the exhibition (a wall with a doorway in it, and a lattice veil in the
+ * doorway that is thinner at each), and the camera's five stops, each five metres before its gate.
+ */
+export const GATES = [109, 116, 123, 130, 137] as const;
+export const PROCESS_STOPS = [104, 111, 118, 125, 132] as const;
+export const PROCESS_COUNT = PROCESS_STOPS.length;
+/** The process's words arrive as the camera walks on from the exhibition and give way as it turns to the sculpture. */
+export const PROCESS_SIGMA = [102.2, 103.8, 133.2, 134.8] as const;
+/** Where the contact words arrive: the camera has passed the last gate and turned to the sculpture. */
+export const CONTACT_SIGMA = [135.4, 137.4] as const;
 
 /** The hall's ribs stand every 4 m from 2.2: exactly the approved opening's grid. */
 export const RIB_EVERY = 4;
@@ -108,13 +121,14 @@ function stretch(from: number, to: number, speed: (sigma: number) => number) {
 
 const baySigma = stretch(HALL_START_SIGMA, SERVICES_END_SIGMA, pace);
 
-/** How fast the camera moves along the exhibition: unhurried between the works, and nearly still at each stop. */
-function workPace(sigma: number): number {
+/** How fast the camera moves where it makes stops: unhurried between them, and nearly still at each stop. */
+const stopPace = (stops: readonly number[]) => (sigma: number) => {
   let d = Infinity;
-  for (const stop of WORK_STOPS) d = Math.min(d, Math.abs(sigma - stop));
+  for (const stop of stops) d = Math.min(d, Math.abs(sigma - stop));
   return 1.15 - 0.8 * Math.exp(-((d / 2.2) ** 2));
-}
-const workSigma = stretch(THRESHOLD_END_SIGMA, WORK_END_SIGMA, workPace);
+};
+const workSigma = stretch(THRESHOLD_END_SIGMA, WORK_END_SIGMA, stopPace(WORK_STOPS));
+const processSigma = stretch(WORK_END_SIGMA, PROCESS_END_SIGMA, stopPace(PROCESS_STOPS));
 
 /** Run progress after the opening (0..1) -> how far down the hall the camera is (σ, in metres). */
 export function hallSigma(s: number): number {
@@ -127,9 +141,10 @@ export function hallSigma(s: number): number {
     return SERVICES_END_SIGMA + (THRESHOLD_END_SIGMA - SERVICES_END_SIGMA) * (0.3 * t + 0.7 * smoothstep(0, 1, t));
   }
   if (s <= WORK_END) return workSigma((s - THRESHOLD_END) / (WORK_END - THRESHOLD_END));
+  if (s <= PROCESS_END) return processSigma((s - WORK_END) / (PROCESS_END - WORK_END));
   // The close: a short, easing-out glide to rest in front of the sculpture.
-  const t = clamp01((s - WORK_END) / (1 - WORK_END));
-  return WORK_END_SIGMA + (CLOSE_SIGMA - WORK_END_SIGMA) * (1 - (1 - t) * (1 - t));
+  const t = clamp01((s - PROCESS_END) / (1 - PROCESS_END));
+  return PROCESS_END_SIGMA + (CLOSE_SIGMA - PROCESS_END_SIGMA) * (1 - (1 - t) * (1 - t));
 }
 
 /** The reverse of hallSigma: the run progress (0..1) at which the camera is at σ. (hallSigma never goes backwards, so this is a search.) */
@@ -148,6 +163,13 @@ export function progressForSigma(sigma: number): number {
 export function workIndexFromSigma(sigma: number): number {
   let count = 0;
   for (const stop of WORK_STOPS) if (stop - 3 <= sigma) count++;
+  return count - 1;
+}
+
+/** Which of the process's five stops is on show, from where the camera is (-1 before the process begins). */
+export function processIndexFromSigma(sigma: number): number {
+  let count = 0;
+  for (const stop of PROCESS_STOPS) if (stop - 3 <= sigma) count++;
   return count - 1;
 }
 

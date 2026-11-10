@@ -27,8 +27,8 @@ async function changeOver(page: Page, ms: number) {
 async function scrollToScene(page: Page, scene: number) {
   await page.evaluate((g) => {
     const vh = window.innerHeight;
-    // The opening is 2.3 screens of travel and everything after it 10.228 (RUN in lib/timeline.ts).
-    window.scrollTo(0, Math.round(g <= 1 ? g * 2.3 * vh : (2.3 + (g - 1) * 10.228) * vh));
+    // The opening is 2.3 screens of travel and everything after it 13.628 (RUN in lib/timeline.ts).
+    window.scrollTo(0, Math.round(g <= 1 ? g * 2.3 * vh : (2.3 + (g - 1) * 13.628) * vh));
   }, scene);
   const [name, expected] = scene <= 1 ? ["--p", scene] : ["--s", scene - 1];
   await expect
@@ -79,7 +79,7 @@ test.describe("immersive opening", () => {
     expect(later).toBeGreaterThan(current);
 
     // Down the corridor's last stretch and through the large doorway: no words of their own, still plum.
-    await scrollToScene(page, 1.55);
+    await scrollToScene(page, 1.41);
     await expect(root).toHaveAttribute("data-phase", "threshold");
     expect(await page.evaluate(() => Number(getComputedStyle(document.querySelector(".immersive-root")!).getPropertyValue("--flip")))).toBeLessThan(0.5);
 
@@ -125,7 +125,7 @@ test.describe("immersive opening", () => {
     const root = page.locator(".immersive-root");
     const link = page.getByRole("link", { name: "Open the demo store" });
 
-    await scrollToScene(page, 1.66);
+    await scrollToScene(page, 1.5);
     await expect(root).toHaveAttribute("data-phase", "work");
     await expect(root).toHaveAttribute("data-work", "0");
     await expect(page.getByText("One finished project you can actually use.")).toBeVisible();
@@ -134,13 +134,44 @@ test.describe("immersive opening", () => {
     await expect(page.getByRole("link", { name: /I want a store like this/ })).toHaveAttribute("href", "/get-started?service=ecommerce");
 
     // Further on a different stop is on show, and the first stop's links are no longer reachable.
-    await scrollToScene(page, 1.78);
+    await scrollToScene(page, 1.58);
     await expect(root).toHaveAttribute("data-work", /^[12]$/);
     await expect(link).toBeHidden();
 
-    await scrollToScene(page, 1.9);
+    await scrollToScene(page, 1.69);
     await expect(root).toHaveAttribute("data-work", "3");
     await expect(page.locator(".imm-work-name", { hasText: "Yours." })).toBeVisible();
+  });
+
+  test("the process: five gates, one step each, in the order of the studio's own process, then the contact", async ({ page }) => {
+    await page.goto("/immersive");
+    const root = page.locator(".immersive-root");
+    const steps = ["Talk", "Plan", "Build", "Launch", "Grow"];
+
+    await scrollToScene(page, 1.73);
+    await expect(root).toHaveAttribute("data-phase", "process");
+    await expect(root).toHaveAttribute("data-process", "0");
+    await expect(page.getByText("From first chat to first customers.")).toBeVisible();
+    await expect(page.locator(".imm-step .imm-work-name", { hasText: steps[0] })).toBeVisible();
+
+    await scrollToScene(page, 1.84);
+    await expect(root).toHaveAttribute("data-process", "2");
+    await expect(page.locator(".imm-step .imm-work-name", { hasText: steps[2] })).toBeVisible();
+
+    await scrollToScene(page, 1.94);
+    await expect(root).toHaveAttribute("data-process", "4");
+    await expect(page.locator(".imm-step .imm-work-name", { hasText: steps[4] })).toBeVisible();
+
+    await scrollToScene(page, 1.99);
+    await expect(root).toHaveAttribute("data-phase", "contact");
+  });
+
+  test("the Process entry scrolls to the first gate", async ({ page }) => {
+    await page.goto("/immersive");
+    await page.getByRole("button", { name: "Menu" }).click();
+    await page.getByRole("dialog", { name: "Site menu" }).getByRole("link", { name: /Process/ }).click();
+    await expect(page.getByRole("dialog", { name: "Site menu" })).toBeHidden();
+    await expect(page.locator(".immersive-root")).toHaveAttribute("data-phase", "process");
   });
 
   test("the Work entry scrolls into the exhibition", async ({ page }) => {
@@ -151,8 +182,9 @@ test.describe("immersive opening", () => {
     await expect(page.locator(".immersive-root")).toHaveAttribute("data-phase", "work");
   });
 
-  test("the work is readable by assistive technology, whatever the scroll position", async ({ page }) => {
+  test("the work and the process are readable by assistive technology, whatever the scroll position", async ({ page }) => {
     await page.goto("/immersive");
+    await expect(page.getByRole("region", { name: "How we work" }).getByRole("heading", { level: 3 })).toHaveText(["Talk", "Plan", "Build", "Launch", "Grow"]);
     await expect(page.getByRole("region", { name: "Our work" }).getByRole("heading", { level: 3 })).toHaveText("Lustre & Lace Store");
   });
 
@@ -225,7 +257,7 @@ test.describe("immersive navigation", () => {
     const hrefs = await page.getByRole("dialog", { name: "Site menu" }).locator("nav a").evaluateAll((links) =>
       links.map((link) => link.getAttribute("href"))
     );
-    expect(hrefs).toEqual(["/immersive#approach", "/immersive#services", "/immersive#work", "/about", "/shop", "/get-started"]);
+    expect(hrefs).toEqual(["/immersive#approach", "/immersive#services", "/immersive#work", "/immersive#process", "/about", "/shop", "/get-started"]);
 
     for (const href of hrefs) {
       const response = await request.get((href ?? "").split("#")[0]);
@@ -277,11 +309,11 @@ test.describe("immersive navigation", () => {
       await expect(page.locator(".imm-scene--opening .imm-lead")).toBeHidden();
     });
 
-    test("the contact words are reached within one screen's scroll of the last stop", async ({ page }) => {
+    test("the contact words are reached within one screen's scroll of the last step", async ({ page }) => {
       await page.goto("/immersive");
       const root = page.locator(".immersive-root");
-      await scrollToScene(page, 1.9);
-      await expect(root).toHaveAttribute("data-work", "3");
+      await scrollToScene(page, 1.94);
+      await expect(root).toHaveAttribute("data-process", "4");
       await page.evaluate(() => window.scrollBy(0, window.innerHeight));
       await expect(root).toHaveAttribute("data-phase", "contact");
       await expect(page.getByRole("link", { name: "Start a Conversation" })).toBeVisible();

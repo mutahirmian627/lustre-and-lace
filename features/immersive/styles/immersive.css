@@ -26,8 +26,10 @@
   --c: 0;
   /* How far the exhibition's words are on show (0..1). */
   --w: 0;
+  /* The same for the process's words. */
+  --pr: 0;
   /* Where the services end in the scroll (must equal SERVICES_END in lib/timeline.ts; a unit test checks it). */
-  --se: 0.4818;
+  --se: 0.3616;
   --atmosphere: calc(clamp(0, calc((var(--p) - 0.36) / 0.24), 1) * (1 - var(--flip)));
 
   --stage-bg: var(--ivory);
@@ -991,21 +993,29 @@ html[data-immersive-poster] nextjs-portal {
 
 /* ---- The exhibition: the demo store on the ivory hall's wall -------------------------------------- */
 
-.imm-scene--work {
+.imm-scene--work,
+.imm-scene--process {
   bottom: max(2.5rem, 6svh);
   max-width: 34rem;
-  opacity: var(--w);
   visibility: hidden;
 }
+.imm-scene--work {
+  opacity: var(--w);
+}
+.imm-scene--process {
+  opacity: var(--pr);
+}
 @media (min-width: 900px) {
-  .imm-scene--work {
+  .imm-scene--work,
+  .imm-scene--process {
     bottom: auto;
     top: 50%;
     width: min(31rem, 36vw);
     transform: translate3d(0, -50%, 0);
   }
 }
-.immersive-root[data-phase="work"] .imm-scene--work {
+.immersive-root[data-phase="work"] .imm-scene--work,
+.immersive-root[data-phase="process"] .imm-scene--process {
   visibility: visible;
 }
 .imm-work-title {
@@ -1020,7 +1030,8 @@ html[data-immersive-poster] nextjs-portal {
   display: grid;
   margin-top: 1.3rem;
 }
-.imm-work {
+.imm-work,
+.imm-step {
   grid-area: 1 / 1;
   opacity: 0;
   visibility: hidden;
@@ -1030,7 +1041,12 @@ html[data-immersive-poster] nextjs-portal {
 .immersive-root[data-work="0"] .imm-work[data-i="0"],
 .immersive-root[data-work="1"] .imm-work[data-i="1"],
 .immersive-root[data-work="2"] .imm-work[data-i="2"],
-.immersive-root[data-work="3"] .imm-work[data-i="3"] {
+.immersive-root[data-work="3"] .imm-work[data-i="3"],
+.immersive-root[data-process="0"] .imm-step[data-i="0"],
+.immersive-root[data-process="1"] .imm-step[data-i="1"],
+.immersive-root[data-process="2"] .imm-step[data-i="2"],
+.immersive-root[data-process="3"] .imm-step[data-i="3"],
+.immersive-root[data-process="4"] .imm-step[data-i="4"] {
   opacity: 1;
   /* Visible only while the whole exhibition is (its scene is hidden outside the work phase), so its links never get in the way. */
   visibility: inherit;

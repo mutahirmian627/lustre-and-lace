@@ -5,7 +5,7 @@ import { useFrame } from "@react-three/fiber";
 import { AdditiveBlending, BufferAttribute, Color, Group, MeshBasicMaterial, MeshPhongMaterial, ShapeGeometry, type Texture } from "three";
 import { archLeaf } from "@/features/immersive/lib/arch";
 import type { Materials } from "@/features/immersive/lib/materials";
-import { ARCHES, DOOR_SIGMA, veilAt } from "@/features/immersive/lib/timeline";
+import { ARCHES, DOOR_SIGMA, GATES, veilAt } from "@/features/immersive/lib/timeline";
 import { BIG_DOOR, HALL, PORTAL, SCREEN_GAP, zAt } from "@/features/immersive/lib/world";
 import { stageState } from "@/features/immersive/lib/stage-state";
 import { SIGNATURES } from "@/features/immersive/scene/HallLights";
@@ -38,6 +38,12 @@ const LATTICES: readonly Lattice[] = [
   { cell: 0.85, angle: 0, colour: "#e3dcff", emissive: "#40367a" }, // broad, lilac
   { cell: 0.55, angle: Math.PI / 8, colour: "#f4e6cf", emissive: "#66502f" }, // turned a little, champagne
   { cell: 0.9, angle: 0, colour: "#f7ecd9", emissive: "#6b5a3a" }, // the large doorway's: broad and warm, the ivory hall's own
+  // The process's five gates: the same warm glass, the lattice growing broader at each, until the last is nearly open.
+  { cell: 0.5, angle: 0, colour: "#f7ecd9", emissive: "#6b5a3a" },
+  { cell: 0.7, angle: Math.PI / 8, colour: "#f7ecd9", emissive: "#6b5a3a" },
+  { cell: 1.0, angle: 0, colour: "#f8efdf", emissive: "#6b5a3a" },
+  { cell: 1.4, angle: Math.PI / 4, colour: "#f9f1e3", emissive: "#6b5a3a" },
+  { cell: 2.0, angle: 0, colour: "#faf3e8", emissive: "#6b5a3a" },
 ];
 
 type Parting = "split" | "rise" | "mixed";
@@ -58,6 +64,8 @@ interface Event {
   /** Its glow's colour and size. */
   halo: string;
   haloSize: number;
+  /** How solid its glass is, as a share of the usual (the process's gates grow lighter). */
+  weight?: number;
 }
 
 const ARCH_EVENTS: readonly Pick<Event, "lattice" | "parting" | "from" | "to">[] = [
@@ -86,6 +94,22 @@ const EVENTS: readonly Event[] = [
   // The large lattice doorway: seen from far down the corridor, as the light of the room beyond it begins to arrive, and
   // parted slowly, both leaves into the walls, as the camera comes up to it.
   { sigma: DOOR_SIGMA, lattice: 4, parting: "split", from: 14, to: 3.6, size: "door", fadeNear: 26, fadeFar: 40, halo: "#ffe6c4", haloSize: 11 },
+  // The process's gates: each a little thinner than the last, parting slowly while its words are read, the last all but open.
+  ...GATES.map(
+    (sigma, i): Event => ({
+      sigma,
+      lattice: 5 + i,
+      parting: "split",
+      from: 11,
+      to: 3.2,
+      size: "door",
+      fadeNear: 14,
+      fadeFar: 24,
+      halo: ["#ffe3bf", "#ffe8cc", "#ffeed8", "#fff3e4", "#fffaf0"][i],
+      haloSize: 11,
+      weight: [0.95, 0.8, 0.62, 0.45, 0.28][i],
+    })
+  ),
 ];
 
 type OpeningSize = Event["size"];
@@ -202,8 +226,9 @@ export function ArchVeils({ materials, jaliMask, glow, lite }: ArchVeilsProps) {
       if (!visible) continue;
       const glass = parts.glasses[i];
       const shown = fade * (1 - open * open);
-      glass.front.opacity = FRONT_OPACITY * shown;
-      glass.back.opacity = lite ? 0 : BACK_OPACITY * shown;
+      const weight = event.weight ?? 1;
+      glass.front.opacity = FRONT_OPACITY * shown * weight;
+      glass.back.opacity = lite ? 0 : BACK_OPACITY * shown * weight;
 
       if (refs.left && refs.right) {
         const SLIDE = slideOf(event.size);

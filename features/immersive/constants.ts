@@ -21,6 +21,7 @@ export const IMMERSIVE_MENU = [
   { label: "Approach", href: "/immersive#approach", note: "How we work" },
   { label: "Services", href: "/immersive#services", note: "What we build" },
   { label: "Work", href: "/immersive#work", note: "The live demo store" },
+  { label: "Process", href: "/immersive#process", note: "From first chat to launch" },
   { label: "About", href: "/about", note: "How we think" },
   { label: "Demo store", href: "/shop", note: "Try it yourself" },
   { label: "Start a project", href: "/get-started", note: "Free quote" },

@@ -1,7 +1,7 @@
 /**
  * Renders the fallback journey: public/immersive/journey/l-00..31.webp (landscape) and p-00..31.webp (portrait).
  *
- * These are 56 frames of the real scene, evenly spaced along the whole journey (scroll position 0 to 2, from the
+ * These are 60 frames of the real scene, evenly spaced along the whole journey (scroll position 0 to 2, from the
  * gallery's opening to the end of the corridor). Devices that are not running the live scene play them by scroll
  * (see features/immersive/sections/StillJourney.tsx). The script opens the running site at
  * /immersive?poster=1&p=<position>, a mode in which the page strips itself down to the 3D canvas, frozen at a fixed
@@ -20,7 +20,7 @@ import path from "node:path";
 
 const baseUrl = process.env.BASE_URL ?? "http://localhost:3000";
 const outDir = path.join(process.cwd(), "public", "immersive", "journey");
-const FRAMES = 56;
+const FRAMES = 60;
 const SCENES = 2;
 
 // Sizes match the reference framings in features/immersive/lib/frame.ts (about 16:9, and 1:2).

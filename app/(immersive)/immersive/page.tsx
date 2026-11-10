@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CASE_STUDY } from "@/constants/agency";
+import { CASE_STUDY, PROCESS_STEPS } from "@/constants/agency";
 import { SERVICES } from "@/features/immersive/content";
 import {
   IMMERSIVE_INSTAGRAM_HANDLE,
@@ -9,7 +9,7 @@ import {
   IMMERSIVE_WHATSAPP_DISPLAY,
   IMMERSIVE_WHATSAPP_NUMBER,
 } from "@/features/immersive/constants";
-import { RUN, THRESHOLD_END, WORK_END } from "@/features/immersive/lib/timeline";
+import { PROCESS_STOPS, RUN, THRESHOLD_END, CONTACT_SIGMA, progressForSigma } from "@/features/immersive/lib/timeline";
 import { ImmersiveNav } from "@/features/immersive/nav/ImmersiveNav";
 import { StageLoader } from "@/features/immersive/scene/StageLoader";
 import { Backdrop } from "@/features/immersive/sections/Backdrop";
@@ -58,7 +58,8 @@ export default function ImmersivePage() {
           <span id="approach" className="imm-anchor" style={{ top: anchorTop(0, 0.78) }} aria-hidden="true" />
           <span id="services" className="imm-anchor" style={{ top: anchorTop(0.07) }} aria-hidden="true" />
           <span id="work" className="imm-anchor" style={{ top: anchorTop(THRESHOLD_END + 0.01) }} aria-hidden="true" />
-          <span id="contact" className="imm-anchor" style={{ top: anchorTop(WORK_END + 0.03) }} aria-hidden="true" />
+          <span id="process" className="imm-anchor" style={{ top: anchorTop(progressForSigma(PROCESS_STOPS[0] - 1)) }} aria-hidden="true" />
+          <span id="contact" className="imm-anchor" style={{ top: anchorTop(progressForSigma(CONTACT_SIGMA[1] + 0.5)) }} aria-hidden="true" />
           <div className="imm-sticky">
             <div className="imm-scrim" aria-hidden="true" />
             <section className="imm-scene imm-scene--opening" aria-labelledby="opening-title">
@@ -165,6 +166,22 @@ export default function ImmersivePage() {
               </div>
             </section>
 
+            {/* The process: five gates across the ivory hall, each a step from first chat to launch; the lattice in each gate is
+                thinner than the last. The words are repeated in the screen-reader list below. */}
+            <section className="imm-scene imm-scene--process" aria-hidden="true">
+              <p className="imm-label">05 &mdash; Process</p>
+              <p className="imm-statement imm-work-title">From first chat to first customers.</p>
+              <div className="imm-work-stack">
+                {PROCESS_STEPS.map((step, i) => (
+                  <article key={step.title} className="imm-step" data-i={i}>
+                    <p className="imm-service-no">{String(i + 1).padStart(2, "0")}</p>
+                    <h3 className="imm-work-name">{step.title}</h3>
+                    <p className="imm-work-text">{step.body}</p>
+                  </article>
+                ))}
+              </div>
+            </section>
+
             {/* The close, in the ivory hall beyond the large doorway. Later stages place the work and the process before it. */}
             <section className="imm-scene imm-scene--contact" aria-labelledby="contact-title">
               <p className="imm-label">Contact</p>
@@ -213,6 +230,18 @@ export default function ImmersivePage() {
               <li key={service.name}>
                 <h3>{service.name}</h3>
                 <p>Includes: {service.includes.join(", ")}.</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+        <section className="sr-only" aria-labelledby="process-title">
+          <h2 id="process-title">How we work</h2>
+          <p>A clear process with a quote up front, so you always know what happens next.</p>
+          <ol>
+            {PROCESS_STEPS.map((step) => (
+              <li key={step.title}>
+                <h3>{step.title}</h3>
+                <p>{step.body}</p>
               </li>
             ))}
           </ol>
