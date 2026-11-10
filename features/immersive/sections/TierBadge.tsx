@@ -35,7 +35,7 @@ export function TierBadge() {
         webgl2 {s.webgl2 ? "yes" : "no"} · cores {s.cores ?? "?"} · memory {s.memoryGb ?? "?"}GB · dpr {s.devicePixelRatio}
       </div>
       <div>
-        network {s.effectiveType ?? "?"} · saveData {s.saveData ? "on" : "off"} · reduced motion {s.reducedMotion ? "on" : "off"}
+        network {s.effectiveType ?? "?"} ({s.downlink ?? "?"} Mbps) · saveData {s.saveData ? "on" : "off"} · reduced motion {s.reducedMotion ? "on" : "off"}
       </div>
     </div>
   );
