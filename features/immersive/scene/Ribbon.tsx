@@ -5,8 +5,9 @@ import { useFrame } from "@react-three/fiber";
 import { BufferAttribute, BufferGeometry, DynamicDrawUsage, Mesh, Vector3 } from "three";
 import type { Materials } from "@/features/immersive/lib/materials";
 import { createSoftBandTexture } from "@/features/immersive/lib/textures";
-import { WALL, ribbonCurve, smoothstep } from "@/features/immersive/lib/world";
-import { POSTER_TIME } from "@/features/immersive/lib/stage-state";
+import { WALL, ribbonCurve, smoothstep, zAt } from "@/features/immersive/lib/world";
+import { ARCHES, DOOR_SIGMA } from "@/features/immersive/lib/timeline";
+import { POSTER_TIME, stageState } from "@/features/immersive/lib/stage-state";
 
 const HALF_WIDTH = 0.3;
 /** How far the strip bows across its width. A flat mirror reflects one colour; a gently bowed one reflects a gradient, which is what makes it read as polished metal. */
@@ -14,6 +15,19 @@ const CAMBER = 0.09;
 /** Vertices across the width of each face. */
 const ACROSS = 7;
 const UP = new Vector3(0, 1, 0);
+
+/**
+ * How far the ribbon swings, in metres, in each bay of the corridor (from the second service arch on; the approved
+ * opening's stretch is left exactly as it was). Sideways; it also swings up and down by 40% of this.
+ */
+const BAY_SWING = [1.6, 1.9, 1.7, 2.0, 1.7, 1.5];
+
+/**
+ * The ribbon keeps at least this far (centre line, metres) from the camera, so the lens can never pass through it.
+ * Below the ribbon's own half-width plus the camera's near plane there is no clearing it, so this is deliberately
+ * small: close passes are wanted, and the route is adjusted only to prevent actually going through the geometry.
+ */
+const LENS_GUARD = 0.42;
 
 interface RibbonProps {
   materials: Materials;
@@ -94,6 +108,25 @@ export function Ribbon({ materials, segments, halfRate, frozen }: RibbonProps) {
     // How much each sample may sway: none where it threads the screen, full elsewhere.
     const sway = points.map((p) => 1 - Math.exp(-(((p.z - (WALL.z - 0.6)) / 2.2) ** 2)));
 
+    // The weave: down the corridor the ribbon swings like a rope threaded through the arches. Its swing is nil at every
+    // arch plane (so it always goes through the opening, in the middle) and greatest mid-bay. The bay a sample is in,
+    // and how far across it, is fixed by where it is on the route, so this is computed once.
+    const nodes = [...ARCHES.map(zAt), zAt(DOOR_SIGMA)]; // z of each arch, then of the corridor's end (descending)
+    const weaveSideways = new Float32Array(count);
+    const weaveVertical = new Float32Array(count);
+    const weaveBay = new Float32Array(count);
+    points.forEach((p, i) => {
+      for (let k = 1; k < nodes.length - 1; k++) {
+        if (p.z <= nodes[k] && p.z > nodes[k + 1]) {
+          const across = (nodes[k] - p.z) / (nodes[k] - nodes[k + 1]);
+          const swing = BAY_SWING[k - 1] * Math.sin(Math.PI * across);
+          weaveSideways[i] = swing;
+          weaveVertical[i] = swing * 0.45;
+          weaveBay[i] = k;
+        }
+      }
+    });
+
     return {
       count,
       length,
@@ -102,6 +135,9 @@ export function Ribbon({ materials, segments, halfRate, frozen }: RibbonProps) {
       widthAxis,
       normalAxis,
       sway,
+      weaveSideways,
+      weaveVertical,
+      weaveBay,
       geometry,
       positions,
       normals,
@@ -124,7 +160,7 @@ export function Ribbon({ materials, segments, halfRate, frozen }: RibbonProps) {
     frame.current += 1;
     if (halfRate && frame.current % 2 === 0) return;
     const t = frozen ? POSTER_TIME : POSTER_TIME + state.clock.elapsedTime;
-    const { count, length, points, tangents, widthAxis, normalAxis, sway, positions, normals, shadowPositions } = rig;
+    const { count, length, points, tangents, widthAxis, normalAxis, sway, weaveSideways, weaveVertical, weaveBay, positions, normals, shadowPositions } = rig;
     const { w, n, c } = scratch;
 
     for (let i = 0; i < count; i++) {
@@ -138,13 +174,27 @@ export function Ribbon({ materials, segments, halfRate, frozen }: RibbonProps) {
       w.set(W0.x * cos + N0.x * sin, W0.y * cos + N0.y * sin, W0.z * cos + N0.z * sin);
       n.set(-W0.x * sin + N0.x * cos, -W0.y * sin + N0.y * cos, -W0.z * sin + N0.z * cos);
 
-      const sideways = 0.24 * sway[i] * Math.sin(0.55 * s - 0.8 * t);
-      const lift = 0.14 * sway[i] * Math.sin(0.37 * s - 0.6 * t + 1.3);
+      // The approved sway, then the corridor's weave on top: a wave that runs down the ribbon on the clock (0.7 rad/s,
+      // about 1.4 m/s along it) between nodes at the arches, so the bends travel through the openings by themselves.
+      const sideways = 0.24 * sway[i] * Math.sin(0.55 * s - 0.8 * t) + weaveSideways[i] * Math.sin(0.7 * t - 0.5 * s + 0.9 * weaveBay[i]);
+      const lift = 0.14 * sway[i] * Math.sin(0.37 * s - 0.6 * t + 1.3) + weaveVertical[i] * Math.sin(0.55 * t - 0.4 * s + 2.1 + 0.7 * weaveBay[i]);
       c.set(
         points[i].x + W0.x * sideways + N0.x * lift,
         points[i].y + W0.y * sideways + N0.y * lift,
         points[i].z + W0.z * sideways + N0.z * lift
       );
+
+      // Only if the camera is about to pass through it, ease the ribbon aside.
+      const dx = c.x - stageState.camera.x;
+      const dy = c.y - stageState.camera.y;
+      const dz = c.z - stageState.camera.z;
+      const gap = Math.hypot(dx, dy, dz);
+      if (gap < LENS_GUARD && gap > 0.001) {
+        const push = ((LENS_GUARD - gap) * 0.9) / gap;
+        c.x += dx * push;
+        c.y += dy * push;
+        c.z += dz * push;
+      }
 
       // It narrows to a point over its last stretch, so it dissolves into the light at the end of the hall.
       const hw = HALF_WIDTH * (1 - 0.94 * smoothstep(length - 13, length, s));

@@ -1,8 +1,8 @@
 import { CatmullRomCurve3, Vector3 } from "three";
-import { HALL_ROUTE, RIB_EVERY } from "@/features/immersive/lib/timeline";
+import { CLOSE_SIGMA, DOOR_SIGMA, HALL_START_SIGMA, RIB_EVERY } from "@/features/immersive/lib/timeline";
 
 // The pure scroll numbers live in timeline.ts (no 3D), and are re-exported here for the scene's convenience.
-export { RUN, SERVICES_END, SERVICE_COUNT, clamp01, smoothstep, hallJourney, serviceIndexAt } from "@/features/immersive/lib/timeline";
+export { RUN, SERVICES_END, SERVICE_COUNT, clamp01, smoothstep, serviceIndexAt } from "@/features/immersive/lib/timeline";
 
 /**
  * The installation's measurements and the paths through it. Units are roughly metres; the floor is y = 0
@@ -19,14 +19,24 @@ export const PORTAL = { x: 2.2, width: 3.0, straight: 3.0 } as const;
 export const WALL = { z: -6, depth: 0.8, width: 60, height: 10 } as const;
 
 /** The hall behind the wall: an arch-section tunnel, wider than the doorway that leads into it. */
-export const HALL = { width: 6.4, straight: 3.2, length: 48, ribEvery: RIB_EVERY } as const;
+export const HALL = { width: 6.4, straight: 3.2, length: DOOR_SIGMA, ribEvery: RIB_EVERY } as const;
+
+/** z of the hall's back face, where distance down the hall (σ, see timeline.ts) is zero. */
+export const HALL_START_Z = WALL.z - WALL.depth;
+/** The z that distance σ down the hall is at. The hall runs straight, so this is all the geometry there is. */
+export const zAt = (sigma: number) => HALL_START_Z - sigma;
 
 /** Half the gap left between the two screen leaves while they are closed (the ribbon passes through it). */
 export const SCREEN_GAP = 0.62;
 /** Where the screen's leaves sit, inside the thickness of the wall. */
 export const SCREEN_Z = WALL.z - 0.5;
 
-/** The ribbon's control points: the shape of the spine. */
+/**
+ * The ribbon's control points: the shape of the spine. The first twelve are exactly the approved opening's route
+ * (from the top of the gallery, through the doorway, to z = -37). The rest continue it down the corridor, threading
+ * each service arch at a chosen height: the camera's eye is about 1.4 m up, so where the ribbon passes at about
+ * 2.4 m to 2.9 m it goes by within a metre or so of the lens, and where it passes higher it is a distant crossing.
+ */
 const RIBBON_POINTS = [
   [1.3, 6.0, -1.8],
   [0.85, 4.5, -2.3],
@@ -38,11 +48,18 @@ const RIBBON_POINTS = [
   [PORTAL.x, 3.0, -8.6],
   [PORTAL.x, 3.25, -13],
   [PORTAL.x, 3.05, -19],
-  [PORTAL.x, 2.8, -25],
-  [PORTAL.x, 3.1, -31],
-  [PORTAL.x, 2.8, -38],
-  [PORTAL.x, 3.0, -45],
-  [PORTAL.x, 2.7, -52],
+  [PORTAL.x, 2.7, -25],
+  [PORTAL.x, 2.9, -37],
+  // --- the corridor ---
+  [PORTAL.x, 2.9, -41],
+  [PORTAL.x, 3.3, -45],
+  [PORTAL.x, 3.5, -49],
+  [PORTAL.x, 3.0, -53],
+  [PORTAL.x, 2.6, -57],
+  [PORTAL.x, 2.9, -61],
+  [PORTAL.x, 2.7, -65],
+  [PORTAL.x, 2.3, -70],
+  [PORTAL.x, 1.8, -74.5],
 ] as const;
 
 export const ribbonCurve = new CatmullRomCurve3(
@@ -77,29 +94,45 @@ export const lookCurve = new CatmullRomCurve3(
 );
 
 /**
- * The camera's route down the hall, for the services (and what follows). It starts exactly where the opening
- * route ends, so the two join without a seam. Like the first, it is parametrised by distance.
+ * The camera's route down the hall, for the services. It starts exactly where the opening route ends, so the two
+ * join without a seam, and like the first it is parametrised by distance. It drifts a little from side to side and
+ * up and down between the arches (kept well inside the walls), so the view is never a rail down the middle; at the
+ * arches it takes the heights that bring it close beside the ribbon.
  */
 export const hallCameraCurve = new CatmullRomCurve3(
   [
-    new Vector3(PORTAL.x, 1.42, HALL_ROUTE.from),
-    new Vector3(PORTAL.x, 1.4, -26),
-    new Vector3(PORTAL.x, 1.4, -38),
-    new Vector3(PORTAL.x, 1.4, HALL_ROUTE.to),
+    new Vector3(PORTAL.x, 1.42, zAt(HALL_START_SIGMA)),
+    new Vector3(2.2, 1.45, zAt(10.2)),
+    new Vector3(1.7, 1.65, zAt(18.2)),
+    new Vector3(2.6, 1.4, zAt(26.2)),
+    new Vector3(2.0, 1.9, zAt(34.2)),
+    new Vector3(2.7, 1.3, zAt(42.2)),
+    new Vector3(1.8, 1.55, zAt(50.2)),
+    new Vector3(2.2, 1.5, zAt(58.2)),
+    new Vector3(2.2, 1.5, zAt(CLOSE_SIGMA)),
   ],
   false,
   "centripetal"
 );
+/** Where it looks: about eight metres ahead, a little off to one side or another to match. */
 export const hallLookCurve = new CatmullRomCurve3(
   [
     new Vector3(PORTAL.x, 2.4, -22),
-    new Vector3(PORTAL.x, 2.5, -34),
-    new Vector3(PORTAL.x, 2.5, -46),
-    new Vector3(PORTAL.x, 2.5, -54),
+    new Vector3(2.2, 2.2, zAt(10.2 + 8)),
+    new Vector3(2.4, 2.1, zAt(18.2 + 8)),
+    new Vector3(2.0, 2.3, zAt(26.2 + 8)),
+    new Vector3(2.2, 1.8, zAt(34.2 + 8)),
+    new Vector3(2.0, 2.6, zAt(42.2 + 8)),
+    new Vector3(2.5, 2.0, zAt(50.2 + 8)),
+    new Vector3(2.2, 2.0, zAt(58.2 + 8)),
+    new Vector3(2.2, 2.0, zAt(CLOSE_SIGMA + 8)),
   ],
   false,
   "centripetal"
 );
+
+/** How many rings the ribbon is built from: about one every 24 cm (41 cm on the lighter tier), as in the approved opening. */
+export const ribbonSegments = (lite: boolean) => Math.round(ribbonCurve.getLength() / (lite ? 0.41 : 0.2435));
 
 
 /**

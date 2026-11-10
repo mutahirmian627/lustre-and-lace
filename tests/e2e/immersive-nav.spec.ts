@@ -13,8 +13,8 @@ import { test, expect, type Page } from "@playwright/test";
 async function scrollToScene(page: Page, scene: number) {
   await page.evaluate((g) => {
     const vh = window.innerHeight;
-    // The opening is 2.3 screens of travel and the services 4.9 (RUN in lib/world.ts).
-    window.scrollTo(0, Math.round(g <= 1 ? g * 2.3 * vh : (2.3 + (g - 1) * 4.9) * vh));
+    // The opening is 2.3 screens of travel and the services 5.6 (RUN in lib/world.ts).
+    window.scrollTo(0, Math.round(g <= 1 ? g * 2.3 * vh : (2.3 + (g - 1) * 5.6) * vh));
   }, scene);
   const [name, expected] = scene <= 1 ? ["--p", scene] : ["--s", scene - 1];
   await expect

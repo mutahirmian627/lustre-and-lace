@@ -10,6 +10,10 @@ export const stageState = {
   target: 0,
   /** The same, eased: what the camera actually uses, so the scene has weight rather than snapping. */
   value: 0,
+  /** How far down the hall the camera is (σ, metres); the opening's end point until the hall route begins. Written by the camera rig. */
+  sigma: 7.6,
+  /** Where the camera is in the world, written by the camera rig. The ribbon uses it for one thing only: to keep clear of the lens. */
+  camera: { x: 0, y: 1.5, z: 7.6 },
   /** Frames per second over the last second, for the `?debug` readout. */
   fps: 0,
 };
