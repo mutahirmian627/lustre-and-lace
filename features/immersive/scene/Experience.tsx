@@ -8,6 +8,7 @@ import { createMaterials } from "@/features/immersive/lib/materials";
 import { createGlowTexture, createJaliMask, createTileTexture } from "@/features/immersive/lib/textures";
 import { stageState } from "@/features/immersive/lib/stage-state";
 import { Architecture } from "@/features/immersive/scene/Architecture";
+import { ArchVeils } from "@/features/immersive/scene/ArchVeils";
 import { CameraRig } from "@/features/immersive/scene/CameraRig";
 import { HallLights } from "@/features/immersive/scene/HallLights";
 import { Dust } from "@/features/immersive/scene/Dust";
@@ -108,6 +109,7 @@ export function Experience({ lite, frozen, onCompiled, onReady }: ExperienceProp
 
       <Architecture materials={resources.materials} tileMap={resources.tileMap} glow={resources.glow} lite={lite} />
       <JaliScreen materials={resources.materials} jaliMask={resources.jaliMask} lite={lite} />
+      <ArchVeils materials={resources.materials} jaliMask={resources.jaliMask} glow={resources.glow} lite={lite} />
       <Ribbon materials={resources.materials} segments={ribbonSegments(lite)} halfRate={lite} frozen={frozen} />
       {!lite && <Dust glow={resources.glow} frozen={frozen} />}
 

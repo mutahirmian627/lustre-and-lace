@@ -16,7 +16,7 @@ const OPENING = [{ z: WALL.z - 8 }, { z: WALL.z - 15 }, { z: WALL.z - 22 }] as c
 /** How quickly a lamp fades as the camera moves away from its arch, in metres. */
 const REACH = 5;
 
-interface Signature {
+export interface Signature {
   /** Where the arch's light hangs, relative to the arch: sideways, height, and metres beyond it. */
   lateral: number;
   height: number;
@@ -31,7 +31,7 @@ interface Signature {
  * cool white one from above, a rose-gold one low to the left, a gold uplight, a lilac one from the right, and at
  * the last a broad gold.
  */
-const SIGNATURES: readonly Signature[] = [
+export const SIGNATURES: readonly Signature[] = [
   { lateral: 0, height: 5, beyond: 1.5, colour: "#ff9db8", peak: 9 },
   { lateral: 1.4, height: 4.2, beyond: 1, colour: "#ffb48a", peak: 12 },
   { lateral: 0, height: 5.4, beyond: 0, colour: "#d9c8ff", peak: 13 },

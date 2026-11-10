@@ -100,3 +100,16 @@ export function serviceIndexFromSigma(sigma: number): number {
 export function serviceIndexAt(s: number): number {
   return serviceIndexFromSigma(hallSigma(s));
 }
+
+/**
+ * A service arch's lattice veil, from how far ahead of the camera the arch is (metres along the corridor; negative once
+ * the camera has passed it). The veil is invisible while the arch is far (so the approved opening is untouched), closed
+ * and showing its lattice as the arch comes into the near corridor, then parts as the camera closes in, and stays parted
+ * behind it. `from` and `to` are where the parting starts and finishes, and differ a little from arch to arch.
+ */
+export function veilAt(ahead: number, from = 9, to = 2.6): { fade: number; open: number } {
+  return {
+    fade: 1 - smoothstep(14, 22, ahead),
+    open: 1 - smoothstep(to, from, ahead),
+  };
+}

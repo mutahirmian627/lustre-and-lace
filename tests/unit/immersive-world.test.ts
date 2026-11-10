@@ -12,6 +12,7 @@ import {
   serviceIndexAt,
   serviceIndexFromSigma,
   smoothstep,
+  veilAt,
 } from "@/features/immersive/lib/timeline";
 import {
   cameraCurve,
@@ -207,5 +208,31 @@ describe("helpers", () => {
     expect(smoothstep(0.2, 0.6, 0)).toBe(0);
     expect(smoothstep(0.2, 0.6, 1)).toBe(1);
     expect(smoothstep(0.2, 0.6, 0.4)).toBeCloseTo(0.5, 5);
+  });
+});
+
+describe("the service arches' lattice veils", () => {
+  it("are invisible from the approved opening's camera, so the opening's view down the hall is untouched", () => {
+    // Where the opening starts, how far ahead of the camera is each arch (the veil sits in the middle of its 0.34 m rib)?
+    const start = cameraCurve.getPointAt(0);
+    for (const arch of ARCHES) expect(veilAt(start.z - (zAt(arch) + 0.17)).fade).toBe(0);
+  });
+
+  it("show closed as the arch nears, part by the camera's distance, and stay parted behind the camera", () => {
+    expect(veilAt(14)).toMatchObject({ fade: 1, open: 0 });
+    expect(veilAt(9, 9, 2.6).open).toBe(0);
+    expect(veilAt(2.6, 9, 2.6).open).toBe(1);
+    expect(veilAt(-5).open).toBe(1);
+    let last = -1;
+    for (let d = 10; d >= -2; d -= 0.5) {
+      const { open } = veilAt(d);
+      expect(open).toBeGreaterThanOrEqual(last);
+      last = open;
+    }
+  });
+
+  it("are fully open well before the lens reaches them, so the camera never goes through a closed leaf", () => {
+    for (const to of [2.6, 2.8, 3.2, 3.4]) expect(veilAt(to - 0.5, 9, to).open).toBe(1);
+    expect(veilAt(1.5).open).toBe(1);
   });
 });
