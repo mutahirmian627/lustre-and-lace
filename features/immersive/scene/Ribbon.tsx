@@ -29,6 +29,9 @@ const BAY_SWING = [1.6, 1.9, 1.7, 2.0, 1.7, 1.5];
  */
 const LENS_GUARD = 0.42;
 
+/** Beyond this z the floor is the ivory hall's, and the ribbon throws a soft shadow on it, as it does in the gallery. */
+const IVORY_FLOOR_Z = zAt(DOOR_SIGMA) - 0.3;
+
 interface RibbonProps {
   materials: Materials;
   segments: number;
@@ -196,8 +199,8 @@ export function Ribbon({ materials, segments, halfRate, frozen }: RibbonProps) {
         c.z += dz * push;
       }
 
-      // It narrows to a point over its last stretch, so it dissolves into the light at the end of the hall.
-      const hw = HALF_WIDTH * (1 - 0.94 * smoothstep(length - 13, length, s));
+      // Its last few metres narrow a little, to a finer end where it touches the floor of the ivory hall.
+      const hw = HALF_WIDTH * (1 - 0.5 * smoothstep(length - 6, length, s));
       for (let face = 0; face < 2; face++) {
         const flip = face === 0 ? 1 : -1; // the top bows towards +n, the bottom towards -n
         for (let k = 0; k < ACROSS; k++) {
@@ -218,9 +221,9 @@ export function Ribbon({ materials, segments, halfRate, frozen }: RibbonProps) {
         }
       }
 
-      // Shadow on the gallery floor, only in front of the wall.
+      // Shadow on the floor: in the gallery in front of the wall, and in the ivory hall beyond the large doorway.
       const sb = i * 6;
-      if (c.z > WALL.z + 0.2) {
+      if (c.z > WALL.z + 0.2 || c.z < IVORY_FLOOR_Z) {
         const h = Math.max(0, c.y);
         const tx = tangents[i].x;
         const tz = tangents[i].z;

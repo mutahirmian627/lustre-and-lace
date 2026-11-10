@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { stageState } from "@/features/immersive/lib/stage-state";
-import { RUN, SERVICES_END, serviceIndexAt } from "@/features/immersive/lib/timeline";
+import { CONTACT_SIGMA, FLIP_SIGMA, RUN, SERVICES_END, hallSigma, serviceIndexAt, smoothstep } from "@/features/immersive/lib/timeline";
 
 /**
  * Turns the page's scroll position into numbers and shares them two ways: as `stageState.target` for the 3D
@@ -10,7 +10,9 @@ import { RUN, SERVICES_END, serviceIndexAt } from "@/features/immersive/lib/time
  * shift colours. Nothing re-renders; scrolling stays the browser's own.
  *
  *   --p       0..1 across the opening (gallery to hall)
- *   --s       0..1 across the services and the close
+ *   --s       0..1 across the services, the threshold and the ivory hall
+ *   --flip    0..1 as the camera passes through the large doorway: the page turns from plum back to ivory
+ *   --c       0..1 as the contact words arrive in the ivory hall
  *   data-phase    which text is meant to be readable now: opening, transit, approach, services, contact
  *   data-service  which of the seven services is on show (while in the services phase)
  *
@@ -44,8 +46,24 @@ export function ScrollDriver({ runId }: { runId: string }) {
 
       // Which text is meant to be readable now. The others are hidden from the keyboard and screen readers as well as the eye.
       // (A sliver of the services run still belongs to the approach, so it can fade out before the services fade in.)
+      const sigma = hallSigma(s);
+      const flip = smoothstep(FLIP_SIGMA[0], FLIP_SIGMA[1], sigma);
+      const contact = smoothstep(CONTACT_SIGMA[0], CONTACT_SIGMA[1], sigma);
+      root.style.setProperty("--flip", flip.toFixed(4));
+      root.style.setProperty("--c", contact.toFixed(4));
+
       const phase =
-        s > 0.03 ? (s < SERVICES_END ? "services" : "contact") : p < 0.2 ? "opening" : p < 0.56 ? "transit" : "approach";
+        s > 0.03
+          ? s < SERVICES_END
+            ? "services"
+            : contact > 0.02
+              ? "contact"
+              : "threshold"
+          : p < 0.2
+            ? "opening"
+            : p < 0.56
+              ? "transit"
+              : "approach";
       if (root.dataset.phase !== phase) root.dataset.phase = phase;
 
       const service = String(serviceIndexAt(s));
@@ -64,6 +82,8 @@ export function ScrollDriver({ runId }: { runId: string }) {
       if (frame) window.cancelAnimationFrame(frame);
       root.style.removeProperty("--p");
       root.style.removeProperty("--s");
+      root.style.removeProperty("--flip");
+      root.style.removeProperty("--c");
       delete root.dataset.phase;
       delete root.dataset.service;
       stageState.target = 0;

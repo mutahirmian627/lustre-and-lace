@@ -20,7 +20,13 @@
 
   --p: 0;
   --s: 0;
-  --atmosphere: clamp(0, calc((var(--p) - 0.36) / 0.24), 1);
+  /* Plum while the corridor is around you, ivory again beyond the large doorway (--flip, 0..1). */
+  --flip: 0;
+  /* How far the contact words have arrived (0..1). */
+  --c: 0;
+  /* Where the services end in the scroll (must equal SERVICES_END in lib/timeline.ts; a unit test checks it). */
+  --se: 0.5917;
+  --atmosphere: calc(clamp(0, calc((var(--p) - 0.36) / 0.24), 1) * (1 - var(--flip)));
 
   --stage-bg: var(--ivory);
   --stage-fg: var(--ink);
@@ -784,27 +790,32 @@ html[data-immersive-poster] nextjs-portal {
 .imm-scrim {
   /* Stronger once the services begin (--s > 0), because the hall's far door is bright and sits behind the text on tall screens. */
   --scrim: calc(var(--atmosphere) * (0.66 + min(var(--s) * 20, 1) * 0.24));
+  /* In the ivory hall the same help is given in ivory, where the ribbon sweeps behind the words. */
+  --cream: calc(var(--flip) * 0.74);
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(0deg, rgb(30 12 36 / var(--scrim)) 0%, rgb(30 12 36 / calc(var(--scrim) * 0.68)) 42%, transparent 72%);
+  background:
+    linear-gradient(0deg, rgb(244 239 230 / var(--cream)) 0%, rgb(244 239 230 / calc(var(--cream) * 0.8)) 40%, transparent 70%),
+    linear-gradient(0deg, rgb(30 12 36 / var(--scrim)) 0%, rgb(30 12 36 / calc(var(--scrim) * 0.68)) 42%, transparent 72%);
 }
 @media (min-width: 900px) {
   .imm-scrim {
-    background: linear-gradient(90deg, rgb(30 12 36 / var(--scrim)) 0%, rgb(30 12 36 / calc(var(--scrim) * 0.5)) 34%, transparent 58%);
+    background:
+      linear-gradient(90deg, rgb(244 239 230 / calc(var(--cream) * 0.55)) 0%, rgb(244 239 230 / calc(var(--cream) * 0.3)) 34%, transparent 58%),
+      linear-gradient(90deg, rgb(30 12 36 / var(--scrim)) 0%, rgb(30 12 36 / calc(var(--scrim) * 0.5)) 34%, transparent 58%);
   }
 }
 
 /* ---- Services: seven bays down the hall ---------------------------------------------------------- */
 
-.imm-scene--services,
-.imm-scene--contact {
+.imm-scene--services {
   --stage-soft: #e3d8e7; /* a little brighter than the day-side grey, since pale arches and the far door pass behind */
 }
 .imm-scene--services {
   bottom: max(2.5rem, 6svh);
   max-width: 34rem;
-  opacity: clamp(0, min(calc((var(--s) - 0.03) * 30), calc((0.88 - var(--s)) * 25)), 1);
+  opacity: clamp(0, min(calc((var(--s) - 0.03) * 30), calc((var(--se) - var(--s)) * 25)), 1);
   visibility: hidden;
 }
 @media (min-width: 900px) {
@@ -953,12 +964,12 @@ html[data-immersive-poster] nextjs-portal {
   border-top-color: var(--stage-fg);
 }
 
-/* ---- The close (provisional) --------------------------------------------------------------------- */
+/* ---- The close: in the ivory hall, beyond the large doorway --------------------------------------------------------------------- */
 
 .imm-scene--contact {
   bottom: max(2.5rem, 6svh);
   max-width: 32rem;
-  opacity: clamp(0, calc((var(--s) - 0.88) * 25), 1);
+  opacity: var(--c);
   visibility: hidden;
 }
 @media (min-width: 900px) {

@@ -25,7 +25,9 @@ Four materials only (`lib/materials.ts`):
 | Mirror chrome | the ribbon, a hairline inlay round the doorway | almost pure reflection of a bright, high-contrast painted cube |
 | Frosted glass | the lattice screen | milky bars, clear gaps; a second fainter lattice sits behind, offset by half a cell, so they slide against each other |
 | Ivory ceramic | gallery walls and floor (tiled), ribs | glazed: broad soft sheen; the floor has 1.6 m tile seams, which also make its perspective visible |
-| Plum lacquer | the hall | deep colour under a hard, glossy reflection |
+| Plum lacquer | the hall (the corridor) | deep colour under a hard, glossy reflection |
+
+The ivory ceramic comes back at the end: beyond the corridor's large lattice doorway is a spacious ivory hall.
 
 The lattice (`lib/textures.ts → createJaliMask`) is a restrained, contemporary reading of a jali screen: a square
 grid, a diamond joining the midpoints of its sides and a ring at the centre. Geometry, not ornament.
@@ -69,7 +71,22 @@ scripts/render-immersive-poster.mjs  renders the four fallback pictures from the
   import so the page's scroll listener doesn't pull the 3D library into the first load.
 - **One service per rib.** The hall has a rib every 4 m and the camera passes one per service, so the architecture
   itself paces the list. The hall's lanterns travel with the camera and drift from rose to gold the deeper it goes;
-  nothing new is added to the space. The hall ends in an arched door of light, the same silhouette again.
+  nothing new is added to the space.
+- **Each service arch is an event** (`scene/ArchVeils.tsx`). Every service rib holds a frosted lattice veil like the
+  gallery doorway's screen (two leaves, the ribbon's gap down the middle). It is invisible while the arch is far (so the
+  approved opening is untouched), shows closed as the arch comes into the near corridor, and parts by the *camera's
+  distance from it* (`veilAt` in `lib/timeline.ts`), so it is the visitor's own approach that opens it. Four lattices
+  (scale, angle, tint), three ways of parting, slightly different moments, and a glow in each arch's own colour
+  (`HallLights.tsx` has the per-arch lamps).
+- **The finale: a doorway, an ivory hall, a sculpture.** The corridor ends in a large lattice doorway (the same veil
+  machinery, bigger, seen from further away, so the light of the room beyond arrives as you approach). The camera goes
+  through it and rests in `scene/IvoryHall.tsx`: a barrel vault in ivory ceramic with a tiled floor, tall lattice windows
+  throwing patterned light, and the ribbon, which continues through the doorway and hangs as a loop in the middle of the
+  room with one end on the floor (no pedestal). It is still the same ribbon on the same clock; only the route changes
+  (`RIBBON_POINTS` in `lib/world.ts`). `scene/EndCurtain.tsx` keeps the far end of the corridor exactly as the approved
+  opening has it until the camera is within about 40 m. The page turns from plum to ivory as the camera passes through
+  the doorway (`--flip`, set by `ScrollDriver` from the camera's distance down the corridor), and the contact words
+  arrive in the ivory hall (`--c`).
 - **Accessibility of the services.** The visual stage (one service at a time) is `aria-hidden`; a screen-reader-only
   list holds all seven in full, so nobody depends on scroll position to read them. The words are in
   `content.ts` (drafted for the owner's review).
@@ -86,7 +103,7 @@ scripts/render-immersive-poster.mjs  renders the four fallback pictures from the
     crash in the 3D (`StageBoundary`), a lost graphics context, or a scene that hasn't drawn within 30 s also fall back.
   - **None of it is silent or permanent.** `data-stage-reason` says why, a quiet note says it to the visitor, and a
     button ("Play 3D" / "Try 3D again", `StillNote`) starts the live scene again on the lighter tier.
-  - **The fallback is itself in motion** (`sections/StillJourney.tsx`): 32 frames of the real scene along the whole
+  - **The fallback is itself in motion** (`sections/StillJourney.tsx`): 44 frames of the real scene along the whole
     journey (`public/immersive/journey/`, each device loads only its own landscape or portrait cut), played by scroll,
     cross-faded, and never still: the picture drifts and breathes and follows the pointer (switched off for reduced
     motion). Only the ribbon's own movement is missing. Regenerate with `npm run dev`, then

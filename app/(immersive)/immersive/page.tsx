@@ -8,7 +8,7 @@ import {
   IMMERSIVE_WHATSAPP_DISPLAY,
   IMMERSIVE_WHATSAPP_NUMBER,
 } from "@/features/immersive/constants";
-import { RUN, SERVICES_END } from "@/features/immersive/lib/timeline";
+import { RUN, THRESHOLD_END } from "@/features/immersive/lib/timeline";
 import { ImmersiveNav } from "@/features/immersive/nav/ImmersiveNav";
 import { StageLoader } from "@/features/immersive/scene/StageLoader";
 import { Backdrop } from "@/features/immersive/sections/Backdrop";
@@ -55,7 +55,7 @@ export default function ImmersivePage() {
           {/* Where the menu's entries scroll to. */}
           <span id="approach" className="imm-anchor" style={{ top: anchorTop(0, 0.78) }} aria-hidden="true" />
           <span id="services" className="imm-anchor" style={{ top: anchorTop(0.07) }} aria-hidden="true" />
-          <span id="contact" className="imm-anchor" style={{ top: anchorTop(SERVICES_END + 0.08) }} aria-hidden="true" />
+          <span id="contact" className="imm-anchor" style={{ top: anchorTop(THRESHOLD_END + 0.03) }} aria-hidden="true" />
           <div className="imm-sticky">
             <div className="imm-scrim" aria-hidden="true" />
             <section className="imm-scene imm-scene--opening" aria-labelledby="opening-title">
@@ -116,7 +116,7 @@ export default function ImmersivePage() {
               </ol>
             </section>
 
-            {/* The close. Provisional: later stages place the work and the process before it. */}
+            {/* The close, in the ivory hall beyond the large doorway. Later stages place the work and the process before it. */}
             <section className="imm-scene imm-scene--contact" aria-labelledby="contact-title">
               <p className="imm-label">Contact</p>
               <h2 id="contact-title" className="imm-statement">
@@ -172,7 +172,7 @@ export default function ImmersivePage() {
       </main>
 
       <div className="imm-chrome pointer-events-none fixed bottom-3 right-3 z-50 rounded-full bg-black/70 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-white">
-        Experimental preview · stage 2 · opening and services
+        Experimental preview · stage 3 · opening, services and close
       </div>
       <StillNote />
       <TierBadge />

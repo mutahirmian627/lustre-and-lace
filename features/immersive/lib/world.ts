@@ -1,8 +1,8 @@
 import { CatmullRomCurve3, Vector3 } from "three";
-import { CLOSE_SIGMA, DOOR_SIGMA, HALL_START_SIGMA, RIB_EVERY } from "@/features/immersive/lib/timeline";
+import { CLOSE_SIGMA, DOOR_SIGMA, HALL_START_SIGMA, IVORY_LENGTH, RIB_EVERY } from "@/features/immersive/lib/timeline";
 
 // The pure scroll numbers live in timeline.ts (no 3D), and are re-exported here for the scene's convenience.
-export { RUN, SERVICES_END, SERVICE_COUNT, clamp01, smoothstep, serviceIndexAt } from "@/features/immersive/lib/timeline";
+export { RUN, SERVICES_END, THRESHOLD_END, SERVICE_COUNT, clamp01, smoothstep, serviceIndexAt } from "@/features/immersive/lib/timeline";
 
 /**
  * The installation's measurements and the paths through it. Units are roughly metres; the floor is y = 0
@@ -20,6 +20,14 @@ export const WALL = { z: -6, depth: 0.8, width: 60, height: 10 } as const;
 
 /** The hall behind the wall: an arch-section tunnel, wider than the doorway that leads into it. */
 export const HALL = { width: 6.4, straight: 3.2, length: DOOR_SIGMA, ribEvery: RIB_EVERY } as const;
+
+/**
+ * The ivory hall beyond the corridor's large lattice doorway: a spacious barrel vault in ivory ceramic, lit by lattice windows
+ * down both sides. It continues the corridor's centre line (x = PORTAL.x) from σ = DOOR_SIGMA.
+ */
+export const IVORY = { width: 12, straight: 4.6, length: IVORY_LENGTH, windowEvery: 7 } as const;
+/** The large doorway at the corridor's end: much bigger than the service arches (and the gallery's portal), nearly the corridor's own height. */
+export const BIG_DOOR = { width: 4.6, straight: 3.5 } as const;
 
 /** z of the hall's back face, where distance down the hall (σ, see timeline.ts) is zero. */
 export const HALL_START_Z = WALL.z - WALL.depth;
@@ -58,8 +66,24 @@ const RIBBON_POINTS = [
   [PORTAL.x, 2.6, -57],
   [PORTAL.x, 2.9, -61],
   [PORTAL.x, 2.7, -65],
-  [PORTAL.x, 2.3, -70],
-  [PORTAL.x, 1.8, -74.5],
+  [PORTAL.x, 2.6, -69.5],
+  [PORTAL.x, 2.9, -74],
+  // --- through the large doorway (its plane is at z = -76.8) and into the ivory hall: the sculpture ---
+  // It rises on the right, crosses high above, comes back down on the left and sweeps round the front to land on the
+  // floor, as one loop hung in the middle of the room. No stretch of it is steeper than the ribbon's own opening.
+  [PORTAL.x, 3.0, -78.6],
+  [2.9, 3.5, -84],
+  [4.1, 4.5, -89.5],
+  [4.0, 5.5, -95],
+  [2.6, 6.1, -98],
+  [0.9, 5.7, -99],
+  [-0.2, 4.7, -97],
+  [0.2, 3.6, -94],
+  [1.5, 2.8, -92],
+  [3.0, 2.2, -92.5],
+  [3.9, 1.4, -94.5],
+  [3.5, 0.6, -97],
+  [2.4, 0.1, -98.5],
 ] as const;
 
 export const ribbonCurve = new CatmullRomCurve3(
@@ -109,7 +133,11 @@ export const hallCameraCurve = new CatmullRomCurve3(
     new Vector3(2.7, 1.3, zAt(42.2)),
     new Vector3(1.8, 1.55, zAt(50.2)),
     new Vector3(2.2, 1.5, zAt(58.2)),
-    new Vector3(2.2, 1.5, zAt(CLOSE_SIGMA)),
+    // The threshold: on down the corridor's last stretch, through the large doorway, and into the ivory hall.
+    new Vector3(2.2, 1.5, zAt(65)),
+    new Vector3(2.2, 1.5, zAt(DOOR_SIGMA)),
+    new Vector3(2.3, 1.6, zAt(73)),
+    new Vector3(2.2, 1.65, zAt(CLOSE_SIGMA)),
   ],
   false,
   "centripetal"
@@ -125,7 +153,10 @@ export const hallLookCurve = new CatmullRomCurve3(
     new Vector3(2.0, 2.6, zAt(42.2 + 8)),
     new Vector3(2.5, 2.0, zAt(50.2 + 8)),
     new Vector3(2.2, 2.0, zAt(58.2 + 8)),
-    new Vector3(2.2, 2.0, zAt(CLOSE_SIGMA + 8)),
+    new Vector3(2.2, 2.1, zAt(65 + 8)),
+    new Vector3(2.2, 2.4, zAt(DOOR_SIGMA + 8)),
+    new Vector3(2.2, 3.0, zAt(80)),
+    new Vector3(2.0, 3.5, zAt(86)),
   ],
   false,
   "centripetal"

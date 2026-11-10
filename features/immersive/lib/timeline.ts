@@ -8,22 +8,34 @@
  */
 
 /**
- * How tall the scroll run is, in screens: the opening (gallery to hall), then the services and the close.
- * Both the page's CSS height and the scroll maths read these, so they can't disagree.
+ * How tall the scroll run is, in screens: the opening (gallery to hall), then everything after it: the seven bays of
+ * services, the threshold (down the corridor's last stretch, through the large lattice doorway) and the ivory hall where
+ * the camera comes to rest. Both the page's CSS height and the scroll maths read these, so they can't disagree.
  */
-export const RUN = { opening: 2.3, services: 5.6 } as const;
+const BAYS_SCREENS = 4.928;
+const THRESHOLD_SCREENS = 2.1;
+const HALL_SCREENS = 1.3;
+export const RUN = { opening: 2.3, services: BAYS_SCREENS + THRESHOLD_SCREENS + HALL_SCREENS } as const;
 
-/** Of the services run, the part that is the seven bays; the rest is the close, where the camera comes to rest. */
-export const SERVICES_END = 0.88;
+/** Of the services run (0..1), where the seven bays end, where the threshold ends (the camera is inside the ivory hall), and the end. */
+export const SERVICES_END = BAYS_SCREENS / RUN.services;
+export const THRESHOLD_END = (BAYS_SCREENS + THRESHOLD_SCREENS) / RUN.services;
 
 export const SERVICE_COUNT = 7;
 
-/** Where the camera is when the opening ends, where the services end, and where the close comes to rest. */
+/** Where the camera is when the opening ends, where the seven bays end, where the threshold ends, and where it comes to rest. */
 export const HALL_START_SIGMA = 7.6;
 export const SERVICES_END_SIGMA = 59;
-export const CLOSE_SIGMA = 62;
-/** The far end of the corridor, where its door of light is (for now). */
+export const THRESHOLD_END_SIGMA = 73;
+export const CLOSE_SIGMA = 75.5;
+/** The far end of the corridor: the large lattice doorway into the ivory hall. */
 export const DOOR_SIGMA = 70;
+/** The ivory hall beyond the doorway: how long it is. */
+export const IVORY_LENGTH = 34;
+/** Between these two distances down the hall the page turns from plum to ivory: the camera is passing through the doorway. */
+export const FLIP_SIGMA = [66, 72] as const;
+/** Where the contact words arrive: the camera has come through into the ivory hall. */
+export const CONTACT_SIGMA = [73, 75] as const;
 
 /** The hall's ribs stand every 4 m from 2.2: exactly the approved opening's grid. */
 export const RIB_EVERY = 4;
@@ -82,9 +94,15 @@ export function hallSigma(s: number): number {
     const span = elapsed[hi] - elapsed[lo] || 1;
     return HALL_START_SIGMA + (lo + (target - elapsed[lo]) / span) * STEP;
   }
-  // The close: a slow, easing-out glide to rest.
-  const t = clamp01((s - SERVICES_END) / (1 - SERVICES_END));
-  return SERVICES_END_SIGMA + (CLOSE_SIGMA - SERVICES_END_SIGMA) * (1 - (1 - t) * (1 - t));
+  if (s <= THRESHOLD_END) {
+    // The threshold: down the last stretch of the corridor, slowly, to the doorway and through it. A little linear
+    // travel keeps the camera moving from the last arch, and the rest eases in and out.
+    const t = clamp01((s - SERVICES_END) / (THRESHOLD_END - SERVICES_END));
+    return SERVICES_END_SIGMA + (THRESHOLD_END_SIGMA - SERVICES_END_SIGMA) * (0.3 * t + 0.7 * smoothstep(0, 1, t));
+  }
+  // The ivory hall: a slow, easing-out glide to rest in front of the sculpture.
+  const t = clamp01((s - THRESHOLD_END) / (1 - THRESHOLD_END));
+  return THRESHOLD_END_SIGMA + (CLOSE_SIGMA - THRESHOLD_END_SIGMA) * (1 - (1 - t) * (1 - t));
 }
 
 /**
@@ -107,9 +125,9 @@ export function serviceIndexAt(s: number): number {
  * and showing its lattice as the arch comes into the near corridor, then parts as the camera closes in, and stays parted
  * behind it. `from` and `to` are where the parting starts and finishes, and differ a little from arch to arch.
  */
-export function veilAt(ahead: number, from = 9, to = 2.6): { fade: number; open: number } {
+export function veilAt(ahead: number, from = 9, to = 2.6, fadeNear = 14, fadeFar = 22): { fade: number; open: number } {
   return {
-    fade: 1 - smoothstep(14, 22, ahead),
+    fade: 1 - smoothstep(fadeNear, fadeFar, ahead),
     open: 1 - smoothstep(to, from, ahead),
   };
 }

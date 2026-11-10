@@ -13,6 +13,10 @@ import {
   serviceIndexFromSigma,
   smoothstep,
   veilAt,
+  DOOR_SIGMA,
+  FLIP_SIGMA,
+  CONTACT_SIGMA,
+  SERVICES_END,
 } from "@/features/immersive/lib/timeline";
 import {
   cameraCurve,
@@ -24,6 +28,8 @@ import {
   PORTAL,
   ribbonCurve,
   SCREEN_GAP,
+  BIG_DOOR,
+  IVORY,
   zAt,
 } from "@/features/immersive/lib/world";
 
@@ -234,5 +240,73 @@ describe("the service arches' lattice veils", () => {
   it("are fully open well before the lens reaches them, so the camera never goes through a closed leaf", () => {
     for (const to of [2.6, 2.8, 3.2, 3.4]) expect(veilAt(to - 0.5, 9, to).open).toBe(1);
     expect(veilAt(1.5).open).toBe(1);
+  });
+});
+
+describe("the large doorway and the ivory hall", () => {
+  const length = ribbonCurve.getLength();
+  const inHall = [] as Vector3[];
+  for (let s = 0; s <= length; s += 0.05) {
+    const point = ribbonCurve.getPointAt(s / length);
+    if (point.z < zAt(DOOR_SIGMA)) inHall.push(point);
+  }
+
+  it("has the ribbon thread the middle of the large doorway, where the leaves part, and arrive in the ivory hall", () => {
+    let nearest = 99;
+    for (let s = 0; s <= length; s += 0.02) {
+      const point = ribbonCurve.getPointAt(s / length);
+      if (Math.abs(point.z - (zAt(DOOR_SIGMA) + 0.17)) < 0.05) nearest = Math.min(nearest, Math.abs(point.x - PORTAL.x));
+    }
+    expect(nearest).toBeLessThan(0.3);
+    expect(inHall.length).toBeGreaterThan(300);
+  });
+
+  it("hangs the ribbon as a sculpture inside the room, with its one end on the floor and no part of it through the floor, walls or vault", () => {
+    const end = ribbonCurve.getPointAt(1);
+    expect(end.y).toBeLessThan(0.25);
+    expect(end.y).toBeGreaterThan(0);
+    for (const point of inHall) {
+      expect(point.y).toBeGreaterThan(0.05);
+      expect(Math.abs(point.x - PORTAL.x)).toBeLessThan(IVORY.width / 2 - 1.5);
+      expect(point.y).toBeLessThan(IVORY.straight + 1.8);
+      expect(point.z).toBeGreaterThan(zAt(DOOR_SIGMA) - IVORY.length + 1);
+    }
+  });
+
+  it("never runs steeply enough for the strip's width to flip: no stretch within 15 degrees of vertical", () => {
+    const first = ribbonCurve.getPointAt(0.5);
+    expect(first).toBeDefined();
+    for (let u = 0.85; u <= 1; u += 0.001) {
+      const tangent = ribbonCurve.getTangentAt(u);
+      expect(Math.hypot(tangent.x, tangent.z)).toBeGreaterThan(0.26);
+    }
+  });
+
+  it("brings the camera through the doorway's middle and to rest where the whole sculpture is in front of it", () => {
+    const position = new Vector3();
+    const u = (DOOR_SIGMA - HALL_START_SIGMA) / (CLOSE_SIGMA - HALL_START_SIGMA);
+    hallCameraCurve.getPointAt(u, position);
+    expect(Math.abs(position.x - PORTAL.x)).toBeLessThan(0.3);
+    expect(position.y).toBeLessThan(BIG_DOOR.straight);
+    hallCameraCurve.getPointAt(1, position);
+    let nearest = 99;
+    for (const point of inHall) nearest = Math.min(nearest, point.distanceTo(position));
+    expect(nearest).toBeGreaterThan(1.2); // at rest the lens is clear of the ribbon, though it passes close overhead on the way in
+    for (const point of inHall.filter((p) => p.z < position.z - 3)) expect(point.z).toBeLessThan(position.z);
+  });
+
+  it("turns the page from plum to ivory as the camera goes through the doorway, and brings the contact words in after it", () => {
+    expect(FLIP_SIGMA[0]).toBeLessThan(DOOR_SIGMA);
+    expect(FLIP_SIGMA[1]).toBeGreaterThan(DOOR_SIGMA);
+    expect(CONTACT_SIGMA[0]).toBeGreaterThanOrEqual(FLIP_SIGMA[1]);
+    expect(CONTACT_SIGMA[1]).toBeLessThanOrEqual(CLOSE_SIGMA);
+    // The last scroll position: the page is fully ivory and the contact words are fully there.
+    expect(hallSigma(1)).toBeGreaterThanOrEqual(CONTACT_SIGMA[1]);
+  });
+
+  it("keeps the stylesheet's idea of where the services end in step with the scroll maths", () => {
+    const css = readFileSync("features/immersive/styles/immersive.css", "utf8");
+    const declared = Number(/--se:\s*([0-9.]+);/.exec(css)?.[1]);
+    expect(declared).toBeCloseTo(SERVICES_END, 3);
   });
 });

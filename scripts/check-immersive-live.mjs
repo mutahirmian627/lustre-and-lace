@@ -17,8 +17,8 @@ const runs = Number(process.argv[3] ?? 3);
 const LIVE_WITHIN_MS = 15_000;
 /** Share of pixels that must change over 1.2 s with nothing touched. (The approved Stage 1 opening measured about 4% per 0.4 s.) */
 const MOTION_FLOOR = 0.01;
-/** Where to look: scroll position in "scenes" (0 = the opening, 1.4 = deep in the corridor). */
-const POSITIONS = [0, 1.4];
+/** Where to look: scroll position in "scenes" (0 = the opening, 1.4 = deep in the corridor, 1.98 = the ivory hall). */
+const POSITIONS = [0, 1.4, 1.98];
 
 async function launch() {
   try {
@@ -65,7 +65,7 @@ try {
     for (const g of POSITIONS) {
       await page.evaluate((scene) => {
         const vh = window.innerHeight;
-        window.scrollTo(0, Math.round(scene <= 1 ? scene * 2.3 * vh : (2.3 + (scene - 1) * 5.6) * vh));
+        window.scrollTo(0, Math.round(scene <= 1 ? scene * 2.3 * vh : (2.3 + (scene - 1) * 8.328) * vh));
       }, g);
       await page.waitForTimeout(3500); // let the camera settle completely: from here nothing is scrolling
       motion.push({ g, share: await changedShare(page) });

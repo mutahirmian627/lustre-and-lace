@@ -5,8 +5,8 @@ import { useFrame } from "@react-three/fiber";
 import { AdditiveBlending, BufferAttribute, Color, Group, MeshBasicMaterial, MeshPhongMaterial, ShapeGeometry, type Texture } from "three";
 import { archLeaf } from "@/features/immersive/lib/arch";
 import type { Materials } from "@/features/immersive/lib/materials";
-import { ARCHES, veilAt } from "@/features/immersive/lib/timeline";
-import { HALL, PORTAL, SCREEN_GAP, zAt } from "@/features/immersive/lib/world";
+import { ARCHES, DOOR_SIGMA, veilAt } from "@/features/immersive/lib/timeline";
+import { BIG_DOOR, HALL, PORTAL, SCREEN_GAP, zAt } from "@/features/immersive/lib/world";
 import { stageState } from "@/features/immersive/lib/stage-state";
 import { SIGNATURES } from "@/features/immersive/scene/HallLights";
 
@@ -37,20 +37,30 @@ const LATTICES: readonly Lattice[] = [
   { cell: 0.42, angle: Math.PI / 4, colour: "#f4dde6", emissive: "#663a52" }, // fine, on the diagonal, rose
   { cell: 0.85, angle: 0, colour: "#e3dcff", emissive: "#40367a" }, // broad, lilac
   { cell: 0.55, angle: Math.PI / 8, colour: "#f4e6cf", emissive: "#66502f" }, // turned a little, champagne
+  { cell: 0.9, angle: 0, colour: "#f7ecd9", emissive: "#6b5a3a" }, // the large doorway's: broad and warm, the ivory hall's own
 ];
 
 type Parting = "split" | "rise" | "mixed";
 
 interface Event {
+  /** Where along the corridor (σ) its rib stands. */
+  sigma: number;
   lattice: number;
   parting: Parting;
   /** The camera's distance from the arch (metres) where the veil starts and finishes parting. */
   from: number;
   to: number;
+  /** The opening it fills. */
+  size: "arch" | "door";
+  /** The camera's distance from it over which it fades in: invisible beyond `fadeFar`, fully there inside `fadeNear`. */
+  fadeNear: number;
+  fadeFar: number;
+  /** Its glow's colour and size. */
+  halo: string;
+  haloSize: number;
 }
 
-/** Arch by arch: which lattice, how it parts, and when. */
-const EVENTS: readonly Event[] = [
+const ARCH_EVENTS: readonly Pick<Event, "lattice" | "parting" | "from" | "to">[] = [
   { lattice: 0, parting: "split", from: 9, to: 2.8 },
   { lattice: 1, parting: "rise", from: 9.5, to: 3.2 },
   { lattice: 2, parting: "mixed", from: 8.5, to: 2.6 },
@@ -60,13 +70,36 @@ const EVENTS: readonly Event[] = [
   { lattice: 0, parting: "split", from: 10, to: 3.2 },
 ];
 
-/** The opening inside a rib. */
-const OPENING = { width: HALL.width - 0.7, straight: HALL.straight } as const;
-/** How far a leaf must go to be out of sight: into the wall beside the arch, or into the vault above it. */
+/** Arch by arch: which lattice, how it parts, and when; then the large doorway at the corridor's end. */
+const EVENTS: readonly Event[] = [
+  ...ARCH_EVENTS.map(
+    (event, i): Event => ({
+      ...event,
+      sigma: ARCHES[i],
+      size: "arch",
+      fadeNear: 14,
+      fadeFar: 22,
+      halo: SIGNATURES[i].colour,
+      haloSize: 7,
+    })
+  ),
+  // The large lattice doorway: seen from far down the corridor, as the light of the room beyond it begins to arrive, and
+  // parted slowly, both leaves into the walls, as the camera comes up to it.
+  { sigma: DOOR_SIGMA, lattice: 4, parting: "split", from: 14, to: 3.6, size: "door", fadeNear: 26, fadeFar: 40, halo: "#ffe6c4", haloSize: 11 },
+];
+
+type OpeningSize = Event["size"];
+
+/** The two sizes of opening: inside a rib, and the large doorway. */
+const OPENINGS: Record<OpeningSize, { width: number; straight: number }> = {
+  arch: { width: HALL.width - 0.7, straight: HALL.straight },
+  door: { width: BIG_DOOR.width, straight: BIG_DOOR.straight },
+};
 const FRONT_OPACITY = 0.78;
 const BACK_OPACITY = 0.42;
-const SLIDE = OPENING.width / 2 + 0.35;
-const LIFT = OPENING.straight + OPENING.width / 2 + 0.5;
+/** How far a leaf must go to be out of sight: into the wall beside the opening, or into the vault above it. */
+const slideOf = (size: OpeningSize) => OPENINGS[size].width / 2 + 0.35;
+const liftOf = (size: OpeningSize) => OPENINGS[size].straight + OPENINGS[size].width / 2 + 0.5 + (size === "door" ? 1.5 : 0);
 /** The rib is 0.34 m thick, extruded towards the viewer from its back face: the veil sits in its middle. */
 const RIB_MIDDLE = 0.17;
 
@@ -88,13 +121,10 @@ interface VeilRefs {
 }
 
 export function ArchVeils({ materials, jaliMask, glow, lite }: ArchVeilsProps) {
-  const veils = useRef<VeilRefs[]>(ARCHES.map(() => ({ group: null, left: null, right: null, halo: null })));
+  const veils = useRef<VeilRefs[]>(EVENTS.map(() => ({ group: null, left: null, right: null, halo: null })));
 
   const parts = useMemo(() => {
     const segments = lite ? 24 : 40;
-    const width = OPENING.width + 0.04; // a hair over the rib's opening, so the leaves tuck into the rib and no light shows round them
-    const leftGeometry = new ShapeGeometry(archLeaf(width, OPENING.straight, SCREEN_GAP, -1), segments);
-    const rightGeometry = new ShapeGeometry(archLeaf(width, OPENING.straight, SCREEN_GAP, 1), segments);
     // The fainter lattice behind: the same leaf, its pattern shifted half a cell so the two slide against each other.
     const shifted = (geometry: ShapeGeometry) => {
       const copy = geometry.clone();
@@ -102,8 +132,14 @@ export function ArchVeils({ materials, jaliMask, glow, lite }: ArchVeilsProps) {
       for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) + 0.5, uv.getY(i) + 0.5);
       return copy;
     };
-    const leftBack = lite ? null : shifted(leftGeometry);
-    const rightBack = lite ? null : shifted(rightGeometry);
+    const make = (size: OpeningSize) => {
+      const opening = OPENINGS[size];
+      const width = opening.width + 0.04; // a hair over the opening, so the leaves tuck into the rib and no light shows round them
+      const leftGeometry = new ShapeGeometry(archLeaf(width, opening.straight, SCREEN_GAP, -1), segments);
+      const rightGeometry = new ShapeGeometry(archLeaf(width, opening.straight, SCREEN_GAP, 1), segments);
+      return { leftGeometry, rightGeometry, leftBack: lite ? null : shifted(leftGeometry), rightBack: lite ? null : shifted(rightGeometry) };
+    };
+    const geometries = { arch: make("arch"), door: make("door") };
 
     // One pattern texture per lattice (arches with the same lattice share it), and a pair of glass materials per arch,
     // so each arch fades and parts on its own.
@@ -127,7 +163,7 @@ export function ArchVeils({ materials, jaliMask, glow, lite }: ArchVeilsProps) {
       };
       return { front: make(materials.glass), back: make(materials.glassBack) };
     });
-    return { leftGeometry, rightGeometry, leftBack, rightBack, masks, glasses };
+    return { geometries, masks, glasses };
   }, [materials, jaliMask, lite]);
 
   useEffect(
@@ -137,23 +173,25 @@ export function ArchVeils({ materials, jaliMask, glow, lite }: ArchVeilsProps) {
         front.dispose();
         back.dispose();
       }
-      parts.leftGeometry.dispose();
-      parts.rightGeometry.dispose();
-      parts.leftBack?.dispose();
-      parts.rightBack?.dispose();
+      for (const geometry of Object.values(parts.geometries)) {
+        geometry.leftGeometry.dispose();
+        geometry.rightGeometry.dispose();
+        geometry.leftBack?.dispose();
+        geometry.rightBack?.dispose();
+      }
     },
     [parts]
   );
 
-  const colours = useMemo(() => SIGNATURES.map((signature) => new Color(signature.colour)), []);
+  const colours = useMemo(() => EVENTS.map((event) => new Color(event.halo)), []);
 
   useFrame(() => {
     const cameraZ = stageState.camera.z;
-    for (let i = 0; i < ARCHES.length; i++) {
+    for (let i = 0; i < EVENTS.length; i++) {
       const refs = veils.current[i];
       const event = EVENTS[i];
-      const z = zAt(ARCHES[i]) + RIB_MIDDLE;
-      const { fade, open } = veilAt(cameraZ - z, event.from, event.to);
+      const z = zAt(event.sigma) + RIB_MIDDLE;
+      const { fade, open } = veilAt(cameraZ - z, event.from, event.to, event.fadeNear, event.fadeFar);
       const visible = fade > 0.004 && open < 0.998;
       if (refs.group) refs.group.visible = visible;
       if (refs.halo) {
@@ -168,6 +206,8 @@ export function ArchVeils({ materials, jaliMask, glow, lite }: ArchVeilsProps) {
       glass.back.opacity = lite ? 0 : BACK_OPACITY * shown;
 
       if (refs.left && refs.right) {
+        const SLIDE = slideOf(event.size);
+        const LIFT = liftOf(event.size);
         if (event.parting === "split") {
           const o = smooth(open);
           refs.left.position.set(-SLIDE * o, 0, 0);
@@ -187,12 +227,13 @@ export function ArchVeils({ materials, jaliMask, glow, lite }: ArchVeilsProps) {
 
   return (
     <>
-      {ARCHES.map((sigma, i) => {
+      {EVENTS.map((event, i) => {
         const glass = parts.glasses[i];
-        const z = zAt(sigma) + RIB_MIDDLE;
+        const geometry = parts.geometries[event.size];
+        const z = zAt(event.sigma) + RIB_MIDDLE;
         return (
           <group
-            key={sigma}
+            key={event.sigma}
             ref={(group) => {
               veils.current[i].group = group;
             }}
@@ -204,20 +245,20 @@ export function ArchVeils({ materials, jaliMask, glow, lite }: ArchVeilsProps) {
                 veils.current[i].left = group;
               }}
             >
-              <mesh geometry={parts.leftGeometry} material={glass.front} renderOrder={2} />
-              {parts.leftBack && <mesh geometry={parts.leftBack} material={glass.back} position={[0, 0, -0.08]} renderOrder={1} />}
+              <mesh geometry={geometry.leftGeometry} material={glass.front} renderOrder={2} />
+              {geometry.leftBack && <mesh geometry={geometry.leftBack} material={glass.back} position={[0, 0, -0.08]} renderOrder={1} />}
             </group>
             <group
               ref={(group) => {
                 veils.current[i].right = group;
               }}
             >
-              <mesh geometry={parts.rightGeometry} material={glass.front} renderOrder={2} />
-              {parts.rightBack && <mesh geometry={parts.rightBack} material={glass.back} position={[0, 0, -0.08]} renderOrder={1} />}
+              <mesh geometry={geometry.rightGeometry} material={glass.front} renderOrder={2} />
+              {geometry.rightBack && <mesh geometry={geometry.rightBack} material={glass.back} position={[0, 0, -0.08]} renderOrder={1} />}
             </group>
             {/* The arch's own light, spilling through the lattice behind it. */}
             <mesh position={[0, 2.7, -0.3]} renderOrder={0}>
-              <planeGeometry args={[7, 7]} />
+              <planeGeometry args={[event.haloSize, event.haloSize]} />
               <meshBasicMaterial
                 ref={(material) => {
                   veils.current[i].halo = material;

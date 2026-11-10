@@ -27,8 +27,8 @@ async function changeOver(page: Page, ms: number) {
 async function scrollToScene(page: Page, scene: number) {
   await page.evaluate((g) => {
     const vh = window.innerHeight;
-    // The opening is 2.3 screens of travel and the services 5.6 (RUN in lib/world.ts).
-    window.scrollTo(0, Math.round(g <= 1 ? g * 2.3 * vh : (2.3 + (g - 1) * 5.6) * vh));
+    // The opening is 2.3 screens of travel and everything after it 8.328 (RUN in lib/timeline.ts).
+    window.scrollTo(0, Math.round(g <= 1 ? g * 2.3 * vh : (2.3 + (g - 1) * 8.328) * vh));
   }, scene);
   const [name, expected] = scene <= 1 ? ["--p", scene] : ["--s", scene - 1];
   await expect
@@ -78,8 +78,15 @@ test.describe("immersive opening", () => {
     const later = await page.evaluate(() => Number(document.querySelector(".immersive-root")!.getAttribute("data-service")));
     expect(later).toBeGreaterThan(current);
 
+    // Down the corridor's last stretch and through the large doorway: no words of their own, still plum.
+    await scrollToScene(page, 1.6);
+    await expect(root).toHaveAttribute("data-phase", "threshold");
+    expect(await page.evaluate(() => Number(getComputedStyle(document.querySelector(".immersive-root")!).getPropertyValue("--flip")))).toBeLessThan(0.5);
+
+    // In the ivory hall: the page has turned ivory and the contact words are there.
     await scrollToScene(page, 1.98);
     await expect(root).toHaveAttribute("data-phase", "contact");
+    await expect.poll(() => page.evaluate(() => Number(getComputedStyle(document.querySelector(".immersive-root")!).getPropertyValue("--flip")))).toBeGreaterThan(0.95);
     await expect(page.getByRole("heading", { level: 2, name: "Got a Business to Make Beautiful?" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Start a Conversation" })).toHaveAttribute("href", "/get-started");
     await expect(page.getByRole("link", { name: /WhatsApp/ })).toHaveAttribute("href", /^https:\/\/wa\.me\/923236022290/);
