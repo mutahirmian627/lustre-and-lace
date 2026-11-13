@@ -71,7 +71,7 @@ export async function Footer() {
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 py-5 pb-20 text-xs text-plum-foreground/75 sm:px-6 sm:pb-5 sm:pr-24 md:flex-row lg:px-8 lg:pr-24">
           <p>
             &copy; {new Date().getFullYear()} {BRAND.name}. A demo store by{" "}
-            <Link href="/" className="underline underline-offset-2 transition-colors hover:text-secondary">
+            <Link href="/studio" className="underline underline-offset-2 transition-colors hover:text-secondary">
               {BRAND.name} Studio
             </Link>
             .

@@ -1,5 +1,5 @@
 /**
- * Layout audit for /immersive: at every stop of the journey, on many screen shapes (small phones, landscape phones,
+ * Layout audit for the homepage: at every stop of the journey, on many screen shapes (small phones, landscape phones,
  * tablets, laptops, and desktops zoomed to 200%), every visible line of text must sit inside the screen, below the
  * navigation bar, clear of the preview label, and the page must not scroll sideways.
  *
@@ -92,7 +92,7 @@ try {
     const phone = width < 900;
     const context = await browser.newContext({ viewport: { width, height }, isMobile: phone, hasTouch: phone });
     const page = await context.newPage();
-    await page.goto(`${base}/immersive`, { waitUntil: "load", timeout: 120_000 });
+    await page.goto(`${base}/`, { waitUntil: "load", timeout: 120_000 });
     await page.waitForTimeout(1200);
     const bad = [];
     for (const [label, position] of STOPS) {

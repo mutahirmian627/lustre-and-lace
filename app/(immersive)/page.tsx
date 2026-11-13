@@ -1,7 +1,9 @@
 import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CASE_STUDY, PROCESS_STEPS } from "@/constants/agency";
+import { CASE_STUDY, PROCESS_STEPS, SERVICES as AGENCY_SERVICES } from "@/constants/agency";
+import { BRAND } from "@/constants/brand";
+import { SOCIAL_LINKS } from "@/constants/site-config";
 import { SERVICES } from "@/features/immersive/content";
 import {
   IMMERSIVE_INSTAGRAM_HANDLE,
@@ -18,13 +20,14 @@ import { ServiceRail } from "@/features/immersive/sections/ServiceRail";
 import { StillNote } from "@/features/immersive/sections/StillNote";
 import { TierBadge } from "@/features/immersive/sections/TierBadge";
 
-// An experiment under review: keep it out of search results until it replaces the homepage.
 export const metadata: Metadata = {
   title: { absolute: "Lustre & Lace | Pretty Websites. Serious Business." },
   description:
     "We create distinctive digital experiences, brands, and platforms that help ambitious businesses stand out and grow.",
-  robots: { index: false, follow: false },
+  alternates: { canonical: "/" },
 };
+
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL ?? `https://${BRAND.domain}`;
 
 const step = (i: number): CSSProperties => ({ "--i": i }) as CSSProperties;
 
@@ -35,7 +38,7 @@ const WHATSAPP_HREF = `https://wa.me/${IMMERSIVE_WHATSAPP_NUMBER}?text=${encodeU
 )}`;
 
 /**
- * Stages 1-2: the opening, the approach, the services, and a provisional close.
+ * The homepage: the opening, the approach, the services, the work, the process and the contact.
  *
  * Structure: a fixed backdrop (a picture of the scene, replaced by the live 3D canvas once it is ready), and a
  * tall "run" with a pinned stage inside it. As the page scrolls through the run, the camera travels from the
@@ -43,8 +46,25 @@ const WHATSAPP_HREF = `https://wa.me/${IMMERSIVE_WHATSAPP_NUMBER}?text=${encodeU
  * scene to scene. All text is real HTML, laid out by CSS; the 3D is a picture behind it.
  */
 export default function ImmersivePage() {
+  // The same structured data the studio page carries: the site's root says who the business is and what it offers.
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ProfessionalService",
+    name: BRAND.name,
+    description: BRAND.descriptor,
+    url: SITE_URL,
+    logo: `${SITE_URL}/icon`,
+    areaServed: "PK",
+    sameAs: [SOCIAL_LINKS.instagram],
+    makesOffer: AGENCY_SERVICES.map((service) => ({
+      "@type": "Offer",
+      itemOffered: { "@type": "Service", name: service.title, description: service.short },
+    })),
+  };
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <ScrollDriver runId="run" />
       <a href="#main" className="imm-skip">
         Skip to content
@@ -271,12 +291,6 @@ export default function ImmersivePage() {
         </section>
       </main>
 
-      <div
-        aria-hidden="true"
-        className="imm-chrome pointer-events-none fixed bottom-3 right-3 z-50 rounded-full bg-black/70 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-white"
-      >
-        Experimental preview · stage 3 · opening, services and close
-      </div>
       <StillNote />
       <TierBadge />
       <StageLoader />

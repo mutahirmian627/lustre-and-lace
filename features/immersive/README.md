@@ -1,15 +1,12 @@
-# Immersive experience (experiment): the Digital Atelier
+# The homepage: the Digital Atelier
 
-A 3D, scroll-driven version of the studio homepage. It lives at `/immersive` on the `feature/immersive`
-branch and is **not linked from anywhere and not indexed** until it is approved to replace `/`.
+A 3D, scroll-driven homepage: an opening gallery, a doorway and a plum corridor with the seven services, a large lattice
+doorway into an ivory hall with the work on its wall, the five steps of the process as five gates, and the contact in
+front of the ribbon's sculpture. It is the site's `/`. The studio's earlier marketing homepage lives at `/studio`
+(reached from the menu's "The studio site" link), and `/immersive`, where this was previewed, redirects to `/`.
 
-Nothing here touches the live site: its styles are scoped to `.immersive-root`, its constants are in
-`constants.ts`, its three typefaces load in the route group's own layout, and the route has its own layout
-(`app/(immersive)/`).
-
-**Status: stage 2.** The stage 1 art direction is approved and locked. The experience now runs: opening gallery,
-doorway and lattice screen, the hall, the approach line, the **seven services** (one bay of the hall each), and a
-provisional close (contact). The work exhibition and the process come next, between the services and the close.
+Its styles are scoped to `.immersive-root`, its constants are in `constants.ts`, its three typefaces load in the route
+group's own layout, and the route has its own layout (`app/(immersive)/`), so none of it touches the rest of the site.
 
 ## The idea
 
@@ -36,7 +33,7 @@ grid, a diamond joining the midpoints of its sides and a ring at the centre. Geo
 
 ```
 app/(immersive)/layout.tsx           fonts (Instrument Serif/Sans, DM Mono), page root, data-phase="opening"
-app/(immersive)/immersive/page.tsx   the page: a tall "run" with a pinned stage inside it; all the text
+app/(immersive)/page.tsx             the homepage: a tall "run" with a pinned stage inside it; all the text
 features/immersive/
   scene/      The 3D. Stage.tsx (canvas) > Experience.tsx (lights, resources, compile) >
               Architecture, JaliScreen, Ribbon, Dust, CameraRig, Placards.
@@ -158,8 +155,8 @@ scripts/render-immersive-poster.mjs  renders the four fallback pictures from the
 
 ## Useful URLs while testing
 
-- `/immersive?debug` shows the tier the device was given and why, which layer is showing, and the live frame rate.
-- `/immersive?poster=1&p=0.95` strips the page to just the scene, frozen, at scroll position `p` (used to make
+- `/?debug` shows the tier the device was given and why, which layer is showing, and the live frame rate.
+- `/?poster=1&p=0.95` strips the page to just the scene, frozen, at scroll position `p` (used to make
   the fallback pictures).
 
 ## Removing it

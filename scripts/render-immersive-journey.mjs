@@ -4,7 +4,7 @@
  * These are 60 frames of the real scene, evenly spaced along the whole journey (scroll position 0 to 2, from the
  * gallery's opening to the end of the corridor). Devices that are not running the live scene play them by scroll
  * (see features/immersive/sections/StillJourney.tsx). The script opens the running site at
- * /immersive?poster=1&p=<position>, a mode in which the page strips itself down to the 3D canvas, frozen at a fixed
+ * /?poster=1&p=<position>, a mode in which the page strips itself down to the 3D canvas, frozen at a fixed
  * moment, and screenshots it once the first frames have drawn.
  *
  *   npm run dev            (in one terminal)
@@ -51,7 +51,7 @@ try {
       // A dev server can stall for a moment (recompiling); try each frame a few times before giving up.
       for (let attempt = 1; ; attempt++) {
         try {
-          await page.goto(`${baseUrl}/immersive?poster=1&p=${position.toFixed(4)}`, { waitUntil: "load", timeout: 60_000 });
+          await page.goto(`${baseUrl}/?poster=1&p=${position.toFixed(4)}`, { waitUntil: "load", timeout: 60_000 });
           await page.waitForSelector('html[data-stage-ready="1"]', { timeout: 30_000 });
           break;
         } catch (error) {

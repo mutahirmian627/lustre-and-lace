@@ -4,7 +4,7 @@
  *
  *   opening-landscape.webp   opening-portrait.webp   the gallery, as the page first appears
  *
- * Each is a frame of the real scene. The script opens the running site at /immersive?poster=1&p=<scroll>,
+ * Each is a frame of the real scene. The script opens the running site at /?poster=1&p=<scroll>,
  * a mode in which the page strips itself down to just the 3D canvas, frozen at a fixed moment, waits for
  * the first frames to draw, and screenshots it. Phones with weak graphics, reduced-motion visitors and every
  * first paint show these, so regenerate them whenever the scene's look changes:
@@ -44,7 +44,7 @@ try {
   for (const shot of shots) {
     const context = await browser.newContext({ viewport: { width: shot.width, height: shot.height }, deviceScaleFactor: 1 });
     const page = await context.newPage();
-    await page.goto(`${baseUrl}/immersive?poster=1&p=${shot.p}`, { waitUntil: "load", timeout: 120_000 });
+    await page.goto(`${baseUrl}/?poster=1&p=${shot.p}`, { waitUntil: "load", timeout: 120_000 });
     await page.waitForSelector('html[data-stage-ready="1"]', { timeout: 120_000 });
     await page.waitForTimeout(800);
     const png = await page.screenshot({ type: "png" });

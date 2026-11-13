@@ -4,7 +4,7 @@ import sharp from "sharp";
 /**
  * The immersive homepage (stage 1: the opening sequence): the bar, the full-screen menu, what happens to
  * focus and scrolling while it is open, and the scroll-driven hand-over from the opening to the next thought.
- * Runs against the hidden /immersive route.
+ * Runs against the homepage.
  */
 
 /** The share of the 3D area that changes over `ms`, with nothing scrolled and no pointer movement. */
@@ -38,7 +38,7 @@ async function scrollToScene(page: Page, scene: number) {
 
 test.describe("immersive opening", () => {
   test("shows the headline, the supporting line and both calls to action", async ({ page }) => {
-    await page.goto("/immersive");
+    await page.goto("/");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Pretty Websites\.\s*Serious Business\./);
     await expect(page.getByText("We create distinctive digital experiences, brands, and platforms")).toBeVisible();
     await expect(page.getByRole("link", { name: /Let.s Talk/ })).toHaveAttribute("href", "/get-started");
@@ -46,7 +46,7 @@ test.describe("immersive opening", () => {
   });
 
   test("hands the text over as you scroll: the opening fades out and the next thought arrives", async ({ page }) => {
-    await page.goto("/immersive");
+    await page.goto("/");
     const opening = page.getByRole("heading", { level: 1 });
     const approach = page.getByRole("heading", { level: 2, name: "Good ideas deserve better execution." });
     await expect(opening).toBeVisible();
@@ -65,7 +65,7 @@ test.describe("immersive opening", () => {
   });
 
   test("the services appear one at a time as you pass down the hall, and the close offers a way to get in touch", async ({ page }) => {
-    await page.goto("/immersive");
+    await page.goto("/");
     const root = page.locator(".immersive-root");
 
     await scrollToScene(page, 1.3);
@@ -97,7 +97,7 @@ test.describe("immersive opening", () => {
   });
 
   test("each service shows its four points and no description", async ({ page }) => {
-    await page.goto("/immersive");
+    await page.goto("/");
     await scrollToScene(page, 1.3);
     expect(await page.locator(".imm-service-summary").count()).toBe(0);
     const current = Number(await page.locator(".immersive-root").getAttribute("data-service"));
@@ -108,7 +108,7 @@ test.describe("immersive opening", () => {
   });
 
   test("the 01-07 index takes you to that service", async ({ page }) => {
-    await page.goto("/immersive");
+    await page.goto("/");
     await scrollToScene(page, 1.1);
     const root = page.locator(".immersive-root");
     for (const [number, name, index] of [
@@ -124,7 +124,7 @@ test.describe("immersive opening", () => {
   });
 
   test("the exhibition: four stops, the real project, real links, then the contact", async ({ page }) => {
-    await page.goto("/immersive");
+    await page.goto("/");
     const root = page.locator(".immersive-root");
     const link = page.getByRole("link", { name: "Open the demo store" });
 
@@ -147,7 +147,7 @@ test.describe("immersive opening", () => {
   });
 
   test("the process: five gates, one step each, in the order of the studio's own process, then the contact", async ({ page }) => {
-    await page.goto("/immersive");
+    await page.goto("/");
     const root = page.locator(".immersive-root");
     const steps = ["Talk", "Plan", "Build", "Launch", "Grow"];
 
@@ -170,7 +170,7 @@ test.describe("immersive opening", () => {
   });
 
   test("the Process entry scrolls to the first gate", async ({ page }) => {
-    await page.goto("/immersive");
+    await page.goto("/");
     await page.getByRole("button", { name: "Menu" }).click();
     await page.getByRole("dialog", { name: "Site menu" }).getByRole("link", { name: /Process/ }).click();
     await expect(page.getByRole("dialog", { name: "Site menu" })).toBeHidden();
@@ -178,7 +178,7 @@ test.describe("immersive opening", () => {
   });
 
   test("the Work entry scrolls into the exhibition", async ({ page }) => {
-    await page.goto("/immersive");
+    await page.goto("/");
     await page.getByRole("button", { name: "Menu" }).click();
     await page.getByRole("dialog", { name: "Site menu" }).getByRole("link", { name: /Work/ }).click();
     await expect(page.getByRole("dialog", { name: "Site menu" })).toBeHidden();
@@ -186,13 +186,13 @@ test.describe("immersive opening", () => {
   });
 
   test("the work and the process are readable by assistive technology, whatever the scroll position", async ({ page }) => {
-    await page.goto("/immersive");
+    await page.goto("/");
     await expect(page.getByRole("region", { name: "How we work" }).getByRole("heading", { level: 3 })).toHaveText(["Talk", "Plan", "Build", "Launch", "Grow"]);
     await expect(page.getByRole("region", { name: "Our work" }).getByRole("heading", { level: 3 })).toHaveText("Lustre & Lace Store");
   });
 
   test("all seven services are readable by assistive technology, whatever the scroll position", async ({ page }) => {
-    await page.goto("/immersive");
+    await page.goto("/");
     const list = page.getByRole("region", { name: "Services" }).getByRole("heading", { level: 3 });
     await expect(list).toHaveCount(7);
     await expect(list.first()).toHaveText("Website Development");
@@ -200,7 +200,7 @@ test.describe("immersive opening", () => {
   });
 
   test("a browser that can run 3D always gets the live scene, never the picture", async ({ page }) => {
-    await page.goto("/immersive");
+    await page.goto("/");
     const hasWebgl2 = await page.evaluate(() => !!document.createElement("canvas").getContext("webgl2"));
     test.skip(!hasWebgl2, "this browser has no WebGL 2, so pictures are the correct outcome here");
     await expect(page.locator(".immersive-root")).toHaveAttribute("data-stage", "live", { timeout: 30_000 });
@@ -209,7 +209,7 @@ test.describe("immersive opening", () => {
   });
 
   test("it is alive on its own: with nothing scrolled or touched, the scene keeps moving at the opening and deep in the corridor", async ({ page }) => {
-    await page.goto("/immersive");
+    await page.goto("/");
     const hasWebgl2 = await page.evaluate(() => !!document.createElement("canvas").getContext("webgl2"));
     test.skip(!hasWebgl2, "needs WebGL 2");
     await expect(page.locator(".immersive-root")).toHaveAttribute("data-stage", "live", { timeout: 30_000 });
@@ -224,7 +224,7 @@ test.describe("immersive opening", () => {
 
 test.describe("immersive navigation", () => {
   test("the bar offers the menu, the wordmark and a way to start a project", async ({ page }) => {
-    await page.goto("/immersive");
+    await page.goto("/");
     const menu = page.getByRole("button", { name: "Menu" });
     await expect(menu).toBeVisible();
     await expect(menu).toHaveAttribute("aria-expanded", "false");
@@ -233,7 +233,7 @@ test.describe("immersive navigation", () => {
   });
 
   test("the menu opens, keeps focus inside, and closes with Escape back to the button", async ({ page }) => {
-    await page.goto("/immersive");
+    await page.goto("/");
     const menu = page.getByRole("button", { name: "Menu" });
     await menu.click();
 
@@ -255,12 +255,12 @@ test.describe("immersive navigation", () => {
   });
 
   test("every menu entry goes somewhere that exists", async ({ page, request }) => {
-    await page.goto("/immersive");
+    await page.goto("/");
     await page.getByRole("button", { name: "Menu" }).click();
     const hrefs = await page.getByRole("dialog", { name: "Site menu" }).locator("nav a").evaluateAll((links) =>
       links.map((link) => link.getAttribute("href"))
     );
-    expect(hrefs).toEqual(["/immersive#approach", "/immersive#services", "/immersive#work", "/immersive#process", "/about", "/shop", "/get-started"]);
+    expect(hrefs).toEqual(["/#approach", "/#services", "/#work", "/#process", "/about", "/shop", "/get-started"]);
 
     for (const href of hrefs) {
       const response = await request.get((href ?? "").split("#")[0]);
@@ -269,7 +269,7 @@ test.describe("immersive navigation", () => {
   });
 
   test("the Services entry scrolls to the first bay", async ({ page }) => {
-    await page.goto("/immersive");
+    await page.goto("/");
     await page.getByRole("button", { name: "Menu" }).click();
     await page.getByRole("dialog", { name: "Site menu" }).getByRole("link", { name: /Services/ }).click();
     await expect(page.getByRole("dialog", { name: "Site menu" })).toBeHidden();
@@ -278,7 +278,7 @@ test.describe("immersive navigation", () => {
   });
 
   test("the Approach entry scrolls into the hall and the page turns to plum", async ({ page }) => {
-    await page.goto("/immersive");
+    await page.goto("/");
     await page.getByRole("button", { name: "Menu" }).click();
     await page.getByRole("dialog", { name: "Site menu" }).getByRole("link", { name: /Approach/ }).click();
     await expect(page.getByRole("dialog", { name: "Site menu" })).toBeHidden();
@@ -298,7 +298,7 @@ test.describe("immersive navigation", () => {
   });
 
   test("the first Tab stop is the skip link", async ({ page }) => {
-    await page.goto("/immersive");
+    await page.goto("/");
     await page.keyboard.press("Tab");
     await expect(page.getByRole("link", { name: "Skip to content" })).toBeFocused();
   });
@@ -307,13 +307,13 @@ test.describe("immersive navigation", () => {
     test.use({ viewport: { width: 375, height: 667 }, hasTouch: true, isMobile: true });
 
     test("the opening leaves out the line under the title, so the title has room", async ({ page }) => {
-      await page.goto("/immersive");
+      await page.goto("/");
       await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
       await expect(page.locator(".imm-scene--opening .imm-lead")).toBeHidden();
     });
 
     test("the contact words are reached within one screen's scroll of the last step", async ({ page }) => {
-      await page.goto("/immersive");
+      await page.goto("/");
       const root = page.locator(".immersive-root");
       await scrollToScene(page, 1.94);
       await expect(root).toHaveAttribute("data-process", "4");
@@ -327,7 +327,7 @@ test.describe("immersive navigation", () => {
     test.use({ reducedMotion: "reduce" });
 
     test("the menu still works, no live 3D is loaded, and the pictures stand in for it, with a reason and a way back", async ({ page }) => {
-      await page.goto("/immersive");
+      await page.goto("/");
       await page.getByRole("button", { name: "Menu" }).click();
       await expect(page.getByRole("dialog", { name: "Site menu" })).toBeVisible();
       await page.keyboard.press("Escape");
@@ -342,7 +342,7 @@ test.describe("immersive navigation", () => {
     });
 
     test("the pictures still travel: scrolling plays the journey frame by frame", async ({ page }) => {
-      await page.goto("/immersive");
+      await page.goto("/");
       await expect(page.locator(".imm-journey")).toHaveCount(1);
       await page.waitForTimeout(2500); // let some frames arrive
       const before = await page.locator(".imm-journey").screenshot();
@@ -353,7 +353,7 @@ test.describe("immersive navigation", () => {
     });
 
     test("'Play 3D' starts the live scene for someone who chose reduced motion but wants it", async ({ page }) => {
-      await page.goto("/immersive");
+      await page.goto("/");
       const hasWebgl2 = await page.evaluate(() => !!document.createElement("canvas").getContext("webgl2"));
       test.skip(!hasWebgl2, "needs WebGL 2");
       await page.getByRole("button", { name: "Play 3D" }).click();

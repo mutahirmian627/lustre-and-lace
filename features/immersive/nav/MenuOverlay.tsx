@@ -80,7 +80,7 @@ export function MenuOverlay({ open, onClose, returnFocusRef }: MenuOverlayProps)
   function handleLinkClick(event: React.MouseEvent<HTMLAnchorElement>, href: string) {
     onClose();
     const hash = href.split("#")[1];
-    if (!hash || !href.startsWith("/immersive")) return;
+    if (!hash || !href.startsWith("/#")) return;
     event.preventDefault();
     window.setTimeout(() => {
       document.getElementById(hash)?.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth" });
@@ -150,9 +150,8 @@ export function MenuOverlay({ open, onClose, returnFocusRef }: MenuOverlayProps)
                 Instagram
                 <span>{IMMERSIVE_INSTAGRAM_HANDLE}</span>
               </a>
-              {/* Review aid while the experience is a preview: a way back to the current homepage. Remove at launch. */}
-              <Link href="/" className="imm-menu-back" onClick={onClose}>
-                &larr; View the current site
+              <Link href="/studio" className="imm-menu-back" onClick={onClose}>
+                The studio site &rarr;
               </Link>
             </motion.aside>
           </div>

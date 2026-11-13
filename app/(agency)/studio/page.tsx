@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   title: { absolute: `${BRAND.name} | ${BRAND.descriptor}` },
   description:
     "We build professional websites and online stores for small businesses in Pakistan, and help them grow with social media and advertising. See our live demo store.",
-  alternates: { canonical: "/" },
+  alternates: { canonical: "/studio" },
 };
 
 const TRUST_ITEMS = ["Cash on Delivery", "EasyPaisa & JazzCash", "WhatsApp ordering", "Mobile-first", "PKR pricing"];

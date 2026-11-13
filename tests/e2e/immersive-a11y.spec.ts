@@ -2,7 +2,7 @@ import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
 /**
- * Accessibility of /immersive: an automated scan (axe, WCAG 2.2 AA and best practice) at the stops of the journey, and the
+ * Accessibility of the homepage: an automated scan (axe, WCAG 2.2 AA and best practice) at the stops of the journey, and the
  * things a scan can't tell: that the keyboard only ever lands on something you can see, in a sensible order, and that the
  * page always has its heading and its landmarks wherever the visitor has scrolled to.
  */
@@ -46,7 +46,7 @@ async function focused(page: Page) {
 test.describe("immersive accessibility", () => {
   for (const [name, scene] of STOPS) {
     test(`a scan finds nothing to fix at ${name}`, async ({ page }) => {
-      await page.goto("/immersive");
+      await page.goto("/");
       await scrollToScene(page, scene);
       const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-practice"]).analyze();
       expect(results.violations.map((v) => `${v.id}: ${v.help} (${v.nodes[0]?.target.join(" ")})`)).toEqual([]);
@@ -54,7 +54,7 @@ test.describe("immersive accessibility", () => {
   }
 
   test("a scan of the open menu finds nothing to fix", async ({ page }) => {
-    await page.goto("/immersive");
+    await page.goto("/");
     await page.getByRole("button", { name: "Menu" }).click();
     await expect(page.getByRole("dialog", { name: "Site menu" })).toBeVisible();
     const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa", "best-practice"]).analyze();
@@ -62,7 +62,7 @@ test.describe("immersive accessibility", () => {
   });
 
   test("the page has one level-one heading and its landmarks wherever you are on it", async ({ page }) => {
-    await page.goto("/immersive");
+    await page.goto("/");
     for (const [, scene] of STOPS) {
       await scrollToScene(page, scene);
       await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
@@ -72,7 +72,7 @@ test.describe("immersive accessibility", () => {
   });
 
   test("the keyboard starts at the skip link and only ever lands on something you can see, and can use", async ({ page }) => {
-    await page.goto("/immersive");
+    await page.goto("/");
     await page.waitForTimeout(1800); // the navigation bar fades in on load
     const seen: string[] = [];
     for (let i = 0; i < 12; i++) {
@@ -88,7 +88,7 @@ test.describe("immersive accessibility", () => {
   });
 
   test("at each stop the keyboard reaches that stop's own links, and none of another stop's", async ({ page }) => {
-    await page.goto("/immersive");
+    await page.goto("/");
     // The exhibition's first stop: the demo store's two links.
     await scrollToScene(page, 1.5);
     const reached: string[] = [];
@@ -106,7 +106,7 @@ test.describe("immersive accessibility", () => {
   });
 
   test("the services' index is reachable and usable from the keyboard", async ({ page }) => {
-    await page.goto("/immersive");
+    await page.goto("/");
     await scrollToScene(page, 1.1);
     const button = page.getByRole("button", { name: "04, Digital Marketing & Social Media" });
     await button.focus();
@@ -116,7 +116,7 @@ test.describe("immersive accessibility", () => {
   });
 
   test("every control is at least 44 px tall", async ({ page }) => {
-    await page.goto("/immersive");
+    await page.goto("/");
     await scrollToScene(page, 1.1);
     const small = await page.evaluate(() =>
       Array.from(document.querySelectorAll<HTMLElement>("button, a[href]"))
@@ -131,7 +131,7 @@ test.describe("immersive accessibility", () => {
     test.use({ viewport: { width: 375, height: 667 }, hasTouch: true, isMobile: true });
 
     test("a scan finds nothing to fix in the exhibition or the contact", async ({ page }) => {
-      await page.goto("/immersive");
+      await page.goto("/");
       for (const scene of [1.5, 1.84, 2]) {
         await scrollToScene(page, scene);
         const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa", "best-practice"]).analyze();
@@ -140,7 +140,7 @@ test.describe("immersive accessibility", () => {
     });
 
     test("the page does not scroll sideways", async ({ page }) => {
-      await page.goto("/immersive");
+      await page.goto("/");
       for (const scene of [0, 1.2, 1.5, 1.84, 2]) {
         await scrollToScene(page, scene);
         const extra = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);

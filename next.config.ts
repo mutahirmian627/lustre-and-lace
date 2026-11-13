@@ -1,6 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // The immersive experience used to be previewed at /immersive; it is the homepage now. (Only this exact path: the
+  // pictures under /immersive/... in public/ are still served.)
+  async redirects() {
+    return [{ source: "/immersive", destination: "/", permanent: true }];
+  },
   // The Playwright webServer runs a second, separate `next dev` process
   // (playwright.config.ts) alongside the manually-managed one on port 3000 —
   // both writing to the same .next/trace file causes an EPERM crash on

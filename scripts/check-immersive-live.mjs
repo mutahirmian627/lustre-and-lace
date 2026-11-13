@@ -46,7 +46,7 @@ try {
     const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
     const page = await context.newPage();
     const started = Date.now();
-    await page.goto(`${base}/immersive`, { waitUntil: "load", timeout: 120_000 });
+    await page.goto(`${base}/`, { waitUntil: "load", timeout: 120_000 });
     let stage = "loading";
     while (Date.now() - started < LIVE_WITHIN_MS) {
       stage = await page.evaluate(() => document.querySelector(".immersive-root")?.dataset.stage ?? "loading");

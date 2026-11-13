@@ -10,7 +10,7 @@ export function DemoStoreBanner() {
   return (
     <div className="border-b border-border bg-champagne text-xs text-plum">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-x-5 gap-y-1 px-4 py-2 sm:justify-between sm:px-6 lg:px-8">
-        <Link href="/" className="inline-flex items-center gap-1.5 font-medium transition-colors hover:text-primary">
+        <Link href="/studio" className="inline-flex items-center gap-1.5 font-medium transition-colors hover:text-primary">
           <ArrowLeft className="size-3.5" aria-hidden="true" />
           {BRAND.name} Studio
         </Link>

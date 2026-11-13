@@ -63,7 +63,18 @@ export function ImmersiveNav() {
             Menu
           </button>
 
-          <Link href="/immersive" className="imm-wordmark imm-nav-item" style={{ "--d": 1 } as React.CSSProperties}>
+          <Link
+            href="/"
+            className="imm-wordmark imm-nav-item"
+            style={{ "--d": 1 } as React.CSSProperties}
+            onClick={(event) => {
+              // Already home: take the visitor back to the opening rather than doing nothing.
+              if (window.location.pathname === "/") {
+                event.preventDefault();
+                window.scrollTo({ top: 0, behavior: "auto" });
+              }
+            }}
+          >
             Lustre &amp; Lace
           </Link>
 
