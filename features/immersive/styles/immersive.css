@@ -785,13 +785,6 @@ html[data-immersive-poster] nextjs-portal {
 .imm-menu-contact:focus-visible {
   color: var(--rose);
 }
-.imm-menu-back {
-  font-size: 0.8rem;
-  color: rgb(244 239 230 / 0.6);
-}
-.imm-menu-back:hover {
-  color: var(--ivory);
-}
 
 @media (prefers-reduced-motion: reduce) {
   .imm-nav,

@@ -150,9 +150,6 @@ export function MenuOverlay({ open, onClose, returnFocusRef }: MenuOverlayProps)
                 Instagram
                 <span>{IMMERSIVE_INSTAGRAM_HANDLE}</span>
               </a>
-              <Link href="/studio" className="imm-menu-back" onClick={onClose}>
-                The studio site &rarr;
-              </Link>
             </motion.aside>
           </div>
         </motion.div>

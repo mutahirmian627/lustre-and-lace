@@ -102,8 +102,8 @@ export default function ImmersivePage() {
                 <Link href="/get-started" className="imm-btn">
                   Let&rsquo;s Talk
                 </Link>
-                <Link href="/work" className="imm-link">
-                  Explore Our Work <span aria-hidden="true">&rarr;</span>
+                <Link href="/studio" className="imm-link">
+                  Who We Are? <span aria-hidden="true">&rarr;</span>
                 </Link>
               </div>
             </section>

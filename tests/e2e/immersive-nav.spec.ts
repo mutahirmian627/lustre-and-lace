@@ -42,7 +42,7 @@ test.describe("immersive opening", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Pretty Websites\.\s*Serious Business\./);
     await expect(page.getByText("We create distinctive digital experiences, brands, and platforms")).toBeVisible();
     await expect(page.getByRole("link", { name: /Let.s Talk/ })).toHaveAttribute("href", "/get-started");
-    await expect(page.getByRole("link", { name: /Explore Our Work/ })).toHaveAttribute("href", "/work");
+    await expect(page.getByRole("link", { name: /Who We Are\?/ })).toHaveAttribute("href", "/studio");
   });
 
   test("hands the text over as you scroll: the opening fades out and the next thought arrives", async ({ page }) => {
@@ -260,7 +260,7 @@ test.describe("immersive navigation", () => {
     const hrefs = await page.getByRole("dialog", { name: "Site menu" }).locator("nav a").evaluateAll((links) =>
       links.map((link) => link.getAttribute("href"))
     );
-    expect(hrefs).toEqual(["/#approach", "/#services", "/#work", "/#process", "/about", "/shop", "/get-started"]);
+    expect(hrefs).toEqual(["/#approach", "/#services", "/#work", "/#process", "/about", "/studio", "/get-started"]);
 
     for (const href of hrefs) {
       const response = await request.get((href ?? "").split("#")[0]);
