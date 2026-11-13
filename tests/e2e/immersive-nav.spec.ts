@@ -41,7 +41,7 @@ test.describe("immersive opening", () => {
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Pretty Websites\.\s*Serious Business\./);
     await expect(page.getByText("We create distinctive digital experiences, brands, and platforms")).toBeVisible();
-    await expect(page.getByRole("link", { name: /Let.s Talk/ })).toHaveAttribute("href", "/get-started");
+    await expect(page.getByRole("link", { name: /Let.s Talk/ })).toHaveAttribute("href", "/studio/get-started");
     await expect(page.getByRole("link", { name: /Who We Are\?/ })).toHaveAttribute("href", "/studio");
   });
 
@@ -91,7 +91,7 @@ test.describe("immersive opening", () => {
     await expect(root).toHaveAttribute("data-phase", "contact");
     await expect.poll(() => page.evaluate(() => Number(getComputedStyle(document.querySelector(".immersive-root")!).getPropertyValue("--flip")))).toBeGreaterThan(0.95);
     await expect(page.getByRole("heading", { level: 2, name: "Got a Business to Make Beautiful?" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Start a Conversation" })).toHaveAttribute("href", "/get-started");
+    await expect(page.getByRole("link", { name: "Start a Conversation" })).toHaveAttribute("href", "/studio/get-started");
     await expect(page.getByRole("link", { name: /WhatsApp/ })).toHaveAttribute("href", /^https:\/\/wa\.me\/923236022290/);
     await expect(page.getByRole("link", { name: /Instagram/ })).toHaveAttribute("href", "https://instagram.com/lustreandlacestudio");
   });
@@ -134,7 +134,7 @@ test.describe("immersive opening", () => {
     await expect(page.getByText("One finished project you can actually use.")).toBeVisible();
     await expect(link).toBeVisible();
     await expect(link).toHaveAttribute("href", "/shop");
-    await expect(page.getByRole("link", { name: /I want a store like this/ })).toHaveAttribute("href", "/get-started?service=ecommerce");
+    await expect(page.getByRole("link", { name: /I want a store like this/ })).toHaveAttribute("href", "/studio/get-started?service=ecommerce");
 
     // Further on a different stop is on show, and the first stop's links are no longer reachable.
     await scrollToScene(page, 1.58);
@@ -229,7 +229,7 @@ test.describe("immersive navigation", () => {
     await expect(menu).toBeVisible();
     await expect(menu).toHaveAttribute("aria-expanded", "false");
     await expect(page.getByRole("link", { name: "Lustre & Lace" }).first()).toBeVisible();
-    await expect(page.getByRole("link", { name: /^Start( a project)?$/ }).first()).toHaveAttribute("href", "/get-started");
+    await expect(page.getByRole("link", { name: /^Start( a project)?$/ }).first()).toHaveAttribute("href", "/studio/get-started");
   });
 
   test("the menu opens, keeps focus inside, and closes with Escape back to the button", async ({ page }) => {
@@ -260,7 +260,7 @@ test.describe("immersive navigation", () => {
     const hrefs = await page.getByRole("dialog", { name: "Site menu" }).locator("nav a").evaluateAll((links) =>
       links.map((link) => link.getAttribute("href"))
     );
-    expect(hrefs).toEqual(["/#approach", "/#services", "/#work", "/#process", "/about", "/studio", "/get-started"]);
+    expect(hrefs).toEqual(["/#approach", "/#services", "/#work", "/#process", "/studio/about", "/studio", "/studio/get-started"]);
 
     for (const href of hrefs) {
       const response = await request.get((href ?? "").split("#")[0]);

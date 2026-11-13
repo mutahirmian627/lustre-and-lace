@@ -19,7 +19,7 @@ export function DemoStoreBanner() {
           <span className="hidden sm:inline"> — built by us to show what your online store could look like.</span>
         </p>
         <Link
-          href="/get-started"
+          href="/studio/get-started"
           className="inline-flex items-center gap-1 font-semibold text-plum underline underline-offset-2 transition-colors hover:text-primary"
         >
           Get a store like this

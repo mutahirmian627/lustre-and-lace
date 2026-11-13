@@ -52,7 +52,7 @@ export async function AgencyFooter() {
             <ul className="space-y-2.5 text-sm font-light text-plum-foreground/85">
               {SERVICES.map((service) => (
                 <li key={service.slug}>
-                  <Link href={`/services/${service.slug}`} className={LINK_CLASS}>
+                  <Link href={`/studio/services/${service.slug}`} className={LINK_CLASS}>
                     {service.title}
                   </Link>
                 </li>
@@ -64,17 +64,17 @@ export async function AgencyFooter() {
             <h3 className="mb-4 font-sans text-xs font-medium uppercase tracking-[0.2em] text-secondary">Studio</h3>
             <ul className="space-y-2.5 text-sm font-light text-plum-foreground/85">
               <li>
-                <Link href="/work" className={LINK_CLASS}>
+                <Link href="/studio/work" className={LINK_CLASS}>
                   Our work
                 </Link>
               </li>
               <li>
-                <Link href="/about" className={LINK_CLASS}>
+                <Link href="/studio/about" className={LINK_CLASS}>
                   About
                 </Link>
               </li>
               <li>
-                <Link href="/get-started" className={LINK_CLASS}>
+                <Link href="/studio/get-started" className={LINK_CLASS}>
                   Start a project
                 </Link>
               </li>
@@ -90,7 +90,7 @@ export async function AgencyFooter() {
                 </Link>
               </li>
               <li>
-                <Link href="/work" className={LINK_CLASS}>
+                <Link href="/studio/work" className={LINK_CLASS}>
                   How it was built
                 </Link>
               </li>

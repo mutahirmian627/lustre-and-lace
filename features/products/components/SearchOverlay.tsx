@@ -47,14 +47,14 @@ export function SearchOverlay() {
     recordSearch(searchQuery);
     setOpen(false);
     setQuery("");
-    router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
+    router.push(`/shop/search?q=${encodeURIComponent(searchQuery)}`);
   }
 
   function goToProduct(slug: string) {
     recordSearch(query);
     setOpen(false);
     setQuery("");
-    router.push(`/products/${slug}`);
+    router.push(`/shop/products/${slug}`);
   }
 
   return (

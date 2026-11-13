@@ -103,6 +103,44 @@
   --sidebar-ring: #af5071;
 }
 
+/*
+ * The studio pages (/studio, /studio/work, /studio/about, /studio/services, /studio/get-started) wear the homepage's palette:
+ * ivory, plum, lavender and ink, as in the 3D experience. The store keeps its own (blush and raspberry). The variables are set
+ * on the page's wrapper and, through :has(), on the root too, so dialogs and menus that portal out to the body match.
+ */
+.studio-theme,
+:root:has(.studio-theme) {
+  --background: #f4efe6; /* ivory */
+  --foreground: #211822; /* ink */
+  --card: #fbf8f3;
+  --card-foreground: #211822;
+  --popover: #fbf8f3;
+  --popover-foreground: #211822;
+  --primary: #3d2142; /* plum: CTAs, links, active states */
+  --primary-foreground: #f4efe6;
+  --secondary: #e0d6ea; /* soft lavender */
+  --secondary-foreground: #3d2142;
+  --muted: #ebe4d8;
+  --muted-foreground: #62535f; /* ink, softened */
+  --accent: #ebe3ef; /* lavender-ivory surface */
+  --accent-foreground: #3d2142;
+  --border: #d9cfd6;
+  --input: #cfc4cc;
+  --ring: #3d2142;
+  --plum: #35193b; /* the deep sections and the footer */
+  --plum-foreground: #f4efe6;
+  --gold: #8c6fa6; /* the accent that was gold is lavender here */
+  --gold-dark: #6a4d85; /* dark enough for small text on ivory */
+  --gold-light: #d6c8e6; /* light enough for small text on plum */
+  --champagne: #e4daee;
+  --blush-light: #efe5f2;
+  --chart-1: #3d2142;
+  --chart-2: #8c6fa6;
+  --chart-3: #b8aacb;
+  --chart-4: #d3a5b0;
+  --chart-5: #e0d6ea;
+}
+
 .dark {
   --background: #1c1718;
   --foreground: #f5efec;

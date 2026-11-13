@@ -29,7 +29,7 @@ export function ResendVerificationButton({
   async function resend() {
     setSending(true);
     setMessage(null);
-    const { error } = await authClient.sendVerificationEmail({ email, callbackURL: "/verify-email" });
+    const { error } = await authClient.sendVerificationEmail({ email, callbackURL: "/shop/verify-email" });
     setSending(false);
     if (error) {
       setMessage({ text: error.message ?? "We couldn't send the email. Try again in a moment.", isError: true });

@@ -21,7 +21,7 @@ export function OrderCard({ order }: { order: OrderCardOrder }) {
 
   return (
     <Link
-      href={`/account/orders/${order.id}`}
+      href={`/shop/account/orders/${order.id}`}
       className="flex flex-col gap-2 rounded-lg border border-border p-4 transition-colors hover:border-primary sm:flex-row sm:items-center sm:justify-between"
     >
       <div className="space-y-1">

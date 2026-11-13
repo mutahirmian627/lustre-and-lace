@@ -19,7 +19,7 @@ export function EmailVerificationBanner({ email }: { email: string }) {
 
   async function handleResend() {
     setIsSending(true);
-    const { error } = await sendVerificationEmail({ email, callbackURL: "/account" });
+    const { error } = await sendVerificationEmail({ email, callbackURL: "/shop/account" });
     setIsSending(false);
     if (error) {
       toast.error(error.message ?? "Couldn't send the verification email.");

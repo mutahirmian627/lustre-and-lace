@@ -19,7 +19,7 @@ export function CartPageClient() {
           title="Your cart is empty"
           description="Browse our collection and find something you'll love."
           actionLabel="Browse Products"
-          actionHref="/products"
+          actionHref="/shop/products"
         />
       ) : (
         <div className="grid gap-8 md:grid-cols-[1fr_320px]">

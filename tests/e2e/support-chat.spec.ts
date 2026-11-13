@@ -17,7 +17,7 @@ test("a visitor gets quick answers, and is asked to sign in before talking to th
 
   await page.getByRole("button", { name: "Talk to our team" }).click();
   await expect(page.getByText(/Please sign in so our team knows/)).toBeVisible();
-  await expect(page.getByRole("dialog").locator('a[href^="/login?redirect="]')).toBeVisible();
+  await expect(page.getByRole("dialog").locator('a[href^="/shop/login?redirect="]')).toBeVisible();
   await expect(page.getByLabel("Message to our team")).toHaveCount(0);
 });
 

@@ -10,9 +10,9 @@ import { BRAND } from "@/constants/brand";
 import { cn } from "@/lib/utils";
 
 const NAV = [
-  { label: "Services", href: "/services" },
-  { label: "Our work", href: "/work" },
-  { label: "About", href: "/about" },
+  { label: "Services", href: "/studio/services" },
+  { label: "Our work", href: "/studio/work" },
+  { label: "About", href: "/studio/about" },
   { label: "Demo store", href: "/shop" },
 ] as const;
 
@@ -65,7 +65,7 @@ export function AgencyHeader() {
 
         <div className="flex items-center gap-2">
           <Link
-            href="/get-started"
+            href="/studio/get-started"
             className={cn(buttonVariants({ size: "lg" }), "hidden h-10 rounded-full px-5 sm:inline-flex")}
           >
             Start a project
@@ -97,7 +97,7 @@ export function AgencyHeader() {
                     </Link>
                   ))}
                   <Link
-                    href="/get-started"
+                    href="/studio/get-started"
                     onClick={() => setOpen(false)}
                     className={cn(buttonVariants({ size: "lg" }), "mt-4 h-11 rounded-full")}
                   >

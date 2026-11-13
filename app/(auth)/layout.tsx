@@ -49,13 +49,13 @@ export default async function AuthLayout({
         </main>
 
         <footer className="flex flex-wrap justify-center gap-x-6 gap-y-1 px-5 pb-6 text-xs text-muted-foreground">
-          <Link href="/contact" className="transition-colors hover:text-primary">
+          <Link href="/shop/contact" className="transition-colors hover:text-primary">
             Contact
           </Link>
-          <Link href="/policies/shipping" className="transition-colors hover:text-primary">
+          <Link href="/shop/policies/shipping" className="transition-colors hover:text-primary">
             Shipping
           </Link>
-          <Link href="/policies/returns" className="transition-colors hover:text-primary">
+          <Link href="/shop/policies/returns" className="transition-colors hover:text-primary">
             Returns
           </Link>
         </footer>

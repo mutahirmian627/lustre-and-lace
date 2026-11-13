@@ -28,7 +28,7 @@ export async function middleware(request: NextRequest) {
 
   // Someone who is already signed in has no use for the sign-in / sign-up pages:
   // send them to where their role works (admins to their panel).
-  if (pathname === "/login" || pathname === "/register") {
+  if (pathname === "/shop/login" || pathname === "/shop/register") {
     // Only page loads: the sign-in form calls server actions that POST to this same URL
     // right after the session cookie is set, and those must not be redirected away.
     if (!cache || request.method !== "GET") return NextResponse.next();
@@ -62,7 +62,7 @@ export async function middleware(request: NextRequest) {
   // Ordering requires an account: checkout and its confirmation page are
   // behind login. placeOrder re-checks the session server-side, so this is
   // the friendly redirect, not the only enforcement.
-  if (pathname.startsWith("/account") || pathname.startsWith("/checkout")) {
+  if (pathname.startsWith("/shop/account") || pathname.startsWith("/shop/checkout")) {
     if (!hasSession) {
       return redirectToLogin(request);
     }
@@ -76,11 +76,11 @@ export async function middleware(request: NextRequest) {
 }
 
 function redirectToLogin(request: NextRequest) {
-  const loginUrl = new URL("/login", request.url);
+  const loginUrl = new URL("/shop/login", request.url);
   loginUrl.searchParams.set("redirect", request.nextUrl.pathname);
   return NextResponse.redirect(loginUrl);
 }
 
 export const config = {
-  matcher: ["/account/:path*", "/admin/:path*", "/super-admin/:path*", "/checkout/:path*", "/login", "/register"],
+  matcher: ["/shop/account/:path*", "/admin/:path*", "/super-admin/:path*", "/shop/checkout/:path*", "/shop/login", "/shop/register"],
 };

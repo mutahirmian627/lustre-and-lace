@@ -32,7 +32,7 @@ export function ReviewModerationCard({ review }: { review: ReviewRow }) {
       <div className="flex items-center justify-between">
         <div>
           <p className="font-medium text-foreground">{review.user.name}</p>
-          <Link href={`/products/${review.product.slug}`} className="text-xs text-primary hover:underline" target="_blank">
+          <Link href={`/shop/products/${review.product.slug}`} className="text-xs text-primary hover:underline" target="_blank">
             {review.product.name}
           </Link>
         </div>

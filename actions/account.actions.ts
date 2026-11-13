@@ -35,8 +35,8 @@ export async function updateProfile(input: z.infer<typeof profileSchema>) {
     .set({ name: parsed.data.name, phone: parsed.data.phone || null, updatedAt: new Date() })
     .where(eq(user.id, session.user.id));
 
-  revalidatePath("/account");
-  revalidatePath("/account/settings");
+  revalidatePath("/shop/account");
+  revalidatePath("/shop/account/settings");
   return { success: true as const };
 }
 
@@ -92,7 +92,7 @@ export async function addAddress(input: AddressInput) {
     await swapDefaultAddress(session.user.id, created.id);
   }
 
-  revalidatePath("/account/addresses");
+  revalidatePath("/shop/account/addresses");
   return { success: true as const };
 }
 
@@ -112,7 +112,7 @@ export async function updateAddress(addressId: string, input: AddressInput) {
     await swapDefaultAddress(session.user.id, addressId);
   }
 
-  revalidatePath("/account/addresses");
+  revalidatePath("/shop/account/addresses");
   return { success: true as const };
 }
 
@@ -128,7 +128,7 @@ export async function deleteAddress(addressId: string) {
   // they originated from.
   await db.delete(addresses).where(eq(addresses.id, addressId));
 
-  revalidatePath("/account/addresses");
+  revalidatePath("/shop/account/addresses");
   return { success: true as const };
 }
 
@@ -141,7 +141,7 @@ export async function setDefaultAddress(addressId: string) {
 
   await swapDefaultAddress(session.user.id, addressId);
 
-  revalidatePath("/account/addresses");
+  revalidatePath("/shop/account/addresses");
   return { success: true as const };
 }
 
@@ -162,7 +162,7 @@ export async function requestAccountDeletion() {
     expiresAt: new Date(Date.now() + ACCOUNT_DELETION_TOKEN_TTL_MS),
   });
 
-  const url = `${process.env.NEXT_PUBLIC_APP_URL}/account/delete-confirm?token=${token}`;
+  const url = `${process.env.NEXT_PUBLIC_APP_URL}/shop/account/delete-confirm?token=${token}`;
 
   await resend.emails.send({
     from: FROM_EMAIL,

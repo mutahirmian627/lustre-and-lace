@@ -7,7 +7,7 @@ import { createAccountFromCheckoutGate } from "./helpers/account";
  * the order's payment status flips to "Paid" (specs/13, specs/16).
  */
 test("admin can confirm a manual-transfer order's payment", async ({ page }) => {
-  await page.goto("/products/everyday-stud-earrings");
+  await page.goto("/shop/products/everyday-stud-earrings");
   await page.getByRole("button", { name: "Add to Cart" }).click();
 
   // The mini cart drawer opens once the add-to-cart Server Action actually
@@ -35,7 +35,7 @@ test("admin can confirm a manual-transfer order's payment", async ({ page }) => 
 
   // The customer is still signed in, and signed-in visitors are redirected away from /login.
   await page.context().clearCookies();
-  await page.goto("/login");
+  await page.goto("/shop/login");
   await page.getByLabel("Email").fill("admin@lustreandlace.com");
   await page.getByLabel("Password").fill("change-this-password-1");
   await page.getByRole("button", { name: "Sign in" }).click();

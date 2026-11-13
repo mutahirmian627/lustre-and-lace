@@ -39,7 +39,7 @@ export function ResetPasswordForm() {
           This reset link is invalid or has expired. Request a new one below.
         </p>
         <Link
-          href="/forgot-password"
+          href="/shop/forgot-password"
           className="text-sm text-primary hover:underline"
         >
           Request a new link
@@ -60,7 +60,7 @@ export function ResetPasswordForm() {
       );
       return;
     }
-    router.push("/login");
+    router.push("/shop/login");
   };
 
   return (

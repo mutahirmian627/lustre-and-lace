@@ -6,5 +6,5 @@ export function getSafeRedirect(value: string | null | undefined): string | null
 }
 
 export function isCheckoutRedirect(redirect: string | null): boolean {
-  return !!redirect && (redirect === "/checkout" || redirect.startsWith("/checkout/"));
+  return !!redirect && (redirect === "/shop/checkout" || redirect.startsWith("/shop/checkout/"));
 }

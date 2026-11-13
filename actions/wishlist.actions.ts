@@ -36,12 +36,12 @@ export async function toggleWishlist(productId: string) {
 
   if (existing) {
     await db.delete(wishlists).where(eq(wishlists.id, existing.id));
-    revalidatePath("/wishlist");
+    revalidatePath("/shop/wishlist");
     return { wishlisted: false as const };
   }
 
   await db.insert(wishlists).values({ userId: user.id, productId });
-  revalidatePath("/wishlist");
+  revalidatePath("/shop/wishlist");
   return { wishlisted: true as const };
 }
 

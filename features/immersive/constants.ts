@@ -22,8 +22,8 @@ export const IMMERSIVE_MENU = [
   { label: "Services", href: "/#services", note: "What we build" },
   { label: "Work", href: "/#work", note: "The live demo store" },
   { label: "Process", href: "/#process", note: "From first chat to launch" },
-  { label: "About", href: "/about", note: "How we think" },
+  { label: "About", href: "/studio/about", note: "How we think" },
   { label: "Our Studio", href: "/studio", note: "Who we are" },
-  { label: "Start a project", href: "/get-started", note: "Free quote" },
+  { label: "Start a project", href: "/studio/get-started", note: "Free quote" },
 ] as const;
 

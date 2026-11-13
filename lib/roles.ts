@@ -18,7 +18,7 @@ export function isSuperAdminRole(role: string | null | undefined): boolean {
 export function getRoleHome(role: string | null | undefined): string {
   if (role === "super_admin") return "/super-admin";
   if (role === "admin") return "/admin";
-  return "/account";
+  return "/shop/account";
 }
 
 export const ROLE_LABELS: Record<Role, string> = {

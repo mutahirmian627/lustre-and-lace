@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: "Admin — Settings" };
 
 export default async function AdminSettingsPage() {
   const session = await auth.api.getSession({ headers: await headers() });
-  if (!session?.user) redirect("/login");
+  if (!session?.user) redirect("/shop/login");
 
   const platformSettingsValues = await getPlatformSettingsForForm();
 

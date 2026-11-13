@@ -100,7 +100,7 @@ export default function StudioHomePage() {
               Built for small businesses in Pakistan, and shown working in the store below.
             </p>
             <div className="flex flex-col gap-2 sm:flex-row sm:gap-3">
-              <Link href="/get-started" className={cn(buttonVariants({ size: "lg" }), "h-12 rounded-full px-8")}>
+              <Link href="/studio/get-started" className={cn(buttonVariants({ size: "lg" }), "h-12 rounded-full px-8")}>
                 Start your project
                 <ArrowUpRight data-icon="inline-end" aria-hidden="true" />
               </Link>
@@ -185,7 +185,7 @@ export default function StudioHomePage() {
           {SERVICES.map((service) => (
             <Link
               key={service.slug}
-              href={`/services/${service.slug}`}
+              href={`/studio/services/${service.slug}`}
               className="group flex items-center gap-4 rounded-2xl border border-border bg-card p-4 transition-all active:bg-accent sm:flex-col sm:items-stretch sm:gap-0 sm:p-7 sm:hover:-translate-y-0.5 sm:hover:border-primary/40 sm:hover:shadow-[0_18px_40px_-24px_rgb(78_56_68/0.35)]"
             >
               <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-accent text-primary ring-1 ring-secondary sm:size-11">
@@ -243,7 +243,7 @@ export default function StudioHomePage() {
                 <ArrowUpRight data-icon="inline-end" aria-hidden="true" />
               </Link>
               <Link
-                href="/work"
+                href="/studio/work"
                 className={cn(buttonVariants({ variant: "outline", size: "lg" }), "h-12 rounded-full px-7")}
               >
                 How it was built
@@ -351,7 +351,7 @@ export default function StudioHomePage() {
                   ))}
                 </ul>
                 <Link
-                  href={`/get-started?service=${pack.serviceSlug}`}
+                  href={`/studio/get-started?service=${pack.serviceSlug}`}
                   className={cn(
                     buttonVariants({ variant: featured ? "default" : "outline", size: "lg" }),
                     "mt-8 h-11 rounded-full"

@@ -43,7 +43,7 @@ export function WishlistItem({ product }: { product: WishlistItemProduct }) {
         {/* WishlistHeartButton is a sibling, not nested in the Link below —
             a <button> inside an <a> is invalid HTML and unreliable to click. */}
         <div className="relative aspect-square overflow-hidden rounded-lg bg-muted">
-          <Link href={`/products/${product.slug}`} className="block size-full">
+          <Link href={`/shop/products/${product.slug}`} className="block size-full">
             {primaryImage ? (
               <Image
                 src={primaryImage.url}
@@ -60,7 +60,7 @@ export function WishlistItem({ product }: { product: WishlistItemProduct }) {
           </Link>
           <WishlistHeartButton productId={product.id} className="absolute right-2 top-2" />
         </div>
-        <Link href={`/products/${product.slug}`} className="mt-3 block space-y-1">
+        <Link href={`/shop/products/${product.slug}`} className="mt-3 block space-y-1">
           <h3 className="line-clamp-1 font-medium text-foreground">{product.name}</h3>
           <PriceDisplay price={product.basePrice} compareAtPrice={product.compareAtPrice} />
         </Link>

@@ -30,7 +30,7 @@ export function ForgotPasswordForm() {
     // shouldn't try to) tell the difference — see specs/03 no-enumeration.
     await requestPasswordReset({
       email: data.email,
-      redirectTo: "/reset-password",
+      redirectTo: "/shop/reset-password",
     });
     setSubmitted(true);
   };
@@ -44,7 +44,7 @@ export function ForgotPasswordForm() {
         <p className="text-sm text-muted-foreground">
           If an account exists for that email, a reset link has been sent.
         </p>
-        <Link href="/login" className="text-sm text-primary hover:underline">
+        <Link href="/shop/login" className="text-sm text-primary hover:underline">
           Back to sign in
         </Link>
       </div>
@@ -78,7 +78,7 @@ export function ForgotPasswordForm() {
       </Button>
 
       <p className="text-center text-sm text-muted-foreground">
-        <Link href="/login" className="text-primary hover:underline">
+        <Link href="/shop/login" className="text-primary hover:underline">
           Back to sign in
         </Link>
       </p>

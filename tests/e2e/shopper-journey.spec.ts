@@ -17,7 +17,7 @@ test("a guest shopper keeps their cart through sign-up and can track the order a
   }
 
   await timed("category page", async () => {
-    await page.goto("/categories/jhumkas");
+    await page.goto("/shop/categories/jhumkas");
     await expect(page.getByRole("heading", { name: "Jhumkas", exact: true })).toBeVisible();
   });
 

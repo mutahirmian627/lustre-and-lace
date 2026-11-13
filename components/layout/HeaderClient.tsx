@@ -78,10 +78,10 @@ export function HeaderClient({
               />
             </div>
             <div className="hidden items-center gap-5 text-xs tracking-[0.08em] text-muted-foreground md:flex">
-              <Link href="/track-order" className="transition-colors hover:text-primary">
+              <Link href="/shop/track-order" className="transition-colors hover:text-primary">
                 Track order
               </Link>
-              <Link href="/contact" className="transition-colors hover:text-primary">
+              <Link href="/shop/contact" className="transition-colors hover:text-primary">
                 Contact
               </Link>
             </div>
@@ -102,7 +102,7 @@ export function HeaderClient({
               nativeButton={false}
               aria-label="Wishlist"
               className="hidden md:inline-flex relative"
-              render={<Link href="/wishlist" />}
+              render={<Link href="/shop/wishlist" />}
             >
               <Heart className="size-5" />
               {wishlistCount > 0 && <IconBadge count={wishlistCount} />}
@@ -113,7 +113,7 @@ export function HeaderClient({
               nativeButton={false}
               aria-label={isLoggedIn ? "Account" : "Sign in"}
               className="hidden md:inline-flex"
-              render={<Link href={isLoggedIn ? "/account" : "/login"} />}
+              render={<Link href={isLoggedIn ? "/shop/account" : "/shop/login"} />}
             >
               <User className="size-5" />
             </Button>
@@ -142,18 +142,18 @@ export function HeaderClient({
                   {category.children.map((child) => (
                     <DropdownMenuItem
                       key={child.id}
-                      render={<Link href={`/categories/${child.slug}`}>{child.name}</Link>}
+                      render={<Link href={`/shop/categories/${child.slug}`}>{child.name}</Link>}
                     />
                   ))}
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Link key={category.id} href={`/categories/${category.slug}`} className={NAV_LINK_CLASS}>
+              <Link key={category.id} href={`/shop/categories/${category.slug}`} className={NAV_LINK_CLASS}>
                 {category.name}
               </Link>
             )
           )}
-          <Link href="/sale" className={cn(NAV_LINK_CLASS, "font-semibold text-primary")}>
+          <Link href="/shop/sale" className={cn(NAV_LINK_CLASS, "font-semibold text-primary")}>
             Sale
           </Link>
         </nav>

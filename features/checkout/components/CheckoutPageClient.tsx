@@ -53,7 +53,7 @@ export function CheckoutPageClient({ savedAddresses }: { savedAddresses: Address
       toast.error(result.error);
       return;
     }
-    router.push(`/checkout/confirmation/${result.orderId}`);
+    router.push(`/shop/checkout/confirmation/${result.orderId}`);
   };
 
   if (cart.items.length === 0) {

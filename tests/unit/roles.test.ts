@@ -19,7 +19,7 @@ describe("roles", () => {
   it("sends each role to its own home", () => {
     expect(getRoleHome("super_admin")).toBe("/super-admin");
     expect(getRoleHome("admin")).toBe("/admin");
-    expect(getRoleHome("customer")).toBe("/account");
-    expect(getRoleHome(null)).toBe("/account");
+    expect(getRoleHome("customer")).toBe("/shop/account");
+    expect(getRoleHome(null)).toBe("/shop/account");
   });
 });

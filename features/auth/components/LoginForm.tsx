@@ -106,7 +106,7 @@ export function LoginForm() {
           <div className="flex items-center justify-between">
             <FieldLabel htmlFor="password">Password</FieldLabel>
             <Link
-              href="/forgot-password"
+              href="/shop/forgot-password"
               className="text-xs text-primary hover:underline"
             >
               Forgot password?
@@ -129,7 +129,7 @@ export function LoginForm() {
       <p className="text-center text-sm text-muted-foreground">
         Don&apos;t have an account?{" "}
         <Link
-          href={redirect ? `/register?redirect=${encodeURIComponent(redirect)}` : "/register"}
+          href={redirect ? `/shop/register?redirect=${encodeURIComponent(redirect)}` : "/shop/register"}
           className="text-primary underline underline-offset-4 hover:no-underline"
         >
           Create one

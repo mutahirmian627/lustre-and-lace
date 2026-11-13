@@ -21,7 +21,7 @@ export async function FeaturedCategories() {
             className="basis-[calc(50%-0.375rem)] rounded-xl sm:basis-[calc(33.333%-0.75rem)] lg:basis-[calc(20%-0.8rem)]"
           >
             <Link
-              href={`/categories/${category.slug}`}
+              href={`/shop/categories/${category.slug}`}
               className="group relative block aspect-[4/5] overflow-hidden rounded-xl bg-gradient-to-br from-secondary via-accent to-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             >
               {category.imageUrl && (

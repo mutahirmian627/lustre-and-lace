@@ -180,21 +180,21 @@ export function EmailLayout({
             <Text style={{ margin: "0 0 12px", fontSize: 13, color: EMAIL_COLORS.champagne }}>
               {studio ? (
                 <>
-                  <FooterLink href={`${siteUrl}/services`}>Services</FooterLink>
+                  <FooterLink href={`${siteUrl}/studio/services`}>Services</FooterLink>
                   <Dot />
-                  <FooterLink href={`${siteUrl}/work`}>Our work</FooterLink>
+                  <FooterLink href={`${siteUrl}/studio/work`}>Our work</FooterLink>
                   <Dot />
-                  <FooterLink href={`${siteUrl}/get-started`}>Start a project</FooterLink>
+                  <FooterLink href={`${siteUrl}/studio/get-started`}>Start a project</FooterLink>
                 </>
               ) : (
                 <>
-                  <FooterLink href={`${siteUrl}/products`}>Shop</FooterLink>
+                  <FooterLink href={`${siteUrl}/shop/products`}>Shop</FooterLink>
                   <Dot />
-                  <FooterLink href={`${siteUrl}/sale`}>Sale</FooterLink>
+                  <FooterLink href={`${siteUrl}/shop/sale`}>Sale</FooterLink>
                   <Dot />
-                  <FooterLink href={`${siteUrl}/track-order`}>Track order</FooterLink>
+                  <FooterLink href={`${siteUrl}/shop/track-order`}>Track order</FooterLink>
                   <Dot />
-                  <FooterLink href={`${siteUrl}/contact`}>Contact</FooterLink>
+                  <FooterLink href={`${siteUrl}/shop/contact`}>Contact</FooterLink>
                 </>
               )}
             </Text>

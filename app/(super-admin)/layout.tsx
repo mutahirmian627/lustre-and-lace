@@ -6,7 +6,7 @@ import { SuperAdminSidebar } from "@/features/super-admin/components/SuperAdminS
 export default async function SuperAdminLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession();
   // Defense in depth, like the admin layout: middleware already guards /super-admin/*.
-  if (!session?.user || !isSuperAdminRole(session.user.role)) redirect("/login");
+  if (!session?.user || !isSuperAdminRole(session.user.role)) redirect("/shop/login");
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">

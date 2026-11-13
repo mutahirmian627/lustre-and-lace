@@ -9,24 +9,24 @@ const SITE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://lustreandlace.com";
 const STATIC_ROUTES = [
   "",
   "/studio",
-  "/services",
-  ...SERVICES.map((service) => `/services/${service.slug}`),
-  "/work",
-  "/about",
-  "/get-started",
+  "/studio/services",
+  ...SERVICES.map((service) => `/studio/services/${service.slug}`),
+  "/studio/work",
+  "/studio/about",
+  "/studio/get-started",
   "/shop",
-  "/products",
-  "/sale",
-  "/search",
-  "/cart",
-  "/wishlist",
-  "/track-order",
-  "/contact",
-  "/policies/shipping",
-  "/policies/returns",
-  "/policies/faq",
-  "/login",
-  "/register",
+  "/shop/products",
+  "/shop/sale",
+  "/shop/search",
+  "/shop/cart",
+  "/shop/wishlist",
+  "/shop/track-order",
+  "/shop/contact",
+  "/shop/policies/shipping",
+  "/shop/policies/returns",
+  "/shop/policies/faq",
+  "/shop/login",
+  "/shop/register",
 ];
 
 /**
@@ -52,12 +52,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   const productEntries: MetadataRoute.Sitemap = activeProducts.map((p) => ({
-    url: `${SITE_URL}/products/${p.slug}`,
+    url: `${SITE_URL}/shop/products/${p.slug}`,
     lastModified: p.updatedAt,
   }));
 
   const categoryEntries: MetadataRoute.Sitemap = activeCategories.map((c) => ({
-    url: `${SITE_URL}/categories/${c.slug}`,
+    url: `${SITE_URL}/shop/categories/${c.slug}`,
     lastModified: c.updatedAt,
   }));
 

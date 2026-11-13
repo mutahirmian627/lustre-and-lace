@@ -37,7 +37,7 @@ export function RegisterForm() {
       email: data.email,
       password: data.password,
       phone: data.phone || undefined,
-      callbackURL: "/verify-email",
+      callbackURL: "/shop/verify-email",
     });
     if (error) {
       setFormError(error.message ?? "Couldn't create your account.");
@@ -47,7 +47,7 @@ export function RegisterForm() {
     // The guest cart merges when they sign in after verifying.
     const params = new URLSearchParams({ pending: "1", email: data.email });
     if (redirect) params.set("redirect", redirect);
-    router.push(`/verify-email?${params.toString()}`);
+    router.push(`/shop/verify-email?${params.toString()}`);
   };
 
   return (
@@ -135,7 +135,7 @@ export function RegisterForm() {
       <p className="text-center text-sm text-muted-foreground">
         Already have an account?{" "}
         <Link
-          href={redirect ? `/login?redirect=${encodeURIComponent(redirect)}` : "/login"}
+          href={redirect ? `/shop/login?redirect=${encodeURIComponent(redirect)}` : "/shop/login"}
           className="text-primary underline underline-offset-4 hover:no-underline"
         >
           Sign in

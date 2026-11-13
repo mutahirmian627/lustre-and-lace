@@ -18,7 +18,7 @@ export function CtaBand({
         <h2 className="mx-auto mt-3 max-w-2xl font-heading text-3xl leading-tight sm:text-4xl">{title}</h2>
         <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-plum-foreground/75">{body}</p>
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Link href="/get-started" className={cn(buttonVariants({ size: "lg" }), "h-12 rounded-full px-8")}>
+          <Link href="/studio/get-started" className={cn(buttonVariants({ size: "lg" }), "h-12 rounded-full px-8")}>
             Start your project
             <ArrowUpRight data-icon="inline-end" aria-hidden="true" />
           </Link>

@@ -238,7 +238,7 @@ export async function updateProduct(id: string, input: ProductFormInput) {
 
   revalidatePath("/admin/products");
   revalidatePath(`/admin/products/${id}/edit`);
-  revalidatePath(`/products`);
+  revalidatePath(`/shop/products`);
   return { success: true as const };
 }
 

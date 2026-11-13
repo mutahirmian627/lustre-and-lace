@@ -42,7 +42,7 @@ export function ReviewForm({
   if (!session?.user) {
     return (
       <p className="text-sm text-muted-foreground">
-        <Link href="/login" className="text-primary hover:underline">
+        <Link href="/shop/login" className="text-primary hover:underline">
           Sign in
         </Link>{" "}
         to write a review.

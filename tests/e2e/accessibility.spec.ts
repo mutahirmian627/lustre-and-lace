@@ -5,19 +5,19 @@ import { createAccountFromCheckoutGate } from "./helpers/account";
 const PAGES: { name: string; path: string; needsCartItem?: boolean }[] = [
   { name: "homepage", path: "/" },
   { name: "studio page", path: "/studio" },
-  { name: "services", path: "/services" },
-  { name: "work", path: "/work" },
-  { name: "start a project", path: "/get-started" },
+  { name: "services", path: "/studio/services" },
+  { name: "work", path: "/studio/work" },
+  { name: "start a project", path: "/studio/get-started" },
   { name: "store homepage", path: "/shop" },
-  { name: "PDP", path: "/products/pearl-drop-earrings" },
-  { name: "cart", path: "/cart", needsCartItem: true },
-  { name: "checkout", path: "/checkout", needsCartItem: true },
+  { name: "PDP", path: "/shop/products/pearl-drop-earrings" },
+  { name: "cart", path: "/shop/cart", needsCartItem: true },
+  { name: "checkout", path: "/shop/checkout", needsCartItem: true },
 ];
 
 for (const { name, path, needsCartItem } of PAGES) {
   test(`${name} has no critical or serious a11y violations`, async ({ page }) => {
     if (needsCartItem) {
-      await page.goto("/products/pearl-drop-earrings");
+      await page.goto("/shop/products/pearl-drop-earrings");
       await page.getByRole("button", { name: "Add to Cart" }).click();
       // The mini cart drawer opening is the real signal that the
       // add-to-cart Server Action resolved.
@@ -26,7 +26,7 @@ for (const { name, path, needsCartItem } of PAGES) {
 
     // /checkout is behind login, so that page is reached through the real
     // sign-up gate instead of a direct goto (which would audit /login).
-    if (path === "/checkout") {
+    if (path === "/shop/checkout") {
       await createAccountFromCheckoutGate(page, { name: "E2E A11y User", emailPrefix: "e2e-a11y" });
     } else {
       await page.goto(path);

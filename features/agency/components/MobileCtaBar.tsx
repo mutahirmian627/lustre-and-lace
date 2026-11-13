@@ -23,7 +23,7 @@ export function MobileCtaBar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  if (pathname === "/get-started") return null;
+  if (pathname === "/studio/get-started") return null;
 
   return (
     <div
@@ -35,7 +35,7 @@ export function MobileCtaBar() {
       aria-hidden={!visible}
     >
       <Link
-        href="/get-started"
+        href="/studio/get-started"
         tabIndex={visible ? 0 : -1}
         className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-primary text-xs font-semibold uppercase tracking-[0.14em] text-primary-foreground transition-colors active:bg-primary/80"
       >

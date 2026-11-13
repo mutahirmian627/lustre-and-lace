@@ -14,8 +14,8 @@ export const getSession = cache(async () => auth.api.getSession({ headers: await
 export async function requireSessionOrRedirect() {
   const session = await getSession();
   if (!session?.user) {
-    const path = (await headers()).get("x-pathname") ?? "/account";
-    redirect(`/login?redirect=${encodeURIComponent(path)}`);
+    const path = (await headers()).get("x-pathname") ?? "/shop/account";
+    redirect(`/shop/login?redirect=${encodeURIComponent(path)}`);
   }
   return session;
 }

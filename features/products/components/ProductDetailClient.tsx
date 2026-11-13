@@ -94,7 +94,7 @@ export function ProductDetailClient({
       <div className="flex flex-col gap-6 md:py-2">
         <div className="space-y-3">
           <Link
-            href={`/categories/${categorySlug}`}
+            href={`/shop/categories/${categorySlug}`}
             className="text-xs font-medium uppercase tracking-[0.2em] text-primary hover:underline"
           >
             {categoryName}

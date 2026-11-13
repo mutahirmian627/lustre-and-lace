@@ -12,11 +12,11 @@ export async function createAccountFromCheckoutGate(
   { name, emailPrefix }: { name: string; emailPrefix: string }
 ) {
   await page.getByRole("button", { name: "Sign in to Checkout" }).click();
-  await expect(page).toHaveURL(/\/login\?redirect=%2Fcheckout/, { timeout: 45_000 });
+  await expect(page).toHaveURL(/\/shop\/login\?redirect=%2Fshop%2Fcheckout/, { timeout: 45_000 });
   await expect(page.getByText(/You need an account to place an order/)).toBeVisible();
 
   await page.getByRole("link", { name: "Create one" }).click();
-  await expect(page).toHaveURL(/\/register\?redirect=%2Fcheckout/);
+  await expect(page).toHaveURL(/\/shop\/register\?redirect=%2Fshop%2Fcheckout/);
 
   const email = `${emailPrefix}-${Date.now()}@example.com`;
   await page.getByLabel("Full name").fill(name);
@@ -34,7 +34,7 @@ export async function createAccountFromCheckoutGate(
   await page.goto(verifyUrl);
   await expect(page.getByText("Email verified")).toBeVisible({ timeout: 45_000 });
 
-  await page.goto("/login?redirect=%2Fcheckout");
+  await page.goto("/shop/login?redirect=%2Fshop%2Fcheckout");
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill("TestPassword1");
   await page.getByRole("button", { name: "Sign in" }).click();

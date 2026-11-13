@@ -10,7 +10,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const session = await auth.api.getSession({ headers: await headers() });
   // Defense in depth — middleware.ts already guards /admin/* by role, but a
   // server component should never assume that guarantee blindly.
-  if (!session?.user || !isAdminRole(session.user.role)) redirect("/login");
+  if (!session?.user || !isAdminRole(session.user.role)) redirect("/shop/login");
 
   // The unread badge is a nicety: if the enquiries table isn't there yet (a deploy that got ahead of its
   // migration), the rest of the admin must keep working rather than fail with it.

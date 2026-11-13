@@ -24,7 +24,7 @@ export async function SaleSection() {
             Up to <span className="font-heading text-2xl text-primary">{biggestDiscount}% off</span> on pieces you
             will love.
           </p>
-          <Button nativeButton={false} render={<Link href="/sale" />} size="lg" className="mt-2">
+          <Button nativeButton={false} render={<Link href="/shop/sale" />} size="lg" className="mt-2">
             Shop the Sale
           </Button>
         </div>

@@ -8,7 +8,7 @@ import { createAccountFromCheckoutGate } from "./helpers/account";
  * — the seed catalog's "Pearl Drop Earrings" is assumed present.
  */
 test("a new account can complete a COD checkout", async ({ page }) => {
-  await page.goto("/products/pearl-drop-earrings");
+  await page.goto("/shop/products/pearl-drop-earrings");
   await page.getByRole("button", { name: "Add to Cart" }).click();
 
   // The mini cart drawer opens once the add-to-cart Server Action actually

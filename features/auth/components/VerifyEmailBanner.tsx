@@ -23,7 +23,7 @@ export function VerifyEmailBanner() {
   const resend = async () => {
     await authClient.sendVerificationEmail({
       email: session.user.email,
-      callbackURL: "/verify-email",
+      callbackURL: "/shop/verify-email",
     });
     setSent(true);
   };

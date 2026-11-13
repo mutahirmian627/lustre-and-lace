@@ -165,14 +165,14 @@ export function ChatBotView({
                 <ChatBubble key={entry.id} own={false}>
                   <p>Please sign in so our team knows who they&apos;re talking to. Your cart will be waiting.</p>
                   <div className="mt-2 flex gap-2">
-                    <Button size="sm" nativeButton={false} render={<Link href={`/login?redirect=${redirect}`} />}>
+                    <Button size="sm" nativeButton={false} render={<Link href={`/shop/login?redirect=${redirect}`} />}>
                       Sign in
                     </Button>
                     <Button
                       size="sm"
                       variant="outline"
                       nativeButton={false}
-                      render={<Link href={`/register?redirect=${redirect}`} />}
+                      render={<Link href={`/shop/register?redirect=${redirect}`} />}
                     >
                       Create account
                     </Button>

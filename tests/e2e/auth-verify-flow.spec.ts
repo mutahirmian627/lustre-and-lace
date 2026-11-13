@@ -12,7 +12,7 @@ test("register, verify via captured email, then log in", async ({ page, request,
   const email = `e2e-verify-${timestamp}@example.com`;
   const password = "TestPassword1";
 
-  await page.goto("/register");
+  await page.goto("/shop/register");
   await page.getByLabel("Full name").fill("E2E Verify User");
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password", { exact: true }).fill(password);
@@ -39,7 +39,7 @@ test("register, verify via captured email, then log in", async ({ page, request,
   await expect(page.getByText("Email verified")).toBeVisible({ timeout: 45_000 });
 
   // Log in with the now-verified account.
-  await page.goto("/login");
+  await page.goto("/shop/login");
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();

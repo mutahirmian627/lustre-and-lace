@@ -37,7 +37,7 @@ export function WishlistProvider({
         toast("Sign in to save items to your wishlist", {
           action: {
             label: "Sign in",
-            onClick: () => router.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}`),
+            onClick: () => router.push(`/shop/login?redirect=${encodeURIComponent(window.location.pathname)}`),
           },
         });
         return;

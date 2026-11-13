@@ -13,7 +13,7 @@ export const HERO_BANNER = {
   subtext:
     "Elegant, affordable artificial jewellery for everyday wear, celebrations, and your biggest moments.",
   ctaLabel: "Shop New Arrivals",
-  ctaHref: "/products?sort=newest",
+  ctaHref: "/shop/products?sort=newest",
   imageUrl: null as string | null,
 } as const;
 
@@ -22,7 +22,7 @@ export const WEDDING_COLLECTION_BANNER = {
   headline: "Say Yes to Timeless Elegance",
   subtext: "Curated pieces for engagements, mehndi, and your big day.",
   ctaLabel: "Explore the Wedding Collection",
-  ctaHref: "/categories/wedding-collection",
+  ctaHref: "/shop/categories/wedding-collection",
   imageUrl: null as string | null,
 } as const;
 

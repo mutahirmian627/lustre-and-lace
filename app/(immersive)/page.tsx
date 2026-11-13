@@ -99,7 +99,7 @@ export default function ImmersivePage() {
                 out and grow.
               </p>
               <div className="imm-actions imm-fade" style={step(2)}>
-                <Link href="/get-started" className="imm-btn">
+                <Link href="/studio/get-started" className="imm-btn">
                   Let&rsquo;s Talk
                 </Link>
                 <Link href="/studio" className="imm-link">
@@ -154,7 +154,7 @@ export default function ImmersivePage() {
                     <Link href="/shop" className="imm-btn">
                       Open the demo store
                     </Link>
-                    <Link href="/get-started?service=ecommerce" className="imm-link">
+                    <Link href="/studio/get-started?service=ecommerce" className="imm-link">
                       I want a store like this <span aria-hidden="true">&rarr;</span>
                     </Link>
                   </div>
@@ -210,7 +210,7 @@ export default function ImmersivePage() {
               </h2>
               <p className="imm-lead">Let&rsquo;s turn your next big idea into something worth remembering.</p>
               <div className="imm-actions">
-                <Link href="/get-started" className="imm-btn">
+                <Link href="/studio/get-started" className="imm-btn">
                   Start a Conversation
                 </Link>
               </div>

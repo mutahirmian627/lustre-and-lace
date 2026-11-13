@@ -66,7 +66,7 @@ export async function submitReview(input: SubmitReviewInput) {
   // products.ratingAverage/ratingCount are recomputed on admin approval
   // (specs/13), not here — reviews start unapproved, so an unmoderated
   // submission must never move the public rating.
-  revalidatePath(`/products/${parsed.data.productSlug}`);
+  revalidatePath(`/shop/products/${parsed.data.productSlug}`);
   return {
     success: true as const,
     message: "Thanks! Your review will appear once it's approved.",

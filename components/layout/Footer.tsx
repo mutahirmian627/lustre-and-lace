@@ -39,13 +39,13 @@ export async function Footer() {
             <ul className="space-y-2.5 text-sm font-light text-plum-foreground/85">
               {categories.map((category) => (
                 <li key={category.id}>
-                  <Link href={`/categories/${category.slug}`} className={LINK_CLASS}>
+                  <Link href={`/shop/categories/${category.slug}`} className={LINK_CLASS}>
                     {category.name}
                   </Link>
                 </li>
               ))}
               <li>
-                <Link href="/sale" className={LINK_CLASS}>
+                <Link href="/shop/sale" className={LINK_CLASS}>
                   Sale
                 </Link>
               </li>

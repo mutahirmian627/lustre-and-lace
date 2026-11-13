@@ -95,7 +95,7 @@ export async function approveReview(id: string): Promise<{ error: string } | { s
   await recomputeProductRating(review.productId);
 
   revalidatePath("/admin/reviews");
-  revalidatePath(`/products/${review.productId}`);
+  revalidatePath(`/shop/products/${review.productId}`);
   return { success: true as const };
 }
 

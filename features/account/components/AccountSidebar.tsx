@@ -7,11 +7,11 @@ import { signOut } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
-  { label: "Overview", href: "/account", icon: LayoutDashboard },
-  { label: "Orders", href: "/account/orders", icon: Package },
-  { label: "Wishlist", href: "/wishlist", icon: Heart },
-  { label: "Addresses", href: "/account/addresses", icon: MapPin },
-  { label: "Settings", href: "/account/settings", icon: Settings },
+  { label: "Overview", href: "/shop/account", icon: LayoutDashboard },
+  { label: "Orders", href: "/shop/account/orders", icon: Package },
+  { label: "Wishlist", href: "/shop/wishlist", icon: Heart },
+  { label: "Addresses", href: "/shop/account/addresses", icon: MapPin },
+  { label: "Settings", href: "/shop/account/settings", icon: Settings },
 ] as const;
 
 /**
@@ -36,7 +36,7 @@ export function AccountSidebar() {
       aria-label="Account navigation"
     >
       {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
-        const isActive = href === "/account" ? pathname === href : pathname.startsWith(href);
+        const isActive = href === "/shop/account" ? pathname === href : pathname.startsWith(href);
         return (
           <Link
             key={href}

@@ -31,7 +31,7 @@ export function MiniCartDrawer() {
             icon={ShoppingBag}
             title="Your cart is empty"
             actionLabel="Browse Products"
-            actionHref="/products"
+            actionHref="/shop/products"
           />
         ) : (
           <>
@@ -50,7 +50,7 @@ export function MiniCartDrawer() {
                 <Button
                   variant="outline"
                   nativeButton={false}
-                  render={<Link href="/cart" />}
+                  render={<Link href="/shop/cart" />}
                   className="flex-1"
                   onClick={closeDrawer}
                 >
@@ -58,7 +58,7 @@ export function MiniCartDrawer() {
                 </Button>
                 <Button
                   nativeButton={false}
-                  render={<Link href="/checkout" />}
+                  render={<Link href="/shop/checkout" />}
                   className="flex-1"
                   onClick={closeDrawer}
                 >

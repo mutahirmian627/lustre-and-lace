@@ -43,7 +43,7 @@ export function MobileNav({
           {categories.map((category) => (
             <div key={category.id} className="py-2">
               <Link
-                href={`/categories/${category.slug}`}
+                href={`/shop/categories/${category.slug}`}
                 onClick={() => setOpen(false)}
                 className="font-medium text-foreground"
               >
@@ -54,7 +54,7 @@ export function MobileNav({
                   {category.children.map((child) => (
                     <Link
                       key={child.id}
-                      href={`/categories/${child.slug}`}
+                      href={`/shop/categories/${child.slug}`}
                       onClick={() => setOpen(false)}
                       className="py-1 text-sm text-muted-foreground"
                     >
@@ -67,7 +67,7 @@ export function MobileNav({
           ))}
 
           <Link
-            href="/sale"
+            href="/shop/sale"
             onClick={() => setOpen(false)}
             className="py-2 font-semibold text-primary"
           >
@@ -76,7 +76,7 @@ export function MobileNav({
 
           <div className="mt-4 flex flex-col gap-3 border-t border-border pt-4">
             <Link
-              href="/wishlist"
+              href="/shop/wishlist"
               onClick={() => setOpen(false)}
               className="flex items-center gap-2 text-sm text-foreground"
             >
@@ -87,7 +87,7 @@ export function MobileNav({
               )}
             </Link>
             <Link
-              href={isLoggedIn ? "/account" : "/login"}
+              href={isLoggedIn ? "/shop/account" : "/shop/login"}
               onClick={() => setOpen(false)}
               className="flex items-center gap-2 text-sm text-foreground"
             >

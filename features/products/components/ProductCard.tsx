@@ -20,7 +20,7 @@ export function ProductCard({
   priority?: boolean;
 }) {
   const discountPercent = getDiscountPercent(product.basePrice, product.compareAtPrice);
-  const href = `/products/${product.slug}`;
+  const href = `/shop/products/${product.slug}`;
 
   return (
     <div className="group relative flex h-full flex-col">

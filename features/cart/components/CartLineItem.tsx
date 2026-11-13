@@ -25,7 +25,7 @@ export function CartLineItem({
   return (
     <div className="flex gap-3">
       <Link
-        href={`/products/${item.productSlug}`}
+        href={`/shop/products/${item.productSlug}`}
         className={cn(
           "relative shrink-0 overflow-hidden rounded-md bg-muted",
           compact ? "size-16" : "size-20 sm:size-24"
@@ -38,7 +38,7 @@ export function CartLineItem({
 
       <div className="flex flex-1 flex-col gap-1">
         <div className="flex items-start justify-between gap-2">
-          <Link href={`/products/${item.productSlug}`} className={cn("font-medium text-foreground", compact ? "text-sm" : "font-heading text-base")}>
+          <Link href={`/shop/products/${item.productSlug}`} className={cn("font-medium text-foreground", compact ? "text-sm" : "font-heading text-base")}>
             {item.productName}
           </Link>
           <button

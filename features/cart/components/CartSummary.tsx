@@ -37,7 +37,7 @@ export function CartSummary() {
 
       <Button
         nativeButton={false}
-        render={<Link href="/checkout" />}
+        render={<Link href="/shop/checkout" />}
         disabled={cart.items.length === 0 || hasUnavailableItem}
         className="w-full"
       >

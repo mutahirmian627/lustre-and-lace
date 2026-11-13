@@ -79,7 +79,7 @@ export function ImmersiveNav() {
           </Link>
 
           <div className="imm-nav-right imm-nav-item" style={{ "--d": 2 } as React.CSSProperties}>
-            <Link href="/get-started" className="imm-pill imm-pill--solid">
+            <Link href="/studio/get-started" className="imm-pill imm-pill--solid">
               <span className="sm:hidden">Start</span>
               <span className="hidden sm:inline">Start a project</span>
             </Link>

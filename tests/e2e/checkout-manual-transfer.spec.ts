@@ -8,7 +8,7 @@ import { createAccountFromCheckoutGate } from "./helpers/account";
  * wa.me deep link (specs/16).
  */
 test("a new account can complete a manual-transfer checkout", async ({ page }) => {
-  await page.goto("/products/everyday-stud-earrings");
+  await page.goto("/shop/products/everyday-stud-earrings");
   await page.getByRole("button", { name: "Add to Cart" }).click();
 
   // The mini cart drawer opens once the add-to-cart Server Action actually
