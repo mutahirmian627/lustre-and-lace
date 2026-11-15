@@ -24,7 +24,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <SupportUnreadProvider>
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <h1 className="mb-6 font-heading text-xl text-foreground">Lustre &amp; Lace Admin</h1>
+        <h1 className="mb-6 font-heading text-xl text-foreground">Aperionie Admin</h1>
         <div className="flex flex-col gap-6 md:flex-row">
           <AdminSidebar isSuperAdmin={isSuperAdminRole(session.user.role)} newInquiries={newInquiries} />
           <div className="min-w-0 flex-1">{children}</div>

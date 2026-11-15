@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, type RefObject } from "react";
 import Link from "next/link";
+import { Logo } from "@/components/brand/Logo";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   IMMERSIVE_INSTAGRAM_HANDLE,
@@ -88,7 +89,7 @@ export function MenuOverlay({ open, onClose, returnFocusRef }: MenuOverlayProps)
   }
 
   const whatsappHref = `https://wa.me/${IMMERSIVE_WHATSAPP_NUMBER}?text=${encodeURIComponent(
-    "Hi, I'd like to talk about a project with Lustre & Lace."
+    "Hi, I'd like to talk about a project with Aperionie."
   )}`;
 
   return (
@@ -111,7 +112,10 @@ export function MenuOverlay({ open, onClose, returnFocusRef }: MenuOverlayProps)
               <span className="imm-pill-icon imm-pill-icon--close" aria-hidden="true" />
               Close
             </button>
-            <span className="imm-wordmark">Lustre &amp; Lace</span>
+            <span className="imm-wordmark">
+              <Logo variant="lockup" className="imm-logo" decorative />
+              <span className="sr-only">Aperionie</span>
+            </span>
             <span aria-hidden="true" />
           </div>
 

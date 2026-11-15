@@ -43,7 +43,7 @@ export default function StudioHomePage() {
     name: BRAND.name,
     description: BRAND.descriptor,
     url: SITE_URL,
-    logo: `${SITE_URL}/icon`,
+    logo: `${SITE_URL}/brand/APERIONIE-Profile-Ink-1080.png`,
     areaServed: "PK",
     sameAs: [SOCIAL_LINKS.instagram],
     makesOffer: SERVICES.map((service) => ({
@@ -304,7 +304,7 @@ export default function StudioHomePage() {
       {/* Why us */}
       <section className="bg-plum text-plum-foreground">
         <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
-          <SectionHeading tone="dark" eyebrow="Why Lustre & Lace" title="Built around how your customers actually shop" />
+          <SectionHeading tone="dark" eyebrow="Why Aperionie" title="Built around how your customers actually shop" />
           <div className="mt-8 grid gap-px overflow-hidden rounded-2xl bg-plum-foreground/10 sm:mt-12 sm:grid-cols-2 lg:grid-cols-4">
             {DIFFERENTIATORS.map((item) => (
               <div key={item.title} className="bg-plum p-5 sm:p-7">

@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { MobileNav } from "@/components/layout/MobileNav";
-import { BRAND } from "@/constants/brand";
+import { STORE_BRAND } from "@/constants/brand";
 import { ANNOUNCEMENT_BAR_TEXT } from "@/constants/site-config";
 import { cn } from "@/lib/utils";
 import type { getCategoryTree } from "@/actions/categories.actions";
@@ -91,7 +91,7 @@ export function HeaderClient({
             href="/shop"
             className="text-center font-heading text-2xl leading-none text-foreground sm:text-3xl"
           >
-            {BRAND.name}
+            {STORE_BRAND.name}
           </Link>
 
           <div className="flex items-center justify-end gap-1">

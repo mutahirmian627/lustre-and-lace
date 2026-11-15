@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { Logo } from "@/components/brand/Logo";
 import { setMenuOpen, useMenuOpen } from "@/features/immersive/lib/menu-store";
 import { whenNeeded } from "@/features/immersive/lib/when-needed";
 import { cn } from "@/lib/utils";
@@ -75,7 +76,9 @@ export function ImmersiveNav() {
               }
             }}
           >
-            Lustre &amp; Lace
+            <Logo variant="lockup" className="imm-logo imm-logo--wide" decorative />
+            <Logo variant="monogram" className="imm-logo imm-logo--mark" decorative />
+            <span className="sr-only">Aperionie</span>
           </Link>
 
           <div className="imm-nav-right imm-nav-item" style={{ "--d": 2 } as React.CSSProperties}>

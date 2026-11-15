@@ -16,7 +16,7 @@ export default function NotFound() {
         moved, or the link may be out of date.
       </p>
       <Link href="/" className={cn(buttonVariants(), "mt-2")}>
-        Back to Lustre &amp; Lace
+        Back to Aperionie
       </Link>
     </main>
   );

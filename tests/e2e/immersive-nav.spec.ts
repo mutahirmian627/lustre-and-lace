@@ -253,7 +253,7 @@ test.describe("immersive navigation", () => {
     const menu = page.getByRole("button", { name: "Menu" });
     await expect(menu).toBeVisible();
     await expect(menu).toHaveAttribute("aria-expanded", "false");
-    await expect(page.getByRole("link", { name: "Lustre & Lace" }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: "Aperionie" }).first()).toBeVisible();
     await expect(page.getByRole("link", { name: /^Start( a project)?$/ }).first()).toHaveAttribute("href", "/studio/get-started");
   });
 

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
-import { BRAND } from "@/constants/brand";
+import { Logo } from "@/components/brand/Logo";
 
 /**
  * Always-visible honesty strip on every store page: the shop is a demo project that shows what the
@@ -12,7 +12,7 @@ export function DemoStoreBanner() {
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-x-5 gap-y-1 px-4 py-2 sm:justify-between sm:px-6 lg:px-8">
         <Link href="/studio" className="inline-flex items-center gap-1.5 font-medium transition-colors hover:text-primary">
           <ArrowLeft className="size-3.5" aria-hidden="true" />
-          {BRAND.name} Studio
+          <Logo variant="wordmark" className="h-3 w-auto" />
         </Link>
         <p className="text-center">
           <span className="font-semibold uppercase tracking-[0.14em]">Live demo store</span>

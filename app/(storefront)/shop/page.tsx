@@ -11,12 +11,12 @@ import { WeddingCollectionBanner } from "@/features/home/components/WeddingColle
 import { ReviewsCarousel } from "@/features/home/components/ReviewsCarousel";
 import { InstagramGallery } from "@/features/home/components/InstagramGallery";
 import { ProductCardSkeleton } from "@/components/shared/skeletons";
-import { BRAND } from "@/constants/brand";
+import { STORE_BRAND } from "@/constants/brand";
 
 export const metadata: Metadata = {
-  title: { absolute: `${BRAND.name} Demo Store — Artificial Jewellery` },
+  title: { absolute: `${STORE_BRAND.name} Demo Store — Artificial Jewellery` },
   description:
-    "A live demo store built by Lustre & Lace: elegant, affordable artificial jewellery for wedding, party and everyday wear. Browse the catalogue, add to cart and check out to see what a finished online store feels like.",
+    "A live demo store built by Aperionie: elegant, affordable artificial jewellery for wedding, party and everyday wear. Browse the catalogue, add to cart and check out to see what a finished online store feels like.",
   alternates: { canonical: "/shop" },
 };
 

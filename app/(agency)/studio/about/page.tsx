@@ -5,7 +5,7 @@ import { SectionHeading } from "@/features/agency/components/SectionHeading";
 
 export const metadata: Metadata = {
   title: "About",
-  description: "Lustre & Lace is a small web development and digital marketing studio helping businesses in Pakistan go online.",
+  description: "Aperionie is a small web development and digital marketing studio helping businesses in Pakistan go online.",
   alternates: { canonical: "/studio/about" },
 };
 

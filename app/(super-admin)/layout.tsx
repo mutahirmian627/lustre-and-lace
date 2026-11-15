@@ -10,7 +10,7 @@ export default async function SuperAdminLayout({ children }: { children: React.R
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-      <h1 className="mb-6 font-heading text-xl text-foreground">Lustre &amp; Lace Super Admin</h1>
+      <h1 className="mb-6 font-heading text-xl text-foreground">Aperionie Super Admin</h1>
       <div className="flex flex-col gap-6 md:flex-row">
         <SuperAdminSidebar />
         <div className="min-w-0 flex-1">{children}</div>

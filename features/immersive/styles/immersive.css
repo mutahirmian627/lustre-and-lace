@@ -572,6 +572,32 @@ html[data-immersive-poster] nextjs-portal {
     font-size: 1.6rem;
   }
 }
+/* The Aperionie logo takes the colour of the text (it follows the page from plum to ivory). The full lockup needs room, so
+   on narrow phones the bar shows the monogram alone and the menu's header keeps the lockup. */
+.imm-logo {
+  display: block;
+  width: auto;
+  height: 1.15rem;
+}
+@media (min-width: 640px) {
+  .imm-logo {
+    height: 1.35rem;
+  }
+}
+.imm-logo--mark {
+  height: 1.6rem;
+}
+.imm-logo--wide {
+  display: none;
+}
+@media (min-width: 480px) {
+  .imm-logo--wide {
+    display: block;
+  }
+  .imm-logo--mark {
+    display: none;
+  }
+}
 
 .imm-pill {
   display: inline-flex;

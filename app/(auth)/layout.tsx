@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { getNewArrivals } from "@/actions/home.actions";
 import { AUTH_BENEFITS, AuthShowcase } from "@/features/auth/components/AuthShowcase";
-import { BRAND } from "@/constants/brand";
+import { STORE_BRAND } from "@/constants/brand";
 
 export default async function AuthLayout({
   children,
@@ -19,7 +19,7 @@ export default async function AuthLayout({
       <div className="flex min-w-0 flex-col bg-accent">
         <header className="flex items-center justify-between gap-4 px-5 py-5 sm:px-10">
           <Link href="/shop" className="font-heading text-2xl text-foreground sm:text-3xl">
-            {BRAND.name}
+            {STORE_BRAND.name}
           </Link>
           <Link
             href="/shop"

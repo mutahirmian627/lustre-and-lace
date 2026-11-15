@@ -46,6 +46,7 @@ test.describe("immersive accessibility", () => {
   for (const [name, scene] of STOPS) {
     test(`a scan finds nothing to fix at ${name}`, async ({ page }) => {
       await page.goto("/");
+      await page.waitForTimeout(1800); // the opening's words and buttons fade in on load; a scan mid-fade reads washed-out colours
       await scrollToScene(page, scene);
       const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-practice"]).analyze();
       expect(results.violations.map((v) => `${v.id}: ${v.help} (${v.nodes[0]?.target.join(" ")})`)).toEqual([]);

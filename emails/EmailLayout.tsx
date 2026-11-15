@@ -4,8 +4,8 @@ import type { ReactNode } from "react";
 // rather than through Next's own bundler, which defaults to the classic JSX
 // transform there and needs `React` in scope.
 import React from "react";
-import { Body, Container, Head, Html, Link, Preview, Section, Text } from "@react-email/components";
-import { BRAND } from "@/constants/brand";
+import { Body, Container, Head, Html, Img, Link, Preview, Section, Text } from "@react-email/components";
+import { BRAND, STORE_BRAND } from "@/constants/brand";
 
 /**
  * Shared shell for every transactional email (specs/14-emails.md), dressed like
@@ -61,7 +61,10 @@ export function EmailLayout({
   children: ReactNode;
 }) {
   const siteUrl = getSiteUrl();
-  const headerImage = canUseHostedImages(siteUrl) ? `${siteUrl}/email/header.png` : undefined;
+  const hosted = canUseHostedImages(siteUrl);
+  const headerImage = hosted ? `${siteUrl}/email/header.png` : undefined;
+  // Studio emails carry the Aperionie logo (a PNG: inboxes don't show SVG); the store's emails keep the store's own name.
+  const logoImage = studio && hosted ? `${siteUrl}/email/aperionie-logo.png` : undefined;
 
   return (
     <Html lang="en">
@@ -104,18 +107,29 @@ export function EmailLayout({
             >
               ✦ ✦ ✦
             </Text>
-            <Text
-              style={{
-                margin: 0,
-                fontFamily: HEADING_FONT,
-                color: EMAIL_COLORS.blushWhite,
-                fontSize: 34,
-                lineHeight: "40px",
-                letterSpacing: "0.02em",
-              }}
-            >
-              {BRAND.name}
-            </Text>
+            {logoImage ? (
+              <Img
+                src={logoImage}
+                alt={BRAND.name}
+                width={240}
+                height={35}
+                style={{ display: "block", margin: "0 auto", width: 240, height: "auto" }}
+              />
+            ) : (
+              <Text
+                style={{
+                  margin: 0,
+                  fontFamily: studio ? BODY_FONT : HEADING_FONT,
+                  color: EMAIL_COLORS.blushWhite,
+                  fontSize: 34,
+                  lineHeight: "40px",
+                  letterSpacing: studio ? "0.18em" : "0.02em",
+                  textTransform: studio ? "uppercase" : undefined,
+                }}
+              >
+                {studio ? BRAND.name : STORE_BRAND.name}
+              </Text>
+            )}
             <Text
               style={{
                 margin: "8px 0 0",
@@ -125,7 +139,7 @@ export function EmailLayout({
                 textTransform: "uppercase",
               }}
             >
-              Artificial jewellery boutique
+              {studio ? BRAND.descriptor : "Artificial jewellery boutique"}
             </Text>
             <Section style={{ width: 56, margin: "18px auto 0", borderTop: `2px solid ${EMAIL_COLORS.gold}` }} />
           </Section>
@@ -199,10 +213,10 @@ export function EmailLayout({
               )}
             </Text>
             <Text style={{ margin: 0, color: "#CDBFC6", fontSize: 12, lineHeight: "18px" }}>
-              {studio ? BRAND.tagline : BRAND.storeTagline}
+              {studio ? BRAND.tagline : STORE_BRAND.tagline}
             </Text>
             <Text style={{ margin: "10px 0 0", color: "#CDBFC6", fontSize: 11 }}>
-              © {new Date().getFullYear()} {BRAND.name}.{" "}
+              © {new Date().getFullYear()} {studio ? BRAND.name : STORE_BRAND.name}.{" "}
               {studio
                 ? "You're receiving this because of a project enquiry."
                 : "You're receiving this because of activity on your account."}

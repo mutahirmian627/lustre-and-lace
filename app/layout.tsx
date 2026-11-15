@@ -7,7 +7,7 @@ import "./globals.css";
 
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL ?? `https://${BRAND.domain}`;
 const DEFAULT_DESCRIPTION =
-  "Lustre & Lace is a web development and digital marketing studio. We build professional websites and online stores, set up WhatsApp, social media and ads, and help small businesses grow online.";
+  "Aperionie is a web development and digital marketing studio. We build professional websites and online stores, set up WhatsApp, social media and ads, and help small businesses grow online.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

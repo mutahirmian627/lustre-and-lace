@@ -22,7 +22,7 @@ import { TierBadge } from "@/features/immersive/sections/TierBadge";
 import { WORK_STOPS_DATA, type WorkStop } from "@/features/immersive/work";
 
 export const metadata: Metadata = {
-  title: { absolute: "Lustre & Lace | Pretty Websites. Serious Business." },
+  title: { absolute: "Aperionie | Pretty Websites. Serious Business." },
   description:
     "We create distinctive digital experiences, brands, and platforms that help ambitious businesses stand out and grow.",
   alternates: { canonical: "/" },
@@ -87,7 +87,7 @@ const step = (i: number): CSSProperties => ({ "--i": i }) as CSSProperties;
 /** Where a point of the run sits, as a CSS length: `openings` screens of opening travel plus a share of the services run. */
 const anchorTop = (share: number, opening = 1): string => `calc(${(RUN.opening * opening + RUN.services * share).toFixed(3)} * 100svh)`;
 const WHATSAPP_HREF = `https://wa.me/${IMMERSIVE_WHATSAPP_NUMBER}?text=${encodeURIComponent(
-  "Hi, I'd like to talk about a project with Lustre & Lace."
+  "Hi, I'd like to talk about a project with Aperionie."
 )}`;
 
 /**
@@ -109,7 +109,7 @@ export default function ImmersivePage() {
     name: BRAND.name,
     description: BRAND.descriptor,
     url: SITE_URL,
-    logo: `${SITE_URL}/icon`,
+    logo: `${SITE_URL}/brand/APERIONIE-Profile-Ink-1080.png`,
     areaServed: "PK",
     sameAs: [SOCIAL_LINKS.instagram],
     makesOffer: AGENCY_SERVICES.map((service) => ({

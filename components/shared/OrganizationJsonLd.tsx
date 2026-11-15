@@ -10,7 +10,7 @@ export function OrganizationJsonLd() {
     "@type": "Organization",
     name: BRAND.name,
     url: SITE_URL,
-    logo: `${SITE_URL}/icon`,
+    logo: `${SITE_URL}/brand/APERIONIE-Profile-Ink-1080.png`,
     sameAs: [SOCIAL_LINKS.instagram],
   };
 

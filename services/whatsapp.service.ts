@@ -24,7 +24,7 @@ export function isRealWhatsAppNumber(businessNumber: string): boolean {
 /** "Say hello" link for the studio side of the site. */
 export function buildStudioWhatsAppLink(businessNumber: string): string {
   const digitsOnly = businessNumber.replace(/[^\d]/g, "");
-  return `https://wa.me/${digitsOnly}?text=${encodeURIComponent("Hi, I'd like to talk about a project with Lustre & Lace.")}`;
+  return `https://wa.me/${digitsOnly}?text=${encodeURIComponent("Hi, I'd like to talk about a project with Aperionie.")}`;
 }
 
 /** Opens a chat with the order reference already typed, for cancellations and other order help. */

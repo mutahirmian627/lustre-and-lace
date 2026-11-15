@@ -121,7 +121,7 @@ export function InquiryCard({ inquiry }: { inquiry: InquiryRow }) {
 
       <div className="flex flex-wrap gap-2">
         <a
-          href={`mailto:${inquiry.email}?subject=${encodeURIComponent("Your project enquiry — Lustre & Lace")}`}
+          href={`mailto:${inquiry.email}?subject=${encodeURIComponent("Your project enquiry — Aperionie")}`}
           className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border px-3 text-sm transition-colors hover:border-primary hover:text-primary"
         >
           <Mail className="size-4" aria-hidden="true" />

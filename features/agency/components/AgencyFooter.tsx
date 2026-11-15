@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Camera, MessageCircle } from "lucide-react";
 import { BRAND } from "@/constants/brand";
+import { Logo } from "@/components/brand/Logo";
 import { SERVICES } from "@/constants/agency";
 import { SOCIAL_LINKS } from "@/constants/site-config";
 import { getWhatsAppNumber } from "@/lib/settings";
@@ -17,7 +18,7 @@ export async function AgencyFooter() {
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_1fr]">
           <div className="max-w-sm space-y-4">
-            <span className="font-heading text-3xl">{BRAND.name}</span>
+            <Logo variant="lockup" className="h-8 w-auto" />
             <p className="font-heading text-base italic text-secondary">{BRAND.tagline}</p>
             <p className="text-sm font-light leading-relaxed text-plum-foreground/75">
               {BRAND.descriptor}. We build websites and online stores, and help businesses reach customers on social

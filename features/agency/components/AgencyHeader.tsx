@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { Menu, ArrowUpRight } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { BRAND } from "@/constants/brand";
+import { Logo } from "@/components/brand/Logo";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -40,11 +40,8 @@ export function AgencyHeader() {
       )}
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3.5 sm:px-6 lg:px-8">
-        <Link href="/" className="flex items-baseline gap-2 leading-none">
-          <span className="font-heading text-2xl text-foreground sm:text-[1.7rem]">{BRAND.name}</span>
-          <span className="hidden text-[0.65rem] font-medium uppercase tracking-[0.22em] text-gold-dark sm:inline">
-            Studio
-          </span>
+        <Link href="/" aria-label="Aperionie, home" className="flex items-center text-foreground">
+          <Logo variant="lockup" decorative className="h-6 w-auto sm:h-7" />
         </Link>
 
         <nav aria-label="Main" className="hidden items-center gap-8 md:flex">
@@ -83,7 +80,7 @@ export function AgencyHeader() {
               />
               <SheetContent side="right">
                 <SheetHeader>
-                  <SheetTitle className="font-heading">{BRAND.name}</SheetTitle>
+                  <SheetTitle><Logo variant="wordmark" className="h-4 w-auto" /></SheetTitle>
                 </SheetHeader>
                 <nav aria-label="Mobile" className="flex flex-col gap-1 px-4 pb-6">
                   {[{ label: "Home", href: "/" }, ...NAV].map((item) => (
