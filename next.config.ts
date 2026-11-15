@@ -13,6 +13,8 @@ const nextConfig: NextConfig = {
     return [
       // The immersive homepage's old preview address. (Only this exact path: the pictures under /immersive/ in public/ are still served.)
       { source: "/immersive", destination: "/", permanent: true },
+      // The studio's fourth service was reshaped into "AI & Business Automation" when its list was matched to the homepage's.
+      { source: "/studio/services/business-digitalization", destination: "/studio/services/ai-business-automation", permanent: true },
       ...moved(["work", "about", "services", "get-started"], "studio"),
       ...moved(
         ["products", "categories", "cart", "checkout", "wishlist", "sale", "search", "track-order", "contact", "policies", "account", "login", "register", "forgot-password", "reset-password", "verify-email"],

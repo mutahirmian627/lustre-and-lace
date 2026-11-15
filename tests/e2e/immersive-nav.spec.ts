@@ -143,11 +143,11 @@ test.describe("immersive opening", () => {
     await expect(root).toHaveAttribute("data-work", "2");
     await expect(link).toBeHidden();
 
-    // Slice & Stack: its own stop, its own link to the live site, and what it does.
+    // Aperionie Foods: its own stop, its own link to the live site, and what it does.
     const open = page.getByRole("link", { name: /Open the site/ });
     await scrollToScene(page, SCENES.work(3));
     await expect(root).toHaveAttribute("data-work", "3");
-    await expect(page.locator(".imm-work-name", { hasText: "Slice & Stack" })).toBeVisible();
+    await expect(page.locator(".imm-work-name", { hasText: "Aperionie Foods" })).toBeVisible();
     await expect(open).toHaveAttribute("href", "https://slice-and-stack.vercel.app");
     await expect(open).toHaveAttribute("target", "_blank");
     await expect(open).toHaveAttribute("rel", /noopener/);
@@ -156,10 +156,10 @@ test.describe("immersive opening", () => {
     await expect(page.locator(".imm-work-list li").filter({ hasText: "kitchen board" })).toBeVisible();
     await expect(open).toBeHidden();
 
-    // Atelier N°9.
+    // Aperionie Apparels.
     await scrollToScene(page, SCENES.work(5));
     await expect(root).toHaveAttribute("data-work", "5");
-    await expect(page.locator(".imm-work-name", { hasText: "Atelier N°9" })).toBeVisible();
+    await expect(page.locator(".imm-work-name", { hasText: "Aperionie Apparels" })).toBeVisible();
     await expect(open).toHaveAttribute("href", "https://atelier-n9-phi.vercel.app");
     await scrollToScene(page, SCENES.work(6));
     await expect(root).toHaveAttribute("data-work", "6");
@@ -213,7 +213,7 @@ test.describe("immersive opening", () => {
   test("the work and the process are readable by assistive technology, whatever the scroll position", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByRole("region", { name: "How we work" }).getByRole("heading", { level: 3 })).toHaveText(["Talk", "Plan", "Build", "Launch", "Grow"]);
-    await expect(page.getByRole("region", { name: "Our work" }).getByRole("heading", { level: 3 })).toHaveText(["Aperionie Adornments", "Slice & Stack", "Atelier N°9"]);
+    await expect(page.getByRole("region", { name: "Our work" }).getByRole("heading", { level: 3 })).toHaveText(["Aperionie Adornments", "Aperionie Foods", "Aperionie Apparels"]);
   });
 
   test("all seven services are readable by assistive technology, whatever the scroll position", async ({ page }) => {

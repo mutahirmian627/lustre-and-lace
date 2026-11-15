@@ -4,8 +4,11 @@ import { PK_PHONE_REGEX } from "@/features/auth/types";
 export const SERVICE_SLUGS = [
   "website-development",
   "ecommerce",
+  "branding-visual-identity",
   "social-media-marketing",
-  "business-digitalization",
+  "seo-growth",
+  "custom-web-applications",
+  "ai-business-automation",
 ] as const;
 
 export const inquirySchema = z.object({

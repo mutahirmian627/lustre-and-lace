@@ -86,7 +86,7 @@ scripts/render-immersive-poster.mjs  renders the four fallback pictures from the
   arrive in the ivory hall (`--c`).
 - **The exhibition** (`features/immersive/work.ts`, `scene/Gallery.tsx`, `lib/gallery.ts`). The studio's work hangs on the
   ivory hall's right wall as real screenshots in ivory frames, a stop at a time, and ends with an empty lit arch: "Next
-  exhibit: yours". Today it shows the demo store (`public/agency`), Slice & Stack and Atelier N°9 (`public/portfolio`: a
+  exhibit: yours". Today it shows the demo store (`public/agency`), Aperionie Foods and Aperionie Apparels (`public/portfolio`: a
   desktop and a phone picture for each stop). Nothing is invented: every claim is something the project does, and they are
   labelled as the studio's own demos.
   - **To add a project:** put its screenshots in `public/portfolio/` (1440x900 for a window, 780x1688 for a phone; **not** a

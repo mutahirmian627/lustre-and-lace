@@ -8,8 +8,11 @@
 export type ServiceSlug =
   | "website-development"
   | "ecommerce"
+  | "branding-visual-identity"
   | "social-media-marketing"
-  | "business-digitalization";
+  | "seo-growth"
+  | "custom-web-applications"
+  | "ai-business-automation";
 
 export interface Service {
   slug: ServiceSlug;
@@ -26,6 +29,10 @@ export interface Service {
   tags: string[];
 }
 
+/**
+ * The studio's services: the same seven, with the same names and in the same order, as on the 3D homepage
+ * (features/immersive/content.ts). A unit test keeps the two lists in step.
+ */
 export const SERVICES: Service[] = [
   {
     slug: "website-development",
@@ -40,14 +47,16 @@ export const SERVICES: Service[] = [
       "Contact form that lands in your inbox, plus a WhatsApp chat button",
       "Basic search-engine setup so people can find you on Google",
       "Google Analytics so you can see who is visiting",
+      "A redesign of your existing site, if it is slow, dated or hard to use on a phone",
+      "Ongoing care after launch: updates, fixes and help when you need a change",
       "Hand-over so you know how everything works and who to ask for changes",
     ],
     goodFor: ["Service businesses", "Boutiques and showrooms", "Clinics, salons and studios", "Restaurants and cafés"],
-    tags: ["Business websites", "Landing pages", "Portfolios"],
+    tags: ["Business sites", "Landing pages", "Redesigns"],
   },
   {
     slug: "ecommerce",
-    title: "Online Stores",
+    title: "Ecommerce Experiences",
     short: "Sell online with your own store: catalogue, cart, checkout and an admin panel to run it.",
     headline: "Your own online store, built for how Pakistan shops.",
     intro:
@@ -61,11 +70,29 @@ export const SERVICES: Service[] = [
       "Sales analytics and CSV export of your orders",
     ],
     goodFor: ["Fashion and jewellery brands", "Beauty and cosmetics", "Home-based sellers", "Small retailers going online"],
-    tags: ["E-commerce", "COD & wallets", "Admin panel"],
+    tags: ["Storefronts", "Checkout & orders", "Payments"],
+  },
+  {
+    slug: "branding-visual-identity",
+    title: "Branding & Visual Identity",
+    short: "A logo, colours and type that make your business recognisable everywhere it appears.",
+    headline: "A look people recognise before they read your name.",
+    intro:
+      "Customers judge a business in seconds, long before they read a word. We design the look that makes you recognisable: a logo, a palette and typefaces, and simple rules that keep it consistent on your website, your social media and everything you print.",
+    deliverables: [
+      "A logo in the versions you will need: full colour, one colour, light and dark, for screen and print",
+      "A colour palette and typefaces chosen to suit your business and your customers",
+      "A short brand guide: how to use the logo, colours and type, so anyone who works for you gets it right",
+      "Social media templates for posts and stories, ready for you to fill in",
+      "Profile pictures and cover images sized for Instagram, Facebook and WhatsApp Business",
+      "All the files handed over to you, editable and yours to keep",
+    ],
+    goodFor: ["New businesses choosing a first logo", "Shops that look different on every platform", "Brands about to launch a website or store"],
+    tags: ["Logo & identity", "Colour & type", "Brand guidelines"],
   },
   {
     slug: "social-media-marketing",
-    title: "Social Media & Marketing",
+    title: "Digital Marketing & Social Media",
     short: "Profiles, content and ads on Instagram and Facebook that turn viewers into enquiries.",
     headline: "Get found, get noticed, get enquiries.",
     intro:
@@ -73,34 +100,78 @@ export const SERVICES: Service[] = [
     deliverables: [
       "Instagram and Facebook business profiles set up properly, matching your brand",
       "A content plan: posts, reels and stories for the products you most want to sell",
+      "Day-to-day social media management, if you would rather not do it yourself",
       "Meta Ads (Facebook and Instagram) campaigns with sensible audience targeting",
       "Tracking with Meta Pixel and Google Analytics, so you know what an order really costs",
       "A short monthly report in plain language, with what to do next",
     ],
     goodFor: ["Businesses with a website that needs traffic", "New brands building an audience", "Shops running seasonal offers"],
-    tags: ["Instagram & Facebook", "Meta Ads", "Content"],
+    tags: ["Content planning", "Social management", "Paid campaigns"],
   },
   {
-    slug: "business-digitalization",
-    title: "Business Digitalization",
-    short: "Move the day-to-day online: WhatsApp Business, catalogues, order handling and Google listing.",
-    headline: "Take the paperwork and the repeated messages out of your day.",
+    slug: "seo-growth",
+    title: "SEO & Growth",
+    short: "Be found when people search for what you sell, including on Google Maps near you.",
+    headline: "Be the business people find when they search.",
     intro:
-      "Digitalizing doesn't have to mean a huge project. Often it is a handful of practical tools set up well: a WhatsApp Business account with a catalogue, a proper Google listing, and a clear way to record and follow orders.",
+      "A website only helps if people can find it. No one can honestly promise you the number one spot on Google, so we promise the work: fixing what holds your site back, setting up your Google listing for local searches, writing content that answers what customers ask, and showing you what is bringing visitors.",
     deliverables: [
-      "WhatsApp Business setup: profile, catalogue, greeting and quick replies",
-      "Google Business Profile so you show up on Google Search and Maps",
-      "A digital product catalogue you can share as a link",
-      "A simple order workflow: how orders come in, get confirmed and get delivered",
-      "Hands-on walkthrough so you and your team know how to use everything",
+      "A technical check of your site: speed, mobile layout, page titles, descriptions and what Google can see",
+      "Google Business Profile set up and kept accurate, so you show up on Google Search and Maps",
+      "Keyword research on what your customers really search for",
+      "Content that answers their questions: product descriptions, service pages and articles",
+      "Google Analytics and Search Console set up, with a plain-language summary of what is working",
+      "A short list of next steps, in order of what will help most",
     ],
-    goodFor: ["Shops that sell through chat", "Home-based businesses", "Owners who want less manual work"],
-    tags: ["WhatsApp Business", "Google listing", "Order workflow"],
+    goodFor: ["Businesses with a website nobody finds", "Shops and clinics that rely on local customers", "Online stores that want more visitors who aren't paid for"],
+    tags: ["Technical SEO", "Local search", "Analytics"],
+  },
+  {
+    slug: "custom-web-applications",
+    title: "Custom Web Applications",
+    short: "Portals, dashboards and booking tools built around how your business actually works.",
+    headline: "Software shaped like your business, not the other way round.",
+    intro:
+      "When a spreadsheet and a chat group stop being enough, a small custom application can take over: somewhere your customers sign in, a dashboard that shows your numbers, a system that tracks bookings or stock. We build it as a web app that works on a phone, with the features you need and no more.",
+    deliverables: [
+      "Client portals where your customers sign in to see their orders, bookings or documents",
+      "Dashboards that bring your sales, orders or enquiries together on one screen",
+      "Booking, scheduling and inventory tools made for the way you work",
+      "Connections to the tools you already use, such as payments, email and WhatsApp",
+      "Secure sign-in and roles, so each person sees only what they should",
+      "Hand-over of the finished application, so it is yours to keep",
+    ],
+    goodFor: ["Businesses run from spreadsheets", "Service companies that manage bookings", "Teams that need a private tool for staff"],
+    tags: ["Client portals", "Dashboards", "Booking & inventory"],
+  },
+  {
+    slug: "ai-business-automation",
+    title: "AI & Business Automation",
+    short: "WhatsApp, workflows and AI assistants that take repeated work off your day.",
+    headline: "Take the repeated messages and manual work out of your day.",
+    intro:
+      "Much of running a small business is answering the same questions and moving the same information from one place to another. We automate the repetitive parts: WhatsApp replies and order updates, workflows between your tools, and AI assistants that answer common questions, with a person always able to step in.",
+    deliverables: [
+      "WhatsApp Business set up properly: profile, catalogue, greeting and quick replies, then automatic replies and order updates where they help",
+      "Workflow automation: new enquiries, orders and bookings recorded, confirmed and passed to the right person without retyping",
+      "AI assistants that answer common customer questions from your own information, and hand over to you when they are unsure",
+      "System integrations between the tools you use: your website, store, spreadsheets, email and payments",
+      "A simple order workflow, from an order coming in to it being confirmed and delivered",
+      "A hands-on walkthrough so you and your team know how to use everything",
+    ],
+    goodFor: ["Shops that sell through chat", "Businesses that answer the same questions all day", "Owners who want less manual work"],
+    tags: ["WhatsApp automation", "AI assistants", "Workflows"],
   },
 ];
 
+/** Service links that already exist out in the world (bookmarks, saved enquiries) and where they lead now. */
+const LEGACY_SERVICE_SLUGS: Record<string, ServiceSlug> = {
+  "business-digitalization": "ai-business-automation",
+};
+
 export function getService(slug: string): Service | undefined {
-  return SERVICES.find((service) => service.slug === slug);
+  const current = LEGACY_SERVICE_SLUGS[slug] ?? slug;
+  return SERVICES.find((service) => service.slug === current);
 }
 
 export const PROCESS_STEPS = [

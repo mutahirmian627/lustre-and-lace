@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image, { getImageProps } from "next/image";
-import { ArrowRight, ArrowUpRight, Banknote, Check, ChevronRight, LayoutDashboard } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Check, ChevronRight, Shirt, ShoppingBag } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { BRAND } from "@/constants/brand";
 import { AGENCY_FAQS, DIFFERENTIATORS, PACKAGES, PROCESS_STEPS, SERVICES } from "@/constants/agency";
 import { SOCIAL_LINKS } from "@/constants/site-config";
+import { APERIONIE_APPARELS } from "@/features/immersive/work";
 import { BrowserFrame } from "@/features/agency/components/BrowserFrame";
 import { PhoneFrame } from "@/features/agency/components/PhoneFrame";
 import { CtaBand } from "@/features/agency/components/CtaBand";
@@ -19,22 +20,23 @@ const SITE_URL = process.env.NEXT_PUBLIC_APP_URL ?? `https://${BRAND.domain}`;
 export const metadata: Metadata = {
   title: { absolute: `${BRAND.name} | ${BRAND.descriptor}` },
   description:
-    "We build professional websites and online stores for small businesses in Pakistan, and help them grow with social media and advertising. See our live demo store.",
+    "We build websites, online stores and web applications for small businesses in Pakistan, and help them grow with branding, social media, search and automation. See our work live.",
   alternates: { canonical: "/studio" },
 };
 
 const TRUST_ITEMS = ["Cash on Delivery", "EasyPaisa & JazzCash", "WhatsApp ordering", "Mobile-first", "PKR pricing"];
 
-// The hero shows a browser mockup from 640px up and a phone mockup below it. Each is lazy-loaded, so
-// these media-scoped hints are what start the right download early and keep the other one off the wire.
+// The hero shows a browser mockup from 640px up and a phone mockup below it, both showing Aperionie Apparels (our 3D fashion
+// lookbook; its screenshots are in public/portfolio). Each is lazy-loaded, so these media-scoped hints are what start
+// the right download early and keep the other one off the wire.
 const HERO_DESKTOP = getImageProps({
-  src: "/agency/store-category.jpg",
+  src: APERIONIE_APPARELS.shots.desktop,
   alt: "",
   width: 1440,
   height: 900,
   sizes: "(min-width: 1024px) 640px, 90vw",
 }).props;
-const HERO_PHONE = getImageProps({ src: "/agency/store-mobile.jpg", alt: "", width: 390, height: 844, sizes: "240px" }).props;
+const HERO_PHONE = getImageProps({ src: APERIONIE_APPARELS.shots.phone, alt: "", width: 390, height: 844, sizes: "240px" }).props;
 
 export default function StudioHomePage() {
   const jsonLd = {
@@ -97,7 +99,7 @@ export default function StudioHomePage() {
             </p>
             <p className="hidden text-lg font-light leading-relaxed text-plum-foreground/80 sm:block">
               Professional websites and online stores, plus the social media and advertising to bring customers in.
-              Built for small businesses in Pakistan, and shown working in the store below.
+              Built for small businesses in Pakistan, and shown working in our own projects.
             </p>
             <div className="flex flex-col gap-2 sm:flex-row sm:gap-3">
               <Link href="/studio/get-started" className={cn(buttonVariants({ size: "lg" }), "h-12 rounded-full px-8")}>
@@ -127,35 +129,35 @@ export default function StudioHomePage() {
             </ul>
           </div>
 
-          {/* Phones: the store as it looks in a hand, with two proof chips. */}
+          {/* Phones: Aperionie Apparels as it looks in a hand, with two proof chips. */}
           <div className="relative mx-auto h-[26rem] w-full max-w-[21rem] overflow-hidden sm:hidden">
             <PhoneFrame
-              src="/agency/store-mobile.jpg"
-              alt="The Aperionie Adornments demo store on a phone"
+              src={APERIONIE_APPARELS.shots.phone}
+              alt="Aperionie Apparels, our 3D fashion lookbook, on a phone"
               sizes="240px"
               className="absolute inset-x-14 top-2"
             />
             <span className="absolute left-0 top-6 flex items-center gap-1.5 rounded-full bg-background px-2.5 py-1.5 text-[0.7rem] font-medium text-plum shadow-lg">
-              <Banknote className="size-3.5 text-primary" aria-hidden="true" />
-              Cash on Delivery
+              <Shirt className="size-3.5 text-primary" aria-hidden="true" />
+              Nine looks, in 3D
             </span>
             <span className="absolute right-0 top-44 flex items-center gap-1.5 rounded-full bg-background px-2.5 py-1.5 text-[0.7rem] font-medium text-plum shadow-lg">
-              <LayoutDashboard className="size-3.5 text-primary" aria-hidden="true" />
-              Admin panel included
+              <ShoppingBag className="size-3.5 text-primary" aria-hidden="true" />
+              Tap to shop
             </span>
             <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-plum via-plum/70 to-transparent" />
           </div>
 
           <div className="relative mx-auto hidden w-full max-w-xl sm:block lg:max-w-none">
             <BrowserFrame
-              src="/agency/store-category.jpg"
-              alt="A product category in the Aperionie Adornments demo store, shown in a browser"
-              url="Aperionie Adornments · demo store"
+              src={APERIONIE_APPARELS.shots.desktop}
+              alt="Aperionie Apparels, our 3D fashion lookbook: nine looks on a circular runway, shown in a browser"
+              url="Aperionie Apparels · demo project"
             />
             <div className="absolute -bottom-8 -left-2 hidden w-[26%] overflow-hidden rounded-[1.6rem] border-[5px] border-[#1c1517] bg-background shadow-[0_24px_50px_-12px_rgb(0_0_0/0.55)] sm:block lg:-left-8">
               <Image
-                src="/agency/store-mobile.jpg"
-                alt="The same demo store on a phone"
+                src={APERIONIE_APPARELS.shots.phone}
+                alt="The same project on a phone"
                 width={390}
                 height={844}
                 className="h-auto w-full"
@@ -178,10 +180,10 @@ export default function StudioHomePage() {
       <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
         <SectionHeading
           eyebrow="What we do"
-          title="Everything a small business needs to sell online"
+          title="Everything a small business needs to grow online"
           lead="Start with the one thing you need most. Each service stands on its own, and they work even better together."
         />
-        <div className="mt-8 grid gap-3 sm:mt-12 sm:grid-cols-2 sm:gap-5">
+        <div className="mt-8 grid gap-3 sm:mt-12 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4">
           {SERVICES.map((service) => (
             <Link
               key={service.slug}
@@ -252,20 +254,20 @@ export default function StudioHomePage() {
           </div>
           <div className="mx-auto flex w-full max-w-xs items-start justify-center gap-3 sm:hidden">
             <PhoneFrame
-              src="/agency/store-mobile-product.jpg"
+              src="/agency/adornments-mobile-product.jpg"
               alt="A product page in the demo store, on a phone"
               sizes="160px"
               className="w-1/2"
             />
             <PhoneFrame
-              src="/agency/store-mobile.jpg"
+              src="/agency/adornments-mobile.jpg"
               alt="A product category in the demo store, on a phone"
               sizes="160px"
               className="mt-8 w-1/2"
             />
           </div>
           <BrowserFrame
-            src="/agency/store-product.jpg"
+            src="/agency/adornments-product.jpg"
             alt="A product page in the demo store"
             url="Aperionie Adornments · demo store"
             className="hidden border-border sm:block"

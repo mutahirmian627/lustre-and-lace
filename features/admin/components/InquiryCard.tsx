@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Mail, MessageCircle, Phone } from "lucide-react";
 import { saveInquiryNotes, updateInquiryStatus } from "@/actions/admin/inquiries.actions";
 import type { InquiryStatus } from "@/constants/inquiry-status";
-import { SERVICES } from "@/constants/agency";
+import { getService } from "@/constants/agency";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
@@ -76,7 +76,7 @@ export function InquiryCard({ inquiry }: { inquiry: InquiryRow }) {
     });
   }
 
-  const serviceTitles = inquiry.services.map((slug) => SERVICES.find((s) => s.slug === slug)?.title ?? slug);
+  const serviceTitles = inquiry.services.map((slug) => getService(slug)?.title ?? slug);
 
   return (
     <article className="space-y-4 rounded-xl border border-border bg-card p-5">
