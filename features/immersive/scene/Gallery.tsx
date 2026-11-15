@@ -19,16 +19,17 @@ import { archRing, archShape } from "@/features/immersive/lib/arch";
 import { WALL_X } from "@/features/immersive/lib/gallery";
 import type { Materials } from "@/features/immersive/lib/materials";
 import { stageState } from "@/features/immersive/lib/stage-state";
-import { WORK_STOPS, WORK_REACH } from "@/features/immersive/lib/timeline";
+import { WORK_REACH, WORK_STOPS } from "@/features/immersive/lib/timeline";
 import { zAt } from "@/features/immersive/lib/world";
+import { WORK_STOPS_DATA } from "@/features/immersive/work";
 
 /**
- * The exhibition: the demo store, which is the studio's one finished project, hung on the ivory hall's right wall as
- * real screenshots in ivory frames (two pages of the store, then two phones), and beyond them an empty arch, lit like an
- * exhibit and left empty on purpose: "Next exhibit: yours". Nothing here is invented; the pictures are the store's own
- * screens (public/agency), the same ones the studio's Work page uses.
+ * The exhibition: the studio's work hung on the ivory hall's right wall as real screenshots in ivory frames, a stop at a
+ * time (see features/immersive/work.ts for what hangs where), and at the end an empty arch, lit like an exhibit and left
+ * empty on purpose: "Next exhibit: yours". Nothing here is invented; the pictures are the projects' own screens.
  *
- * The pictures are fetched only once the visitor is well down the corridor, so none of it costs the opening anything.
+ * Each project's pictures are fetched only once the visitor is well down the hall towards them, so none of it costs the
+ * opening anything, and a visitor who stops early never downloads the rest.
  */
 
 interface Work {
@@ -41,19 +42,41 @@ interface Work {
   y: number;
 }
 
-const BROWSER = { width: 4, height: 2.5, y: 2.35 } as const;
-const PHONE = { width: 1.15, height: 2.49, y: 2.3 } as const;
-/** The works hang where the camera's stops look: each stop's σ plus the reach. */
-const [A, B, C, D] = WORK_STOPS.map((stop) => stop + WORK_REACH);
+const SIZES = {
+  browser: { width: 4, height: 2.5, y: 2.35 },
+  phone: { width: 1.15, height: 2.49, y: 2.3 },
+} as const;
+/** The space left between two frames of one stop. */
+const GAP = 0.5;
+/** How much smaller a window and a phone are hung when they share a stop. */
+const PAIR_SCALE = 0.85;
+/** How far (metres along the hall) ahead of a frame the visitor must be before its picture is fetched. */
+const FETCH_AHEAD = 45;
 
-const WORKS: readonly Work[] = [
-  { src: "/agency/store-category.jpg", sigma: A, ...BROWSER },
-  { src: "/agency/store-product.jpg", sigma: B, ...BROWSER },
-  { src: "/agency/store-mobile.jpg", sigma: C - 0.9, ...PHONE },
-  { src: "/agency/store-mobile-product.jpg", sigma: C + 0.7, ...PHONE },
-];
-/** The empty arch: where the next exhibit will hang. */
-const NICHE = { sigma: D, width: 2.3, straight: 2.3, sill: 0.95 } as const;
+/**
+ * The frames of every stop, centred on the work the camera looks at (the stop's σ plus the reach). The first frame is the
+ * visitor's leftmost as they face the wall, which is the one furthest down the hall.
+ */
+const WORKS: readonly Work[] = WORK_STOPS_DATA.flatMap((stop, i) => {
+  const centre = WORK_STOPS[i] + WORK_REACH;
+  // A window and a phone hung together are a little smaller, so the pair fits the view beside the words.
+  const kinds = new Set(stop.frames.map((frame) => frame.kind));
+  const scale = kinds.has("browser") && kinds.has("phone") ? PAIR_SCALE : 1;
+  const widths = stop.frames.map((frame) => SIZES[frame.kind].width * scale);
+  const total = widths.reduce((sum, w) => sum + w, 0) + GAP * Math.max(0, widths.length - 1);
+  let edge = centre + total / 2;
+  return stop.frames.map((frame) => {
+    const size = SIZES[frame.kind];
+    const width = size.width * scale;
+    const sigma = edge - width / 2;
+    edge -= width + GAP;
+    return { src: frame.src, sigma, width, height: size.height * scale, y: size.y };
+  });
+});
+
+/** The empty arch: where the next exhibit will hang (the exhibition's last stop). */
+const NICHE_STOP = WORK_STOPS_DATA.findIndex((stop) => stop.words.type === "next");
+const NICHE = { sigma: WORK_STOPS[NICHE_STOP] + WORK_REACH, width: 2.3, straight: 2.3, sill: 0.95 } as const;
 const BORDER = 0.1;
 
 /** A rectangular frame: an outer rectangle with a rectangular hole. */
@@ -86,7 +109,7 @@ interface GalleryProps {
 }
 
 export function Gallery({ materials, jaliMask, glow, lite, frozen }: GalleryProps) {
-  const started = useRef(false);
+  const requested = useRef(new Set<number>());
 
   const parts = useMemo(() => {
     const frames = new Map<string, ExtrudeGeometry>();
@@ -126,12 +149,14 @@ export function Gallery({ materials, jaliMask, glow, lite, frozen }: GalleryProp
     return { frameFor, planeFor, frames, planes, frameMaterial, pictures, washMaterial, nicheShape, nicheFrame, nicheGlass, nicheBars, bars };
   }, [materials, jaliMask, glow, lite]);
 
-  // Fetch the screenshots once the visitor is well down the corridor (or at once, for a still).
+  // Fetch each picture once the visitor is well down the hall towards it (or all at once, for a still).
+  const loader = useMemo(() => new TextureLoader(), []);
   useFrame(() => {
-    if (started.current || (!frozen && stageState.sigma < 40)) return;
-    started.current = true;
-    const loader = new TextureLoader();
+    if (requested.current.size === WORKS.length) return;
     WORKS.forEach((work, i) => {
+      if (requested.current.has(i)) return;
+      if (!frozen && stageState.sigma < work.sigma - FETCH_AHEAD) return;
+      requested.current.add(i);
       loader.load(work.src, (texture) => {
         texture.colorSpace = SRGBColorSpace;
         texture.anisotropy = lite ? 4 : 8;
@@ -163,7 +188,7 @@ export function Gallery({ materials, jaliMask, glow, lite, frozen }: GalleryProp
   return (
     <group>
       {WORKS.map((work, i) => (
-        <group key={work.src} position={hang(work.sigma)} rotation={facing}>
+        <group key={`${work.src}-${i}`} position={hang(work.sigma)} rotation={facing}>
           {/* The wall washed in warm light round the work. */}
           <mesh material={parts.washMaterial} position={[0, work.y, 0.012]} renderOrder={0}>
             <planeGeometry args={[work.width + 3.4, work.height + 2.6]} />

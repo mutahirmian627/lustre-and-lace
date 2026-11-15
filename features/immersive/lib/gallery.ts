@@ -1,5 +1,6 @@
-import { CLOSE_SIGMA, PROCESS_STOPS, THRESHOLD_END_SIGMA, WORK_REACH, WORK_STOPS } from "@/features/immersive/lib/timeline";
+import { CLOSE_SIGMA, PROCESS_STOPS, THRESHOLD_END_SIGMA, WORK_END_SIGMA, WORK_REACH, WORK_STOPS } from "@/features/immersive/lib/timeline";
 import { PORTAL } from "@/features/immersive/lib/world";
+import { WORK_STOPS_DATA } from "@/features/immersive/work";
 
 /**
  * The camera's route along the ivory hall: the exhibition, then the turn to the sculpture. Unlike the corridor's routes
@@ -46,18 +47,33 @@ const between = (from: number, to: number): Key => ({
   lsigma: (from + to) / 2 + 5.5,
 });
 
+/** How the camera stands at a stop: x, height, and the height it looks at. */
+const STANDS: readonly (readonly [number, number, number])[] = [
+  [1.5, 1.6, 2.5],
+  [1.5, 1.55, 2.5],
+  [1.5, 1.6, 2.6],
+  [1.6, 1.6, 2.5],
+];
+
 export const GALLERY_KEYS: readonly Key[] = [
   // Where the corridor's route leaves off: just inside the doorway, looking down the hall.
   { sigma: THRESHOLD_END_SIGMA, x: 2.3, y: 1.6, lx: 2.2, ly: 2.9, lsigma: THRESHOLD_END_SIGMA + 7 },
-  at(WORK_STOPS[0]),
-  between(WORK_STOPS[0], WORK_STOPS[1]),
-  at(WORK_STOPS[1], 1.5, 1.55),
-  between(WORK_STOPS[1], WORK_STOPS[2]),
-  at(WORK_STOPS[2], 1.5, 1.6, WALL_X, 2.6),
-  between(WORK_STOPS[2], WORK_STOPS[3]),
-  at(WORK_STOPS[3], 1.6),
+  // The exhibition: a stop in front of each part of the work, and a walk between stops. (The camera stands a little differently
+  // at each of the first four and the pattern repeats: a touch lower, or looking a touch higher at a tall phone frame.)
+  ...WORK_STOPS.flatMap((stop, i): Key[] => {
+    const [x, y, ly] = STANDS[i % STANDS.length];
+    // Where along the wall to look: a little past the middle of the bay, except in a bay of a window and a phone, where the
+    // two together are wider than the view, so the camera aims at their middle.
+    const kinds = new Set(WORK_STOPS_DATA[i]?.frames.map((frame) => frame.kind));
+    const pair = kinds.has("browser") && kinds.has("phone");
+    const lead = pair ? WORK_REACH - 0.6 : WORK_REACH + 0.5;
+    const next = WORK_STOPS[i + 1];
+    // ...and it stands a little further back from the wall there, so the pair sits in the right of the view, clear of the words.
+    const standX = pair ? Math.min(x, 1.1) : x;
+    return next === undefined ? [at(stop, standX, y, WALL_X, ly, lead)] : [at(stop, standX, y, WALL_X, ly, lead), between(stop, next)];
+  }),
   // The turn from the wall to the hall: the camera comes to the middle of the room and looks down it, at the first gate.
-  { sigma: 101, x: 2.0, y: 1.62, lx: 4.2, ly: 2.4, lsigma: 109 },
+  { sigma: WORK_END_SIGMA + 3, x: 2.0, y: 1.62, lx: 4.2, ly: 2.4, lsigma: WORK_END_SIGMA + 11 },
   // The process: at each stop the camera stands in the middle of the hall, five metres before a gate, and looks through it.
   ...PROCESS_STOPS.flatMap((stop, i): Key[] => {
     const stand = { sigma: stop, x: i % 2 ? 2.4 : 2.0, y: 1.6, lx: 2.2, ly: 2.35, lsigma: stop + 10 };
@@ -65,7 +81,7 @@ export const GALLERY_KEYS: readonly Key[] = [
     return next === undefined ? [stand] : [stand, { sigma: (stop + next) / 2, x: 2.2, y: 1.63, lx: 2.2, ly: 2.5, lsigma: (stop + next) / 2 + 9 }];
   }),
   // The close: through the last gate and on to rest, looking down the room at the sculpture.
-  { sigma: 136, x: 2.2, y: 1.62, lx: 2.1, ly: 3.0, lsigma: 146 },
+  { sigma: WORK_END_SIGMA + 38, x: 2.2, y: 1.62, lx: 2.1, ly: 3.0, lsigma: WORK_END_SIGMA + 48 },
   { sigma: CLOSE_SIGMA, x: PORTAL.x, y: 1.65, lx: 2.0, ly: 3.5, lsigma: CLOSE_SIGMA + 11 },
 ];
 

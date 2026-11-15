@@ -29,7 +29,7 @@
   /* The same for the process's words. */
   --pr: 0;
   /* Where the services end in the scroll (must equal SERVICES_END in lib/timeline.ts; a unit test checks it). */
-  --se: 0.3616;
+  --se: 0.3075;
   --atmosphere: calc(clamp(0, calc((var(--p) - 0.36) / 0.24), 1) * (1 - var(--flip)));
 
   --stage-bg: var(--ivory);
@@ -1043,6 +1043,12 @@ html[data-immersive-poster] nextjs-portal {
 .immersive-root[data-work="1"] .imm-work[data-i="1"],
 .immersive-root[data-work="2"] .imm-work[data-i="2"],
 .immersive-root[data-work="3"] .imm-work[data-i="3"],
+.immersive-root[data-work="4"] .imm-work[data-i="4"],
+.immersive-root[data-work="5"] .imm-work[data-i="5"],
+.immersive-root[data-work="6"] .imm-work[data-i="6"],
+.immersive-root[data-work="7"] .imm-work[data-i="7"],
+.immersive-root[data-work="8"] .imm-work[data-i="8"],
+.immersive-root[data-work="9"] .imm-work[data-i="9"],
 .immersive-root[data-process="0"] .imm-step[data-i="0"],
 .immersive-root[data-process="1"] .imm-step[data-i="1"],
 .immersive-root[data-process="2"] .imm-step[data-i="2"],
@@ -1078,6 +1084,16 @@ html[data-immersive-poster] nextjs-portal {
   max-width: 28rem;
   font-size: 0.97rem;
   line-height: 1.6;
+  color: var(--stage-soft);
+}
+.imm-work-tags {
+  margin: 0.9rem 0 0;
+  max-width: 28rem;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  line-height: 1.7;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--stage-soft);
 }
 .imm-work-links {

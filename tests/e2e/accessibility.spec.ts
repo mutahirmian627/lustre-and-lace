@@ -30,6 +30,8 @@ for (const { name, path, needsCartItem } of PAGES) {
       await createAccountFromCheckoutGate(page, { name: "E2E A11y User", emailPrefix: "e2e-a11y" });
     } else {
       await page.goto(path);
+      // The homepage's bar and words fade in on load; scan it once they have (a scan mid-fade measures half-transparent text).
+      if (path === "/") await page.waitForTimeout(2200);
     }
     const results = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa"])

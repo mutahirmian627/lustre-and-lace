@@ -9,13 +9,16 @@
 
 /**
  * How tall the scroll run is, in screens: the opening (gallery to hall), then everything after it: the seven bays of
- * services, the threshold (down the corridor's last stretch, through the large lattice doorway), the exhibition (four
- * stops along the ivory hall), the process (five gates further down the hall) and the close, where the camera comes to
+ * services, the threshold (down the corridor's last stretch, through the large lattice doorway), the exhibition (a stop
+ * for each part of the work on show, along the ivory hall), the process (five gates further down the hall) and the close, where the camera comes to
  * rest before the sculpture. Both the page's CSS height and the scroll maths read these, so they can't disagree.
  */
 const BAYS_SCREENS = 4.928;
 const THRESHOLD_SCREENS = 1.3;
-const WORK_SCREENS = 3.2;
+/** How many stops the exhibition makes (the length of WORK_STOPS_DATA in features/immersive/work.ts, which a unit test checks). */
+export const WORK_STOP_COUNT = 8;
+/** A little under a screen of scroll for each stop. */
+const WORK_SCREENS = WORK_STOP_COUNT * 0.7;
 const PROCESS_SCREENS = 3.4;
 const CLOSE_SCREENS = 0.8;
 export const RUN = { opening: 2.3, services: BAYS_SCREENS + THRESHOLD_SCREENS + WORK_SCREENS + PROCESS_SCREENS + CLOSE_SCREENS } as const;
@@ -32,13 +35,19 @@ export const SERVICE_COUNT = 7;
 export const HALL_START_SIGMA = 7.6;
 export const SERVICES_END_SIGMA = 59;
 export const THRESHOLD_END_SIGMA = 73;
-export const WORK_END_SIGMA = 98;
-export const PROCESS_END_SIGMA = 132;
-export const CLOSE_SIGMA = 140;
+/** The exhibition's stops, 7 m apart from 77 (below), the last of which is the empty arch. */
+const WORK_FIRST_STOP = 77;
+export const WORK_PITCH_SIGMA = 7;
+export const WORK_END_SIGMA = WORK_FIRST_STOP + WORK_PITCH_SIGMA * (WORK_STOP_COUNT - 1);
+/** Everything beyond the exhibition keeps its place relative to the exhibition's end. */
+export const PROCESS_END_SIGMA = WORK_END_SIGMA + 34;
+export const CLOSE_SIGMA = WORK_END_SIGMA + 42;
 /** The far end of the corridor: the large lattice doorway into the ivory hall. */
-export const DOOR_SIGMA = 70;
+const DOOR_SIGMA_VALUE = 70;
+export const DOOR_SIGMA = DOOR_SIGMA_VALUE;
 /** The ivory hall beyond the doorway: how long it is. */
-export const IVORY_LENGTH = 91;
+/** (The exhibition and the process fill most of it; the sculpture is at the far end.) */
+export const IVORY_LENGTH = WORK_END_SIGMA + 63 - DOOR_SIGMA_VALUE;
 /** Between these two distances down the hall the page turns from plum to ivory: the camera is passing through the doorway. */
 export const FLIP_SIGMA = [66, 72] as const;
 
@@ -46,23 +55,23 @@ export const FLIP_SIGMA = [66, 72] as const;
  * The exhibition: the stops the camera makes along the ivory hall's right wall, as distances down the hall, and the
  * distance (along the hall) from each stop to the work it looks at.
  */
-export const WORK_STOPS = [77, 84, 91, 98] as const;
+export const WORK_STOPS: readonly number[] = Array.from({ length: WORK_STOP_COUNT }, (_, i) => WORK_FIRST_STOP + WORK_PITCH_SIGMA * i);
 export const WORK_REACH = 3;
 export const WORK_COUNT = WORK_STOPS.length;
 /** The exhibition's words arrive as the camera comes into the hall and give way as it turns to the sculpture. */
-export const WORK_SIGMA = [73.6, 75.4, 99, 100.4] as const;
+export const WORK_SIGMA = [73.6, 75.4, WORK_END_SIGMA + 1, WORK_END_SIGMA + 2.4] as const;
 
 /**
  * The process: five gates across the ivory hall beyond the exhibition (a wall with a doorway in it, and a lattice veil in the
  * doorway that is thinner at each), and the camera's five stops, each five metres before its gate.
  */
-export const GATES = [109, 116, 123, 130, 137] as const;
-export const PROCESS_STOPS = [104, 111, 118, 125, 132] as const;
+export const PROCESS_STOPS: readonly number[] = [6, 13, 20, 27, 34].map((d) => WORK_END_SIGMA + d);
+export const GATES: readonly number[] = PROCESS_STOPS.map((stop) => stop + 5);
 export const PROCESS_COUNT = PROCESS_STOPS.length;
 /** The process's words arrive as the camera walks on from the exhibition and give way as it turns to the sculpture. */
-export const PROCESS_SIGMA = [102.2, 103.8, 133.2, 134.8] as const;
+export const PROCESS_SIGMA = [WORK_END_SIGMA + 4.2, WORK_END_SIGMA + 5.8, WORK_END_SIGMA + 35.2, WORK_END_SIGMA + 36.8] as const;
 /** Where the contact words arrive: the camera has passed the last gate and turned to the sculpture. */
-export const CONTACT_SIGMA = [135.4, 137.4] as const;
+export const CONTACT_SIGMA = [WORK_END_SIGMA + 37.4, WORK_END_SIGMA + 39.4] as const;
 
 /** The hall's ribs stand every 4 m from 2.2: exactly the approved opening's grid. */
 export const RIB_EVERY = 4;

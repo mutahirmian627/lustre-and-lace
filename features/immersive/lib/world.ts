@@ -1,5 +1,15 @@
 import { CatmullRomCurve3, Vector3 } from "three";
-import { DOOR_SIGMA, HALL_START_SIGMA, IVORY_LENGTH, RIB_EVERY, THRESHOLD_END_SIGMA } from "@/features/immersive/lib/timeline";
+import {
+  DOOR_SIGMA,
+  HALL_START_SIGMA,
+  IVORY_LENGTH,
+  RIB_EVERY,
+  THRESHOLD_END_SIGMA,
+  WORK_END_SIGMA,
+  WORK_PITCH_SIGMA,
+  WORK_REACH,
+  WORK_STOPS,
+} from "@/features/immersive/lib/timeline";
 
 // The pure scroll numbers live in timeline.ts (no 3D), and are re-exported here for the scene's convenience.
 export { RUN, SERVICES_END, THRESHOLD_END, SERVICE_COUNT, clamp01, smoothstep, serviceIndexAt } from "@/features/immersive/lib/timeline";
@@ -45,7 +55,7 @@ export const SCREEN_Z = WALL.z - 0.5;
  * each service arch at a chosen height: the camera's eye is about 1.4 m up, so where the ribbon passes at about
  * 2.4 m to 2.9 m it goes by within a metre or so of the lens, and where it passes higher it is a distant crossing.
  */
-const RIBBON_POINTS = [
+const CORRIDOR_POINTS = [
   [1.3, 6.0, -1.8],
   [0.85, 4.5, -2.3],
   [0.1, 3.5, -2.9],
@@ -69,21 +79,33 @@ const RIBBON_POINTS = [
   [PORTAL.x, 2.6, -69.5],
   [PORTAL.x, 2.9, -74],
   // --- through the large doorway (its plane is at z = -76.8) and into the ivory hall ---
-  // First it runs the length of the exhibition: over each work (above its frame) and down between the works (in front of
-  // the blank wall between them), so it keeps threading the room as the camera walks along it; then through the five gates of the process; then, at the far end,
-  // it hangs as a sculpture: it rises on the right, crosses high above, comes back down on the left and sweeps round the
-  // front to land on the floor, one loop in the middle of the room. No stretch of it is steeper than the ribbon's own opening.
   [PORTAL.x, 3.0, -78.6],
-  [3.0, 3.8, -83.8],
-  [5.2, 4.8, -86.8],
-  [6.0, 2.6, -90.3],
-  [5.4, 4.9, -93.8],
-  [6.0, 2.5, -97.3],
-  [5.2, 4.9, -100.8],
-  [5.8, 2.7, -104.3],
-  [4.8, 4.6, -107.8],
-  // The process: through the middle of each of the five gates (z = -115.8, -122.8, -129.8, -136.8, -143.8), a little under
-  // the height of the doorway, so it passes a metre and a half above the camera at each.
+] as const;
+
+/**
+ * Along the exhibition the ribbon runs over each work (above its frame, a few metres in front of the wall) and dips down
+ * between the works (in front of the blank wall between them), so it keeps threading the room as the camera walks along it.
+ */
+const OVER_WORK = [[5.2, 4.8], [5.4, 4.9], [5.2, 4.9], [5.0, 4.7], [5.3, 4.8], [5.2, 4.9], [5.4, 4.7], [4.8, 4.6]] as const;
+const BETWEEN_WORKS = [[6.0, 2.6], [6.0, 2.5], [5.8, 2.7], [6.0, 2.6], [5.9, 2.5], [6.0, 2.7], [5.8, 2.6]] as const;
+const EXHIBITION_POINTS: [number, number, number][] = [[3.0, 3.8, zAt(WORK_STOPS[0])]];
+WORK_STOPS.forEach((stop, i) => {
+  const [ox, oy] = OVER_WORK[i % OVER_WORK.length];
+  EXHIBITION_POINTS.push([ox, oy, zAt(stop + WORK_REACH)]);
+  if (i < WORK_STOPS.length - 1) {
+    const [bx, by] = BETWEEN_WORKS[i % BETWEEN_WORKS.length];
+    EXHIBITION_POINTS.push([bx, by, zAt(stop + WORK_PITCH_SIGMA / 2 + WORK_REACH)]);
+  }
+});
+
+/**
+ * Beyond the exhibition: the process (through the middle of each of the five gates, a little under the height of the
+ * doorway, so it passes a metre and a half above the camera at each) and the sculpture (it rises on the right, crosses high
+ * above, comes back down on the left and sweeps round the front to land on the floor, one loop in the middle of the room;
+ * no stretch of it is steeper than the ribbon's own opening). These were drawn with the exhibition ending at distance 98;
+ * they keep their places relative to its end, wherever that is.
+ */
+const BEYOND_EXHIBITION: [number, number, number][] = [
   [3.4, 3.7, -111.5],
   [2.2, 3.2, -115.8],
   [2.2, 3.5, -119.3],
@@ -108,7 +130,13 @@ const RIBBON_POINTS = [
   [3.9, 1.4, -158.5],
   [3.5, 0.6, -161],
   [2.4, 0.1, -162.5],
-] as const;
+];
+const SHIFT = WORK_END_SIGMA - 98;
+const RIBBON_POINTS: readonly (readonly [number, number, number])[] = [
+  ...CORRIDOR_POINTS,
+  ...EXHIBITION_POINTS,
+  ...BEYOND_EXHIBITION.map(([x, y, z]): [number, number, number] => [x, y, z - SHIFT]),
+];
 
 export const ribbonCurve = new CatmullRomCurve3(
   RIBBON_POINTS.map(([x, y, z]) => new Vector3(x, y, z)),

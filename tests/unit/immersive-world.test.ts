@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { Vector3 } from "three";
 import { frameFor } from "@/features/immersive/lib/frame";
@@ -20,6 +20,8 @@ import {
   THRESHOLD_END_SIGMA,
   WORK_STOPS,
   WORK_COUNT,
+  WORK_STOP_COUNT,
+  WORK_PITCH_SIGMA,
   WORK_END_SIGMA,
   WORK_SIGMA,
   WORK_REACH,
@@ -32,6 +34,7 @@ import {
   workIndexFromSigma,
 } from "@/features/immersive/lib/timeline";
 import { WALL_X, galleryPose } from "@/features/immersive/lib/gallery";
+import { WORK_STOPS_DATA } from "@/features/immersive/work";
 import {
   cameraCurve,
   hallCameraCurve,
@@ -329,15 +332,49 @@ describe("the large doorway and the ivory hall", () => {
 });
 
 describe("the exhibition", () => {
-  it("makes four stops, one work each, in order, and shows each stop's words once", () => {
-    expect(WORK_COUNT).toBe(4);
+  it("makes a stop for every part of the work on show, in order, and shows each stop's words once", () => {
+    expect(WORK_COUNT).toBe(WORK_STOPS_DATA.length);
+    expect(WORK_STOP_COUNT).toBe(WORK_STOPS_DATA.length);
     const seen: number[] = [];
-    for (let s = 0; s <= 1; s += 0.001) {
+    for (let s = 0; s <= 1; s += 0.0005) {
       const index = workIndexFromSigma(hallSigma(s));
       if (index >= 0 && seen[seen.length - 1] !== index) seen.push(index);
     }
-    expect(seen).toEqual([0, 1, 2, 3]);
+    expect(seen).toEqual(Array.from({ length: WORK_STOPS_DATA.length }, (_, i) => i));
     expect(workIndexFromSigma(THRESHOLD_END_SIGMA - 1)).toBe(-1);
+  });
+
+  it("describes every stop: real pictures that exist, words that say something, honest links, and the empty arch last", () => {
+    WORK_STOPS_DATA.forEach((stop, i) => {
+      for (const frame of stop.frames) expect(existsSync(`public${frame.src}`), `${frame.src} is not in public/`).toBe(true);
+      const words = stop.words;
+      if (words.type === "project") {
+        expect(words.name.length).toBeGreaterThan(1);
+        expect(words.text.length).toBeGreaterThan(40);
+        expect(words.links.filter((link) => link.primary)).toHaveLength(1);
+        for (const link of words.links) {
+          if (link.external) expect(link.href).toMatch(/^https:\/\//);
+          else expect(link.href).toMatch(/^\/(shop|studio)(\/|$)/);
+        }
+        expect(stop.frames.length).toBeGreaterThan(0);
+      } else if (words.type === "list") {
+        expect(words.items.length).toBeGreaterThanOrEqual(4);
+        expect(stop.frames.length).toBeGreaterThan(0);
+      } else {
+        expect(i).toBe(WORK_STOPS_DATA.length - 1);
+        expect(stop.frames).toHaveLength(0);
+      }
+    });
+    // Every project's stops start with its name, so a list is never left without a project before it.
+    expect(WORK_STOPS_DATA[0].words.type).toBe("project");
+  });
+
+  it("keeps each stop's frames within its own stretch of wall, clear of the ribs between the stops", () => {
+    // Frames are at most 4 m + 0.5 m + 1.15 m wide in a bay; a rib stands every 7 m midway between works and is 0.45 m deep.
+    const widest = Math.max(
+      ...WORK_STOPS_DATA.map((stop) => stop.frames.reduce((sum, frame) => sum + (frame.kind === "browser" ? 4 : 1.15), 0) + 0.5 * Math.max(0, stop.frames.length - 1) + 0.2)
+    );
+    expect(widest / 2).toBeLessThan(WORK_PITCH_SIGMA / 2 - 0.45);
   });
 
   it("slows nearly to a stand at each stop and walks on between them", () => {

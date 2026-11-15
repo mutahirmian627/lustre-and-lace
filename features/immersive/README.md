@@ -84,14 +84,21 @@ scripts/render-immersive-poster.mjs  renders the four fallback pictures from the
   opening has it until the camera is within about 40 m. The page turns from plum to ivory as the camera passes through
   the doorway (`--flip`, set by `ScrollDriver` from the camera's distance down the corridor), and the contact words
   arrive in the ivory hall (`--c`).
-- **The exhibition** (`scene/Gallery.tsx`, `lib/gallery.ts`). The studio's one finished project, the demo store, hangs on the
-  ivory hall's right wall as its real screenshots (`public/agency`, the same ones the Work page uses): two pages of the
-  store, then two phones, then an empty arch lit like an exhibit: "Next exhibit: yours". Nothing is invented. The camera
-  makes four stops along the hall (`WORK_STOPS`, slowing nearly to a stand at each), looking at the work on the wall, and
-  then turns to the sculpture for the contact. Its route here is keyed by distance (`galleryPose`) rather than being a curve,
-  because the view swings sideways. The ribbon runs over each work and dips between them, so it keeps threading the room.
-  The screenshots are fetched only once the visitor is well down the corridor. The words are the Work page's own copy
-  (`constants/agency.ts`), one stop at a time (`data-work`), with the links reachable only while their stop is on show.
+- **The exhibition** (`features/immersive/work.ts`, `scene/Gallery.tsx`, `lib/gallery.ts`). The studio's work hangs on the
+  ivory hall's right wall as real screenshots in ivory frames, a stop at a time, and ends with an empty lit arch: "Next
+  exhibit: yours". Today it shows the demo store (`public/agency`), Slice & Stack and Atelier N°9 (`public/portfolio`: a
+  desktop and a phone picture for each stop). Nothing is invented: every claim is something the project does, and they are
+  labelled as the studio's own demos.
+  - **To add a project:** put its screenshots in `public/portfolio/` (1440x900 for a window, 780x1688 for a phone; **not** a
+    folder called `work`, which the old `/work` redirect would catch), add its stops to `WORK_STOPS_DATA` in `work.ts`, and
+    raise `WORK_STOP_COUNT` in `lib/timeline.ts` by the same number (a unit test checks they agree). The wall, the camera's
+    stops, the scroll length, the words, the ribbon's route over the works, the hall's length and the screen-reader list
+    all follow; everything after the exhibition (the process, the sculpture) keeps its place relative to the exhibition's end.
+  - The camera makes a stop in front of each (`WORK_STOPS`, slowing nearly to a stand), looking at the middle of the bay, and
+    at the end turns to the process. Its route is keyed by distance (`galleryPose`) rather than being a curve, because the
+    view swings sideways. A window and a phone hung together are 85% size so the pair fits beside the words.
+  - Each project's pictures are fetched only once the visitor is within 45 m of them. The words come from the same list, one
+    stop at a time (`data-work`), with the links reachable only while their stop is on show.
 - **The process: five gates** (`scene/IvoryHall.tsx`, `scene/ArchVeils.tsx`). Beyond the exhibition the ivory hall is
   crossed by five walls, each with the great doorway in it (`GATES`): Talk, Plan, Build, Launch, Grow, the studio's own five
   steps (`PROCESS_STEPS` in `constants/agency.ts`). Looking down the hall they stack into an enfilade of nested arches, with

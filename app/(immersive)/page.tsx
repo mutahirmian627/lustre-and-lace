@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CASE_STUDY, PROCESS_STEPS, SERVICES as AGENCY_SERVICES } from "@/constants/agency";
+import { PROCESS_STEPS, SERVICES as AGENCY_SERVICES } from "@/constants/agency";
 import { BRAND } from "@/constants/brand";
 import { SOCIAL_LINKS } from "@/constants/site-config";
 import { SERVICES } from "@/features/immersive/content";
@@ -19,6 +19,7 @@ import { ScrollDriver } from "@/features/immersive/sections/ScrollDriver";
 import { ServiceRail } from "@/features/immersive/sections/ServiceRail";
 import { StillNote } from "@/features/immersive/sections/StillNote";
 import { TierBadge } from "@/features/immersive/sections/TierBadge";
+import { WORK_STOPS_DATA, type WorkStop } from "@/features/immersive/work";
 
 export const metadata: Metadata = {
   title: { absolute: "Lustre & Lace | Pretty Websites. Serious Business." },
@@ -28,6 +29,58 @@ export const metadata: Metadata = {
 };
 
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL ?? `https://${BRAND.domain}`;
+
+/** One stop of the exhibition, in words. Only the one on show is visible, and so only its links can be reached. */
+function WorkStopWords({ stop, index }: { stop: WorkStop; index: number }) {
+  const words = stop.words;
+  if (words.type === "project") {
+    return (
+      <article className="imm-work" data-i={index}>
+        <div aria-hidden="true">
+          <p className="imm-work-kind">{words.kind}</p>
+          <h3 className="imm-work-name">{words.name}</h3>
+          <p className="imm-work-text">{words.text}</p>
+        </div>
+        <div className="imm-work-links">
+          {words.links.map((item) =>
+            item.external ? (
+              <a key={item.href} href={item.href} target="_blank" rel="noopener noreferrer" className={item.primary ? "imm-btn" : "imm-link"}>
+                {item.label}
+                <span className="sr-only"> (opens in a new tab)</span>
+                {!item.primary && <span aria-hidden="true">&nbsp;&rarr;</span>}
+              </a>
+            ) : (
+              <Link key={item.href} href={item.href} className={item.primary ? "imm-btn" : "imm-link"}>
+                {item.label}
+                {!item.primary && <span aria-hidden="true">&nbsp;&rarr;</span>}
+              </Link>
+            )
+          )}
+        </div>
+      </article>
+    );
+  }
+  if (words.type === "list") {
+    return (
+      <article className="imm-work" data-i={index} aria-hidden="true">
+        <p className="imm-work-kind">{words.kind}</p>
+        <ul className="imm-work-list">
+          {words.items.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+        {words.tags && <p className="imm-work-tags">{words.tags.join(" · ")}</p>}
+      </article>
+    );
+  }
+  return (
+    <article className="imm-work" data-i={index} aria-hidden="true">
+      <p className="imm-work-kind">{words.kind}</p>
+      <h3 className="imm-work-name">{words.name}</h3>
+      <p className="imm-work-text">{words.text}</p>
+    </article>
+  );
+}
 
 const step = (i: number): CSSProperties => ({ "--i": i }) as CSSProperties;
 
@@ -46,6 +99,9 @@ const WHATSAPP_HREF = `https://wa.me/${IMMERSIVE_WHATSAPP_NUMBER}?text=${encodeU
  * scene to scene. All text is real HTML, laid out by CSS; the 3D is a picture behind it.
  */
 export default function ImmersivePage() {
+  // The project the screen-reader list is currently describing (set as the list is built, in order).
+  let currentProject = "";
+
   // The same structured data the studio page carries: the site's root says who the business is and what it offers.
   const jsonLd = {
     "@context": "https://schema.org",
@@ -136,53 +192,18 @@ export default function ImmersivePage() {
               <ServiceRail names={SERVICES.map((service) => service.name)} />
             </section>
 
-            {/* The exhibition: the studio's one finished project, on the ivory hall's wall, then an empty arch. The words
-                are repeated in the screen-reader list below; the links are real and only reachable while their stop is on show. */}
+            {/* The exhibition: the studio's work on the ivory hall's wall, a stop at a time, then an empty arch (see
+                features/immersive/work.ts). The words are repeated in the screen-reader list below; the links are real and only
+                reachable while their stop is on show. */}
             <section className="imm-scene imm-scene--work">
               <div aria-hidden="true">
                 <p className="imm-label">04 &mdash; Work</p>
-                <p className="imm-statement imm-work-title">One finished project you can actually use.</p>
+                <p className="imm-statement imm-work-title">Work you can open and try.</p>
               </div>
               <div className="imm-work-stack">
-                <article className="imm-work" data-i={0}>
-                  <div aria-hidden="true">
-                    <p className="imm-work-kind">{CASE_STUDY.kind}</p>
-                    <h3 className="imm-work-name">{CASE_STUDY.name}</h3>
-                    <p className="imm-work-text">{CASE_STUDY.summary}</p>
-                  </div>
-                  <div className="imm-work-links">
-                    <Link href="/shop" className="imm-btn">
-                      Open the demo store
-                    </Link>
-                    <Link href="/studio/get-started?service=ecommerce" className="imm-link">
-                      I want a store like this <span aria-hidden="true">&rarr;</span>
-                    </Link>
-                  </div>
-                </article>
-                <article className="imm-work" data-i={1} aria-hidden="true">
-                  <p className="imm-work-kind">What your customers get</p>
-                  <ul className="imm-work-list">
-                    {CASE_STUDY.storeFeatures.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                </article>
-                <article className="imm-work" data-i={2} aria-hidden="true">
-                  <p className="imm-work-kind">On a phone, and what you get to run it</p>
-                  <ul className="imm-work-list">
-                    {CASE_STUDY.adminFeatures.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                </article>
-                <article className="imm-work" data-i={3} aria-hidden="true">
-                  <p className="imm-work-kind">Next exhibit</p>
-                  <h3 className="imm-work-name">Yours.</h3>
-                  <p className="imm-work-text">
-                    This is the first project in the exhibition. Client work will hang here as we finish it, with permission. Until
-                    then, the demo store is the honest measure of what we build.
-                  </p>
-                </article>
+                {WORK_STOPS_DATA.map((stop, i) => (
+                  <WorkStopWords key={i} stop={stop} index={i} />
+                ))}
               </div>
             </section>
 
@@ -268,26 +289,40 @@ export default function ImmersivePage() {
         </section>
         <section className="sr-only" aria-labelledby="work-title">
           <h2 id="work-title">Our work</h2>
-          <h3>{CASE_STUDY.name}</h3>
-          <p>
-            {CASE_STUDY.kind}. {CASE_STUDY.summary}
-          </p>
-          <h4>What your customers get</h4>
-          <ul>
-            {CASE_STUDY.storeFeatures.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-          <h4>What you get to run it</h4>
-          <ul>
-            {CASE_STUDY.adminFeatures.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-          <p>
-            Next exhibit: yours. Client work will be added here as we finish it, with permission. Until then, the demo store is the
-            honest measure of what we build.
-          </p>
+          {WORK_STOPS_DATA.map((stop, i) => {
+            const words = stop.words;
+            if (words.type === "project") {
+              currentProject = words.name;
+              return (
+                <div key={i}>
+                  <h3>{words.name}</h3>
+                  <p>
+                    {words.kind}. {words.text}
+                  </p>
+                </div>
+              );
+            }
+            if (words.type === "list") {
+              return (
+                <div key={i}>
+                  <h4>
+                    {currentProject}: {words.kind}
+                  </h4>
+                  <ul>
+                    {words.items.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                  {words.tags && <p>Built with {words.tags.join(", ")}.</p>}
+                </div>
+              );
+            }
+            return (
+              <p key={i}>
+                {words.kind}: yours. {words.text}
+              </p>
+            );
+          })}
         </section>
       </main>
 

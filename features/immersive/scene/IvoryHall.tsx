@@ -5,7 +5,7 @@ import { AdditiveBlending, BackSide, Color, DoubleSide, ExtrudeGeometry, MeshBas
 import { toCreasedNormals } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { archRing, archShape } from "@/features/immersive/lib/arch";
 import type { Materials } from "@/features/immersive/lib/materials";
-import { DOOR_SIGMA, GATES } from "@/features/immersive/lib/timeline";
+import { DOOR_SIGMA, GATES, WORK_END_SIGMA, WORK_PITCH_SIGMA, WORK_REACH, WORK_STOPS } from "@/features/immersive/lib/timeline";
 import { BIG_DOOR, HALL, IVORY, PORTAL, zAt } from "@/features/immersive/lib/world";
 import { doorwayOutline } from "@/features/immersive/scene/Architecture";
 
@@ -25,10 +25,11 @@ const endZ = doorZ - IVORY.length;
  * wall, where the works hang, none until the process begins; then in each room between the gates, and round the sculpture.
  * The ribs stand between the works. (The gates themselves are the ribs of the process.)
  */
-const ROOMS = [112.5, 119.5, 126.5, 133.5, 141, 148, 155] as const;
-const WINDOWS_LEFT = [77, 84, 91, 98, 105, ...ROOMS] as const;
-const WINDOWS_RIGHT = [...ROOMS] as const;
-const RIBS = [83.5, 90.5, 97.5] as const;
+// The rooms of the process and the sculpture, as distances beyond the end of the exhibition.
+const ROOMS = [14.5, 21.5, 28.5, 35.5, 43, 50, 57].map((d) => WORK_END_SIGMA + d);
+const WINDOWS_LEFT = [...WORK_STOPS, WORK_END_SIGMA + 7, ...ROOMS];
+const WINDOWS_RIGHT = ROOMS;
+const RIBS = WORK_STOPS.slice(0, -1).map((stop) => stop + WORK_PITCH_SIGMA / 2 + WORK_REACH);
 const WINDOW = { width: 2.2, straight: 2.7, sill: 0.45 } as const;
 
 /**

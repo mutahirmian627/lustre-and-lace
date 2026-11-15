@@ -1,5 +1,7 @@
 import { test, expect, type Page } from "@playwright/test";
 import sharp from "sharp";
+import { OPENING, RUN, SCENES } from "./helpers/immersive";
+import { WORK_STOPS_DATA } from "../../features/immersive/work";
 
 /**
  * The immersive homepage (stage 1: the opening sequence): the bar, the full-screen menu, what happens to
@@ -25,11 +27,10 @@ async function changeOver(page: Page, ms: number) {
  * the services and the close. Waits until the page's own scroll variables agree.
  */
 async function scrollToScene(page: Page, scene: number) {
-  await page.evaluate((g) => {
+  await page.evaluate(([g, opening, run]) => {
     const vh = window.innerHeight;
-    // The opening is 2.3 screens of travel and everything after it 13.628 (RUN in lib/timeline.ts).
-    window.scrollTo(0, Math.round(g <= 1 ? g * 2.3 * vh : (2.3 + (g - 1) * 13.628) * vh));
-  }, scene);
+    window.scrollTo(0, Math.round(g <= 1 ? g * opening * vh : (opening + (g - 1) * run) * vh));
+  }, [scene, OPENING, RUN] as const);
   const [name, expected] = scene <= 1 ? ["--p", scene] : ["--s", scene - 1];
   await expect
     .poll(() => page.evaluate((n) => Number(getComputedStyle(document.querySelector(".immersive-root")!).getPropertyValue(n)), name))
@@ -52,7 +53,7 @@ test.describe("immersive opening", () => {
     await expect(opening).toBeVisible();
     await expect(approach).toBeHidden();
 
-    await scrollToScene(page, 0.95);
+    await scrollToScene(page, SCENES.approach);
     await expect(approach).toBeVisible();
     // The opening's words are gone from sight and its links from the keyboard; only the page's heading stays in the accessibility tree.
     await expect(page.locator(".imm-scene--opening")).toHaveCSS("opacity", "0");
@@ -68,7 +69,7 @@ test.describe("immersive opening", () => {
     await page.goto("/");
     const root = page.locator(".immersive-root");
 
-    await scrollToScene(page, 1.3);
+    await scrollToScene(page, SCENES.services);
     await expect(root).toHaveAttribute("data-phase", "services");
     await expect(page.getByText("Seven disciplines, one studio.")).toBeVisible();
     const current = Number(await root.getAttribute("data-service"));
@@ -77,17 +78,17 @@ test.describe("immersive opening", () => {
     await expect(page.locator(`.imm-service[data-i="${current}"]`)).toHaveCSS("opacity", "1");
 
     // Further down, a different service is on show.
-    await scrollToScene(page, 1.7);
+    await scrollToScene(page, SCENES.laterService);
     const later = await page.evaluate(() => Number(document.querySelector(".immersive-root")!.getAttribute("data-service")));
     expect(later).toBeGreaterThan(current);
 
     // Down the corridor's last stretch and through the large doorway: no words of their own, still plum.
-    await scrollToScene(page, 1.41);
+    await scrollToScene(page, SCENES.threshold);
     await expect(root).toHaveAttribute("data-phase", "threshold");
     expect(await page.evaluate(() => Number(getComputedStyle(document.querySelector(".immersive-root")!).getPropertyValue("--flip")))).toBeLessThan(0.5);
 
     // In the ivory hall: the page has turned ivory and the contact words are there.
-    await scrollToScene(page, 1.98);
+    await scrollToScene(page, SCENES.contact);
     await expect(root).toHaveAttribute("data-phase", "contact");
     await expect.poll(() => page.evaluate(() => Number(getComputedStyle(document.querySelector(".immersive-root")!).getPropertyValue("--flip")))).toBeGreaterThan(0.95);
     await expect(page.getByRole("heading", { level: 2, name: "Got a Business to Make Beautiful?" })).toBeVisible();
@@ -98,7 +99,7 @@ test.describe("immersive opening", () => {
 
   test("each service shows its four points and no description", async ({ page }) => {
     await page.goto("/");
-    await scrollToScene(page, 1.3);
+    await scrollToScene(page, SCENES.services);
     expect(await page.locator(".imm-service-summary").count()).toBe(0);
     const current = Number(await page.locator(".immersive-root").getAttribute("data-service"));
     const stage = page.locator(`.imm-service[data-i="${current}"]`);
@@ -123,26 +124,50 @@ test.describe("immersive opening", () => {
     }
   });
 
-  test("the exhibition: four stops, the real project, real links, then the contact", async ({ page }) => {
+  test("the exhibition: a stop for every part of the work, the real projects, real links, then the empty arch", async ({ page }) => {
     await page.goto("/");
     const root = page.locator(".immersive-root");
     const link = page.getByRole("link", { name: "Open the demo store" });
 
-    await scrollToScene(page, 1.5);
+    // The demo store, first.
+    await scrollToScene(page, SCENES.work(0));
     await expect(root).toHaveAttribute("data-phase", "work");
     await expect(root).toHaveAttribute("data-work", "0");
-    await expect(page.getByText("One finished project you can actually use.")).toBeVisible();
+    await expect(page.getByText("Work you can open and try.")).toBeVisible();
     await expect(link).toBeVisible();
     await expect(link).toHaveAttribute("href", "/shop");
     await expect(page.getByRole("link", { name: /I want a store like this/ })).toHaveAttribute("href", "/studio/get-started?service=ecommerce");
 
     // Further on a different stop is on show, and the first stop's links are no longer reachable.
-    await scrollToScene(page, 1.58);
-    await expect(root).toHaveAttribute("data-work", /^[12]$/);
+    await scrollToScene(page, SCENES.work(2));
+    await expect(root).toHaveAttribute("data-work", "2");
     await expect(link).toBeHidden();
 
-    await scrollToScene(page, 1.69);
+    // Slice & Stack: its own stop, its own link to the live site, and what it does.
+    const open = page.getByRole("link", { name: /Open the site/ });
+    await scrollToScene(page, SCENES.work(3));
     await expect(root).toHaveAttribute("data-work", "3");
+    await expect(page.locator(".imm-work-name", { hasText: "Slice & Stack" })).toBeVisible();
+    await expect(open).toHaveAttribute("href", "https://slice-and-stack.vercel.app");
+    await expect(open).toHaveAttribute("target", "_blank");
+    await expect(open).toHaveAttribute("rel", /noopener/);
+    await scrollToScene(page, SCENES.work(4));
+    await expect(root).toHaveAttribute("data-work", "4");
+    await expect(page.locator(".imm-work-list li").filter({ hasText: "kitchen board" })).toBeVisible();
+    await expect(open).toBeHidden();
+
+    // Atelier N°9.
+    await scrollToScene(page, SCENES.work(5));
+    await expect(root).toHaveAttribute("data-work", "5");
+    await expect(page.locator(".imm-work-name", { hasText: "Atelier N°9" })).toBeVisible();
+    await expect(open).toHaveAttribute("href", "https://atelier-n9-phi.vercel.app");
+    await scrollToScene(page, SCENES.work(6));
+    await expect(root).toHaveAttribute("data-work", "6");
+    await expect(page.locator(".imm-work-list li").filter({ hasText: "morph into each other" })).toBeVisible();
+
+    // The empty arch.
+    await scrollToScene(page, SCENES.nextExhibit);
+    await expect(root).toHaveAttribute("data-work", String(WORK_STOPS_DATA.length - 1));
     await expect(page.locator(".imm-work-name", { hasText: "Yours." })).toBeVisible();
   });
 
@@ -151,21 +176,21 @@ test.describe("immersive opening", () => {
     const root = page.locator(".immersive-root");
     const steps = ["Talk", "Plan", "Build", "Launch", "Grow"];
 
-    await scrollToScene(page, 1.73);
+    await scrollToScene(page, SCENES.process(0));
     await expect(root).toHaveAttribute("data-phase", "process");
     await expect(root).toHaveAttribute("data-process", "0");
     await expect(page.getByText("From first chat to first customers.")).toBeVisible();
     await expect(page.locator(".imm-step .imm-work-name", { hasText: steps[0] })).toBeVisible();
 
-    await scrollToScene(page, 1.84);
+    await scrollToScene(page, SCENES.process(2));
     await expect(root).toHaveAttribute("data-process", "2");
     await expect(page.locator(".imm-step .imm-work-name", { hasText: steps[2] })).toBeVisible();
 
-    await scrollToScene(page, 1.94);
+    await scrollToScene(page, SCENES.process(4));
     await expect(root).toHaveAttribute("data-process", "4");
     await expect(page.locator(".imm-step .imm-work-name", { hasText: steps[4] })).toBeVisible();
 
-    await scrollToScene(page, 1.99);
+    await scrollToScene(page, SCENES.contact);
     await expect(root).toHaveAttribute("data-phase", "contact");
   });
 
@@ -188,7 +213,7 @@ test.describe("immersive opening", () => {
   test("the work and the process are readable by assistive technology, whatever the scroll position", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByRole("region", { name: "How we work" }).getByRole("heading", { level: 3 })).toHaveText(["Talk", "Plan", "Build", "Launch", "Grow"]);
-    await expect(page.getByRole("region", { name: "Our work" }).getByRole("heading", { level: 3 })).toHaveText("Lustre & Lace Store");
+    await expect(page.getByRole("region", { name: "Our work" }).getByRole("heading", { level: 3 })).toHaveText(["Lustre & Lace Store", "Slice & Stack", "Atelier N°9"]);
   });
 
   test("all seven services are readable by assistive technology, whatever the scroll position", async ({ page }) => {
@@ -216,7 +241,7 @@ test.describe("immersive opening", () => {
     await page.waitForTimeout(1500);
     // The approved Stage 1 opening changed about 4% of the scene in 0.4 s; demand 1% over 1.2 s, at both ends of the journey.
     expect(await changeOver(page, 1200)).toBeGreaterThan(0.01);
-    await scrollToScene(page, 1.4);
+    await scrollToScene(page, SCENES.corridor);
     await page.waitForTimeout(3500);
     expect(await changeOver(page, 1200)).toBeGreaterThan(0.01);
   });
@@ -315,7 +340,7 @@ test.describe("immersive navigation", () => {
     test("the contact words are reached within one screen's scroll of the last step", async ({ page }) => {
       await page.goto("/");
       const root = page.locator(".immersive-root");
-      await scrollToScene(page, 1.94);
+      await scrollToScene(page, SCENES.process(4));
       await expect(root).toHaveAttribute("data-process", "4");
       await page.evaluate(() => window.scrollBy(0, window.innerHeight));
       await expect(root).toHaveAttribute("data-phase", "contact");
@@ -346,7 +371,7 @@ test.describe("immersive navigation", () => {
       await expect(page.locator(".imm-journey")).toHaveCount(1);
       await page.waitForTimeout(2500); // let some frames arrive
       const before = await page.locator(".imm-journey").screenshot();
-      await scrollToScene(page, 1.4);
+      await scrollToScene(page, SCENES.corridor);
       await page.waitForTimeout(2500);
       const after = await page.locator(".imm-journey").screenshot();
       expect(Buffer.compare(before, after)).not.toBe(0);

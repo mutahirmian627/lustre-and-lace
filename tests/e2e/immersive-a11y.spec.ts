@@ -1,5 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import { OPENING, RUN, SCENES } from "./helpers/immersive";
 
 /**
  * Accessibility of the homepage: an automated scan (axe, WCAG 2.2 AA and best practice) at the stops of the journey, and the
@@ -7,17 +8,15 @@ import AxeBuilder from "@axe-core/playwright";
  * page always has its heading and its landmarks wherever the visitor has scrolled to.
  */
 
-// Run length after the opening, in screens (RUN in lib/timeline.ts), and some positions to look at, in scenes.
-const OPENING = 2.3;
-const RUN = 13.628;
+// Some positions to look at, in scenes (see helpers/immersive.ts: they come from the page's own scroll maths).
 const STOPS: [string, number][] = [
   ["the opening", 0],
-  ["the approach", 0.95],
-  ["the services", 1.2],
-  ["the corridor's end", 1.41],
-  ["the exhibition", 1.5],
-  ["the process", 1.84],
-  ["the contact", 2],
+  ["the approach", SCENES.approach],
+  ["the services", SCENES.services],
+  ["the corridor's end", SCENES.threshold],
+  ["the exhibition", SCENES.work(0)],
+  ["the process", SCENES.process(2)],
+  ["the contact", SCENES.contact],
 ];
 
 async function scrollToScene(page: Page, scene: number) {
@@ -90,7 +89,7 @@ test.describe("immersive accessibility", () => {
   test("at each stop the keyboard reaches that stop's own links, and none of another stop's", async ({ page }) => {
     await page.goto("/");
     // The exhibition's first stop: the demo store's two links.
-    await scrollToScene(page, 1.5);
+    await scrollToScene(page, SCENES.work(0));
     const reached: string[] = [];
     for (let i = 0; i < 8; i++) {
       await page.keyboard.press("Tab");
@@ -132,7 +131,7 @@ test.describe("immersive accessibility", () => {
 
     test("a scan finds nothing to fix in the exhibition or the contact", async ({ page }) => {
       await page.goto("/");
-      for (const scene of [1.5, 1.84, 2]) {
+      for (const scene of [SCENES.work(0), SCENES.process(2), SCENES.contact]) {
         await scrollToScene(page, scene);
         const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa", "best-practice"]).analyze();
         expect(results.violations.map((v) => `${v.id}: ${v.help}`), `at scene ${scene}`).toEqual([]);
@@ -141,7 +140,7 @@ test.describe("immersive accessibility", () => {
 
     test("the page does not scroll sideways", async ({ page }) => {
       await page.goto("/");
-      for (const scene of [0, 1.2, 1.5, 1.84, 2]) {
+      for (const scene of [0, SCENES.services, SCENES.work(0), SCENES.work(3), SCENES.process(2), SCENES.contact]) {
         await scrollToScene(page, scene);
         const extra = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
         expect(extra, `at scene ${scene}`).toBeLessThanOrEqual(1);
