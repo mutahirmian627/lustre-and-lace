@@ -169,7 +169,7 @@ export const DIFFERENTIATORS = [
 
 /** The one real project we can show today. */
 export const CASE_STUDY = {
-  name: "Lustre & Lace Store",
+  name: "Aperionie Adornments",
   kind: "Demo project: e-commerce",
   summary:
     "A complete online jewellery store built from scratch to show what we can deliver. It isn't a client project and it doesn't sell to the public; it exists so you can see, and try, a finished store.",

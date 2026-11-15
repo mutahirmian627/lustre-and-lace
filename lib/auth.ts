@@ -48,7 +48,7 @@ export const auth = betterAuth({
     sendResetPassword: async ({ user, url }) => {
       await sendEmail({
         to: user.email,
-        subject: "Reset your Lustre & Lace password",
+        subject: "Reset your Aperionie Adornments password",
         react: ResetPassword({ name: user.name, url }),
         localLink: url,
       });
@@ -63,7 +63,7 @@ export const auth = betterAuth({
     sendVerificationEmail: async ({ user, url }) => {
       await sendEmail({
         to: user.email,
-        subject: "Verify your email — Lustre & Lace",
+        subject: "Verify your email — Aperionie Adornments",
         react: VerifyEmail({ name: user.name, url }),
         localLink: url,
       });

@@ -2,7 +2,10 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { getNewArrivals } from "@/actions/home.actions";
 import { AUTH_BENEFITS, AuthShowcase } from "@/features/auth/components/AuthShowcase";
-import { STORE_BRAND } from "@/constants/brand";
+import { Logo } from "@/components/brand/Logo";
+import { STORE_METADATA } from "@/lib/store-metadata";
+
+export const metadata = STORE_METADATA;
 
 export default async function AuthLayout({
   children,
@@ -18,8 +21,8 @@ export default async function AuthLayout({
 
       <div className="flex min-w-0 flex-col bg-accent">
         <header className="flex items-center justify-between gap-4 px-5 py-5 sm:px-10">
-          <Link href="/shop" className="font-heading text-2xl text-foreground sm:text-3xl">
-            {STORE_BRAND.name}
+          <Link href="/shop" aria-label="Aperionie Adornments, shop home" className="text-foreground">
+            <Logo brand="store" variant="lockup" decorative className="h-10 w-auto sm:h-12" />
           </Link>
           <Link
             href="/shop"

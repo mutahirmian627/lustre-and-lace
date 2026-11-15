@@ -22,7 +22,7 @@ const GREETING: Entry = {
   id: "greeting",
   from: "bot",
   kind: "text",
-  text: "Hi, welcome to Lustre & Lace. Pick a question below, type your own, or enter an order number to check its status.",
+  text: "Hi, welcome to Aperionie Adornments. Pick a question below, type your own, or enter an order number to check its status.",
 };
 
 const NO_MATCH_TEXT =

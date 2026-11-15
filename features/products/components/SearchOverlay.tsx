@@ -66,7 +66,7 @@ export function SearchOverlay() {
         open={open}
         onOpenChange={setOpen}
         title="Search products"
-        description="Search the Lustre & Lace catalog"
+        description="Search the Aperionie Adornments catalog"
       >
         <Command shouldFilter={false}>
           <CommandInput

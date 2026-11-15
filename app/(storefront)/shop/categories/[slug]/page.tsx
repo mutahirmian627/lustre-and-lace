@@ -29,7 +29,7 @@ export async function generateMetadata({
 
   return {
     title: category.name,
-    description: category.description ?? `Shop ${category.name} at Lustre & Lace.`,
+    description: category.description ?? `Shop ${category.name} at Aperionie Adornments.`,
     alternates: { canonical: `/shop/categories/${category.slug}` },
   };
 }

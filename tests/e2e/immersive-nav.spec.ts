@@ -94,7 +94,7 @@ test.describe("immersive opening", () => {
     await expect(page.getByRole("heading", { level: 2, name: "Got a Business to Make Beautiful?" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Start a Conversation" })).toHaveAttribute("href", "/studio/get-started");
     await expect(page.getByRole("link", { name: /WhatsApp/ })).toHaveAttribute("href", /^https:\/\/wa\.me\/923236022290/);
-    await expect(page.getByRole("link", { name: /Instagram/ })).toHaveAttribute("href", "https://instagram.com/lustreandlacestudio");
+    await expect(page.getByRole("link", { name: /Instagram/ })).toHaveAttribute("href", "https://instagram.com/aperionie");
   });
 
   test("each service shows its four points and no description", async ({ page }) => {
@@ -213,7 +213,7 @@ test.describe("immersive opening", () => {
   test("the work and the process are readable by assistive technology, whatever the scroll position", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByRole("region", { name: "How we work" }).getByRole("heading", { level: 3 })).toHaveText(["Talk", "Plan", "Build", "Launch", "Grow"]);
-    await expect(page.getByRole("region", { name: "Our work" }).getByRole("heading", { level: 3 })).toHaveText(["Lustre & Lace Store", "Slice & Stack", "Atelier N°9"]);
+    await expect(page.getByRole("region", { name: "Our work" }).getByRole("heading", { level: 3 })).toHaveText(["Aperionie Adornments", "Slice & Stack", "Atelier N°9"]);
   });
 
   test("all seven services are readable by assistive technology, whatever the scroll position", async ({ page }) => {

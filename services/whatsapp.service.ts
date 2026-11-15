@@ -13,7 +13,7 @@ export function buildWhatsAppLink(businessNumber: string, orderReference: string
 /** A plain "say hello" link for the Contact page. */
 export function buildWhatsAppChatLink(businessNumber: string): string {
   const digitsOnly = businessNumber.replace(/[^\d]/g, "");
-  return `https://wa.me/${digitsOnly}?text=${encodeURIComponent("Hi, I have a question about Lustre & Lace.")}`;
+  return `https://wa.me/${digitsOnly}?text=${encodeURIComponent("Hi, I have a question about Aperionie Adornments.")}`;
 }
 
 /** The seeded default ("923XXXXXXXXX") is a placeholder, not a number — don't render a dead link for it. */

@@ -16,6 +16,15 @@ export const metadata: Metadata = {
     template: `%s | ${BRAND.name}`,
   },
   description: DEFAULT_DESCRIPTION,
+  // Aperionie's icons (public/). Metadata, not app/icon.* files, so the demo store can replace them with its own
+  // (lib/store-metadata.ts); file-based icons at the root would always stay in the page's head as well.
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "48x48" },
+      { url: "/brand/favicon.svg", type: "image/svg+xml" },
+    ],
+    apple: "/brand/apple-touch-icon.png",
+  },
   openGraph: {
     type: "website",
     siteName: BRAND.name,

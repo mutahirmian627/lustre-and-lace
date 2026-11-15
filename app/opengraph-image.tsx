@@ -5,7 +5,7 @@ import { LOGO_ART } from "@/components/brand/logo-art";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-const ART = LOGO_ART.stacked;
+const ART = LOGO_ART.studio.stacked;
 const [, , artWidth, artHeight] = ART.viewBox.split(" ").map(Number);
 
 /**

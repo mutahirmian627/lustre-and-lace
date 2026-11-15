@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { MobileNav } from "@/components/layout/MobileNav";
-import { STORE_BRAND } from "@/constants/brand";
+import { Logo } from "@/components/brand/Logo";
 import { ANNOUNCEMENT_BAR_TEXT } from "@/constants/site-config";
 import { cn } from "@/lib/utils";
 import type { getCategoryTree } from "@/actions/categories.actions";
@@ -87,11 +87,8 @@ export function HeaderClient({
             </div>
           </div>
 
-          <Link
-            href="/shop"
-            className="text-center font-heading text-2xl leading-none text-foreground sm:text-3xl"
-          >
-            {STORE_BRAND.name}
+          <Link href="/shop" aria-label="Aperionie Adornments, shop home" className="flex justify-center text-foreground">
+            <Logo brand="store" variant="lockup" decorative className="h-9 w-auto sm:h-11" />
           </Link>
 
           <div className="flex items-center justify-end gap-1">

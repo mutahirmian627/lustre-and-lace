@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 export const metadata: Metadata = {
   title: "Our Work",
   description:
-    "See the Lustre & Lace demo store: a complete online store with checkout, payments and an admin panel, built to show the standard of our work.",
+    "See the Aperionie Adornments demo store: a complete online store with checkout, payments and an admin panel, built to show the standard of our work.",
   alternates: { canonical: "/studio/work" },
 };
 
@@ -100,7 +100,7 @@ export default function WorkPage() {
             <BrowserFrame
               src="/agency/store-category.jpg"
               alt="A product category in the demo store"
-              url="lustreandlace.com/categories/necklaces"
+              url="Aperionie Adornments · demo store"
               className="border-border"
             />
             <div className="absolute -bottom-6 -right-2 hidden w-[24%] overflow-hidden rounded-[1.5rem] border-[5px] border-[#1c1517] bg-background shadow-[0_24px_50px_-12px_rgb(0_0_0/0.45)] sm:block lg:-right-6">

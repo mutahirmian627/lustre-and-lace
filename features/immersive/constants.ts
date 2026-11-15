@@ -7,11 +7,11 @@
  * this value is only used here until the experience replaces the homepage.
  */
 export const IMMERSIVE_WHATSAPP_NUMBER = "923236022290";
-export const IMMERSIVE_INSTAGRAM_URL = "https://instagram.com/lustreandlacestudio";
+export const IMMERSIVE_INSTAGRAM_URL = "https://instagram.com/aperionie";
 
 /** How the number is written for people (the link form above is for wa.me). */
 export const IMMERSIVE_WHATSAPP_DISPLAY = "0323 6022290";
-export const IMMERSIVE_INSTAGRAM_HANDLE = "@lustreandlacestudio";
+export const IMMERSIVE_INSTAGRAM_HANDLE = "@APERIONIE";
 
 /**
  * The full-screen menu. Every entry goes somewhere that works today: an in-page chapter, or an existing

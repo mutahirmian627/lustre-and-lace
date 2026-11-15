@@ -167,7 +167,7 @@ export async function requestAccountDeletion() {
   await resend.emails.send({
     from: FROM_EMAIL,
     to: session.user.email,
-    subject: "Confirm Account Deletion — Lustre & Lace",
+    subject: "Confirm Account Deletion — Aperionie Adornments",
     react: ConfirmAccountDeletion({ name: session.user.name, url }),
   });
 

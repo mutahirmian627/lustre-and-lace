@@ -21,7 +21,7 @@ export default function VerifyEmail({
     >
       <Text style={BODY_STYLE}>Hi {name},</Text>
       <Text style={BODY_STYLE}>
-        Welcome to Lustre &amp; Lace! Please confirm this is your email address so we can keep your
+        Welcome to Aperionie Adornments! Please confirm this is your email address so we can keep your
         account, orders and wishlist safe. Once confirmed, you can sign in and start shopping.
       </Text>
       <EmailButton href={url}>Verify my email</EmailButton>

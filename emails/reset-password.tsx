@@ -15,7 +15,7 @@ export default function ResetPassword({
 }) {
   return (
     <EmailLayout
-      previewText="Reset your Lustre & Lace password"
+      previewText="Reset your Aperionie Adornments password"
       eyebrow="Account security"
       title="Reset your password"
     >

@@ -49,7 +49,7 @@ export const POPULAR_SEARCHES = [
 ] as const;
 
 export const SOCIAL_LINKS = {
-  instagram: "https://instagram.com/lustreandlace",
+  instagram: "https://instagram.com/aperionie",
 } as const;
 
 export const SITE_POLICIES = {

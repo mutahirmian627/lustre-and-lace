@@ -131,7 +131,7 @@ export default function StudioHomePage() {
           <div className="relative mx-auto h-[26rem] w-full max-w-[21rem] overflow-hidden sm:hidden">
             <PhoneFrame
               src="/agency/store-mobile.jpg"
-              alt="The Lustre & Lace demo store on a phone"
+              alt="The Aperionie Adornments demo store on a phone"
               sizes="240px"
               className="absolute inset-x-14 top-2"
             />
@@ -149,8 +149,8 @@ export default function StudioHomePage() {
           <div className="relative mx-auto hidden w-full max-w-xl sm:block lg:max-w-none">
             <BrowserFrame
               src="/agency/store-category.jpg"
-              alt="A product category in the Lustre & Lace demo store, shown in a browser"
-              url="lustreandlace.com/categories/necklaces"
+              alt="A product category in the Aperionie Adornments demo store, shown in a browser"
+              url="Aperionie Adornments · demo store"
             />
             <div className="absolute -bottom-8 -left-2 hidden w-[26%] overflow-hidden rounded-[1.6rem] border-[5px] border-[#1c1517] bg-background shadow-[0_24px_50px_-12px_rgb(0_0_0/0.55)] sm:block lg:-left-8">
               <Image
@@ -222,7 +222,7 @@ export default function StudioHomePage() {
               align="left"
               eyebrow="Proof, not promises"
               title="Don't take our word for it. Open the store."
-              lead="Lustre & Lace Store is a complete online store we built to show the standard of our work. Browse it, add a product to the cart and place a test order. It's a demo, so nothing real is sold."
+              lead="Aperionie Adornments is a complete online store we built to show the standard of our work. Browse it, add a product to the cart and place a test order. It's a demo, so nothing real is sold."
             />
             <ul className="space-y-3 text-sm text-foreground/85">
               {[
@@ -267,7 +267,7 @@ export default function StudioHomePage() {
           <BrowserFrame
             src="/agency/store-product.jpg"
             alt="A product page in the demo store"
-            url="lustreandlace.com/products/velvet-pearl-choker"
+            url="Aperionie Adornments · demo store"
             className="hidden border-border sm:block"
           />
         </div>

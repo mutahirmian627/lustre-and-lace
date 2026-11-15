@@ -14,13 +14,13 @@ export default function ConfirmAccountDeletion({
 }) {
   return (
     <EmailLayout
-      previewText="Confirm you want to delete your Lustre & Lace account"
+      previewText="Confirm you want to delete your Aperionie Adornments account"
       eyebrow="Account"
       title="Confirm account deletion"
     >
       <Text style={BODY_STYLE}>Hi {name},</Text>
       <Text style={BODY_STYLE}>
-        We received a request to permanently delete your Lustre &amp; Lace account. This will
+        We received a request to permanently delete your Aperionie Adornments account. This will
         remove your saved addresses, wishlist, and cart — this can&apos;t be undone.
       </Text>
       <EmailButton href={url}>Confirm Account Deletion</EmailButton>

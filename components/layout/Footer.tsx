@@ -18,7 +18,7 @@ export async function Footer() {
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr]">
           <div className="max-w-sm space-y-4">
-            <span className="font-heading text-3xl">{STORE_BRAND.name}</span>
+            <Logo brand="store" variant="lockup" className="h-14 w-auto" />
             <p className="font-heading text-base italic text-secondary">{STORE_BRAND.tagline}</p>
             <p className="text-sm font-light leading-relaxed text-plum-foreground/75">
               Elegant, affordable artificial jewellery for every story you&apos;re telling, from everyday wear to your

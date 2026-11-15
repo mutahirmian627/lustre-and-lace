@@ -63,8 +63,9 @@ export function EmailLayout({
   const siteUrl = getSiteUrl();
   const hosted = canUseHostedImages(siteUrl);
   const headerImage = hosted ? `${siteUrl}/email/header.png` : undefined;
-  // Studio emails carry the Aperionie logo (a PNG: inboxes don't show SVG); the store's emails keep the store's own name.
-  const logoImage = studio && hosted ? `${siteUrl}/email/aperionie-logo.png` : undefined;
+  // Each email carries its brand's logo as a PNG (inboxes don't show SVG): Aperionie for the studio's, Aperionie Adornments
+  // for the store's.
+  const logoImage = hosted ? `${siteUrl}/email/${studio ? "aperionie-logo" : "aperionie-adornments-logo"}.png` : undefined;
 
   return (
     <Html lang="en">
@@ -110,10 +111,10 @@ export function EmailLayout({
             {logoImage ? (
               <Img
                 src={logoImage}
-                alt={BRAND.name}
-                width={240}
-                height={35}
-                style={{ display: "block", margin: "0 auto", width: 240, height: "auto" }}
+                alt={studio ? BRAND.name : STORE_BRAND.name}
+                width={studio ? 240 : 260}
+                height={studio ? 35 : 46}
+                style={{ display: "block", margin: "0 auto", width: studio ? 240 : 260, height: "auto" }}
               />
             ) : (
               <Text

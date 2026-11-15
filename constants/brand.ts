@@ -12,7 +12,7 @@ export const BRAND = {
  * it keeps its own name, tagline and colours, and does not take the studio's logo.
  */
 export const STORE_BRAND = {
-  name: "Lustre & Lace",
+  name: "Aperionie Adornments",
   tagline: "Where Every Sparkle Tells Your Story.",
 } as const;
 

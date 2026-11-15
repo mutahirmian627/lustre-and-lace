@@ -57,7 +57,7 @@ export function RegisterForm() {
           Create your account
         </h1>
         <p className="text-sm text-muted-foreground">
-          Join Lustre &amp; Lace for a faster checkout and order history
+          Join Aperionie Adornments for a faster checkout and order history
         </p>
       </div>
 

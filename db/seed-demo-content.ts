@@ -133,7 +133,7 @@ const REVIEW_TEXT: { rating: number; title: string; comment: string }[] = [
   { rating: 5, title: "Exactly what I wanted", comment: "Matched my outfit perfectly. Will order the matching set next." },
   { rating: 3, title: "Good, not amazing", comment: "Pretty design but the clasp is a bit stiff. Customer support helped quickly though." },
   { rating: 5, title: "Elegant and classy", comment: "Looks far more expensive than it is. Highly recommend." },
-  { rating: 4, title: "Happy with it", comment: "Good quality and fast delivery. Would buy from Lustre & Lace again." },
+  { rating: 4, title: "Happy with it", comment: "Good quality and fast delivery. Would buy from Aperionie Adornments again." },
   { rating: 5, title: "Bridal favourite", comment: "Wore this for my event and everyone asked where it was from. Beautiful craftsmanship." },
   { rating: 4, title: "Pretty and light", comment: "Doesn't pull on the ears at all, even after a long evening." },
 ];

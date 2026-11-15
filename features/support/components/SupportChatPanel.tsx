@@ -26,7 +26,7 @@ export function SupportChatPanel({
   return (
     <div
       role="dialog"
-      aria-label="Chat with Lustre & Lace"
+      aria-label="Chat with Aperionie Adornments"
       className="fixed inset-x-2 bottom-2 top-16 z-40 flex flex-col overflow-hidden rounded-xl border border-border bg-background shadow-xl sm:inset-x-auto sm:bottom-20 sm:right-4 sm:top-auto sm:h-[34rem] sm:max-h-[calc(100dvh-6rem)] sm:w-[22rem]"
     >
       <div className="flex items-center gap-2 border-b border-border bg-secondary px-3 py-3">

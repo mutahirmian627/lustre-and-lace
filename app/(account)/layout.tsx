@@ -1,6 +1,9 @@
 import { SiteShell } from "@/components/layout/SiteShell";
 import { AccountSidebar } from "@/features/account/components/AccountSidebar";
 import { requireSessionOrRedirect } from "@/lib/session";
+import { STORE_METADATA } from "@/lib/store-metadata";
+
+export const metadata = STORE_METADATA;
 
 export default async function AccountLayout({ children }: { children: React.ReactNode }) {
   // The middleware only checks that a session cookie exists; this confirms the session is still valid.
