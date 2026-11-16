@@ -77,7 +77,7 @@ export const APERIONIE_FOODS: WorkProject = {
     "Menu and coupon admin, with sales analytics",
   ],
   stack: ["Next.js", "React", "TypeScript", "three.js", "GSAP", "PostgreSQL", "Cloudinary"],
-  url: "https://slice-and-stack.vercel.app",
+  url: "https://foods.aperionie.com",
   serviceSlug: "ecommerce",
   shots: {
     desktop: "/portfolio/aperionie-foods-hero.jpg",
@@ -101,7 +101,7 @@ export const APERIONIE_APPARELS: WorkProject = {
     "A calmer version for people who prefer reduced motion",
   ],
   stack: ["Next.js", "React", "TypeScript", "three.js", "GSAP", "Tailwind CSS"],
-  url: "https://atelier-n9-phi.vercel.app",
+  url: "https://apparels.aperionie.com",
   serviceSlug: "website-development",
   shots: {
     desktop: "/portfolio/aperionie-apparels-ring.jpg",

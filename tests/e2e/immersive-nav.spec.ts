@@ -148,7 +148,7 @@ test.describe("immersive opening", () => {
     await scrollToScene(page, SCENES.work(3));
     await expect(root).toHaveAttribute("data-work", "3");
     await expect(page.locator(".imm-work-name", { hasText: "Aperionie Foods" })).toBeVisible();
-    await expect(open).toHaveAttribute("href", "https://slice-and-stack.vercel.app");
+    await expect(open).toHaveAttribute("href", "https://foods.aperionie.com");
     await expect(open).toHaveAttribute("target", "_blank");
     await expect(open).toHaveAttribute("rel", /noopener/);
     await scrollToScene(page, SCENES.work(4));
@@ -160,7 +160,7 @@ test.describe("immersive opening", () => {
     await scrollToScene(page, SCENES.work(5));
     await expect(root).toHaveAttribute("data-work", "5");
     await expect(page.locator(".imm-work-name", { hasText: "Aperionie Apparels" })).toBeVisible();
-    await expect(open).toHaveAttribute("href", "https://atelier-n9-phi.vercel.app");
+    await expect(open).toHaveAttribute("href", "https://apparels.aperionie.com");
     await scrollToScene(page, SCENES.work(6));
     await expect(root).toHaveAttribute("data-work", "6");
     await expect(page.locator(".imm-work-list li").filter({ hasText: "morph into each other" })).toBeVisible();

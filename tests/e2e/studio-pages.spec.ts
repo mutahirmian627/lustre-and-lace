@@ -51,8 +51,8 @@ test("the work page shows the store, Aperionie Foods and Aperionie Apparels, wit
 
   const slice = page.getByRole("link", { name: /Open the site.*opens in a new tab/ });
   await expect(slice).toHaveCount(2);
-  await expect(slice.nth(0)).toHaveAttribute("href", "https://slice-and-stack.vercel.app");
-  await expect(slice.nth(1)).toHaveAttribute("href", "https://atelier-n9-phi.vercel.app");
+  await expect(slice.nth(0)).toHaveAttribute("href", "https://foods.aperionie.com");
+  await expect(slice.nth(1)).toHaveAttribute("href", "https://apparels.aperionie.com");
   await expect(slice.nth(0)).toHaveAttribute("rel", /noopener/);
   await expect(page.getByRole("link", { name: "Open the demo store" })).toHaveAttribute("href", "/shop");
   await expect(page.getByRole("link", { name: "I want something like this" }).nth(1)).toHaveAttribute("href", "/studio/get-started?service=website-development");
