@@ -11,6 +11,11 @@ const nextConfig: NextConfig = {
         { source: `/${name}/:path*`, destination: `/${prefix}/${name}/:path*`, permanent: true },
       ]);
     return [
+      // One address for the site: www.aperionie.com and the old lustre-and-lace.vercel.app address both go to aperionie.com
+      // (the path and query are kept). The old address skips /api, so the nightly scheduled job and anything calling the
+      // API directly are not redirected. Preview deployments have other hosts and are not touched.
+      { source: "/:path*", has: [{ type: "host" as const, value: "www.aperionie.com" }], destination: "https://aperionie.com/:path*", permanent: true },
+      { source: "/:path((?!api(?:/|$)).*)", has: [{ type: "host" as const, value: "lustre-and-lace.vercel.app" }], destination: "https://aperionie.com/:path", permanent: true },
       // The immersive homepage's old preview address. (Only this exact path: the pictures under /immersive/ in public/ are still served.)
       { source: "/immersive", destination: "/", permanent: true },
       // The studio's fourth service was reshaped into "AI & Business Automation" when its list was matched to the homepage's.

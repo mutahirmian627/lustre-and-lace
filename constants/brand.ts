@@ -3,8 +3,8 @@ export const BRAND = {
   name: "Aperionie",
   descriptor: "Web Development & Digital Marketing",
   tagline: "We help businesses go digital and grow online.",
-  // The domain isn't changed with the name: set NEXT_PUBLIC_APP_URL to the live address, which takes priority everywhere.
-  domain: "lustreandlace.com",
+  // The site's address. NEXT_PUBLIC_APP_URL (set in Vercel) takes priority wherever a full address is needed; this is the fallback.
+  domain: "aperionie.com",
 } as const;
 
 /**

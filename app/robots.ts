@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
+import { BRAND } from "@/constants/brand";
 
-const SITE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://lustreandlace.com";
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL ?? `https://${BRAND.domain}`;
 
 export default function robots(): MetadataRoute.Robots {
   return {

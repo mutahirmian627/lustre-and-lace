@@ -3,8 +3,9 @@ import { isNull, eq, and } from "drizzle-orm";
 import { db } from "@/db";
 import { products, categories } from "@/db/schema";
 import { SERVICES } from "@/constants/agency";
+import { BRAND } from "@/constants/brand";
 
-const SITE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://lustreandlace.com";
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL ?? `https://${BRAND.domain}`;
 
 const STATIC_ROUTES = [
   "",

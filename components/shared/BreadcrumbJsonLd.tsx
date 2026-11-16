@@ -1,4 +1,6 @@
-const SITE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://lustreandlace.com";
+import { BRAND } from "@/constants/brand";
+
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL ?? `https://${BRAND.domain}`;
 
 /** Structured-data mirror of a page's existing visual breadcrumb UI — not new UI (specs/15). */
 export function BreadcrumbJsonLd({ items }: { items: { name: string; path: string }[] }) {
