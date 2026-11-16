@@ -7,7 +7,7 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/db";
 import { user, addresses, verification } from "@/db/schema";
 import { auth } from "@/lib/auth";
-import { resend, FROM_EMAIL } from "@/lib/resend";
+import { resend, FROM_EMAIL, REPLY_TO_EMAIL } from "@/lib/resend";
 import ConfirmAccountDeletion from "@/emails/confirm-account-deletion";
 
 const PK_PHONE_REGEX = /^(\+92|0)3\d{9}$/;
@@ -166,6 +166,7 @@ export async function requestAccountDeletion() {
 
   await resend.emails.send({
     from: FROM_EMAIL,
+    ...(REPLY_TO_EMAIL ? { replyTo: REPLY_TO_EMAIL } : {}),
     to: session.user.email,
     subject: "Confirm Account Deletion — Aperionie Adornments",
     react: ConfirmAccountDeletion({ name: session.user.name, url }),

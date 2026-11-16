@@ -19,7 +19,7 @@ import { checkCouponEligibility, calculateDiscountAmount } from "@/lib/coupon";
 import { SETTINGS_KEYS } from "@/constants/settings-keys";
 import { generateOrderReference } from "@/utils/generate-order-reference";
 import { buildWhatsAppLink } from "@/services/whatsapp.service";
-import { resend, FROM_EMAIL } from "@/lib/resend";
+import { resend, FROM_EMAIL, REPLY_TO_EMAIL } from "@/lib/resend";
 import OrderConfirmation from "@/emails/order-confirmation";
 import { checkoutSchema, type CheckoutInput } from "@/features/checkout/types";
 import { saveAddressFromCheckout } from "@/actions/addresses.actions";
@@ -183,6 +183,7 @@ export async function placeOrder(input: CheckoutInput) {
 
     await resend.emails.send({
       from: FROM_EMAIL,
+      ...(REPLY_TO_EMAIL ? { replyTo: REPLY_TO_EMAIL } : {}),
       to: data.customerEmail,
       subject: `Order Confirmed — ${orderReference}`,
       react: OrderConfirmation({

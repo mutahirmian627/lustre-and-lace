@@ -70,12 +70,14 @@ export async function submitInquiry(input: unknown, trap = ""): Promise<SubmitIn
             adminUrl: `${siteUrl()}/admin/inquiries`,
           }),
           replyTo: data.email,
+          sender: "studio",
         })
       : Promise.resolve(console.warn("[inquiry] INQUIRY_NOTIFY_EMAIL is not set, so no notification was sent.")),
     sendEmail({
       to: data.email,
       subject: "We've received your project details — Aperionie",
       react: InquiryReceived({ name: data.name, businessName: data.businessName, siteUrl: siteUrl() }),
+      sender: "studio",
     }),
   ]);
 

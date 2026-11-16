@@ -65,6 +65,11 @@ export const resend: EmailSender =
           return new Resend(process.env.RESEND_API_KEY);
         })();
 
-// Must be a domain verified in the Resend dashboard before launch — see
-// specs/17-deployment.md pre-launch checklist.
-export const FROM_EMAIL = process.env.FROM_EMAIL ?? "orders@example.lustreandlace.com";
+// Senders must be on a domain verified in the Resend dashboard (aperionie.com).
+// FROM_EMAIL: the demo store's emails (orders, accounts), e.g. "Aperionie Adornments <orders@aperionie.com>".
+export const FROM_EMAIL = process.env.FROM_EMAIL ?? "orders@aperionie.com";
+// STUDIO_FROM_EMAIL: the studio's emails (enquiries), e.g. "Aperionie <hello@aperionie.com>". Falls back to FROM_EMAIL.
+export const STUDIO_FROM_EMAIL = process.env.STUDIO_FROM_EMAIL || FROM_EMAIL;
+// REPLY_TO_EMAIL: a real inbox that replies should reach, because the sending addresses have no mailbox of their own.
+// Optional; leave unset until there is one.
+export const REPLY_TO_EMAIL = process.env.REPLY_TO_EMAIL || undefined;

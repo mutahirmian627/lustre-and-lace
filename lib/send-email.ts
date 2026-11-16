@@ -1,5 +1,5 @@
 import type { ReactElement } from "react";
-import { resend, FROM_EMAIL } from "@/lib/resend";
+import { resend, FROM_EMAIL, STUDIO_FROM_EMAIL, REPLY_TO_EMAIL } from "@/lib/resend";
 
 /**
  * Sends one email and never throws: the Resend SDK reports failures in its
@@ -13,6 +13,7 @@ export async function sendEmail({
   react,
   localLink,
   replyTo,
+  sender = "store",
 }: {
   to: string;
   subject: string;
@@ -21,9 +22,13 @@ export async function sendEmail({
   localLink?: string;
   /** Where a reply should go, e.g. the customer who filled in an enquiry form. */
   replyTo?: string;
+  /** Whose email it is: the studio's (enquiries) or the demo store's (accounts, orders). Decides the From address. */
+  sender?: "studio" | "store";
 }): Promise<boolean> {
   try {
-    const result = (await resend.emails.send({ from: FROM_EMAIL, to, subject, react, ...(replyTo ? { replyTo } : {}) })) as {
+    const from = sender === "studio" ? STUDIO_FROM_EMAIL : FROM_EMAIL;
+    const reply = replyTo ?? REPLY_TO_EMAIL;
+    const result = (await resend.emails.send({ from, to, subject, react, ...(reply ? { replyTo: reply } : {}) })) as {
       error?: { message?: string } | null;
     } | null;
     if (result?.error) throw new Error(result.error.message ?? "Resend rejected the email");

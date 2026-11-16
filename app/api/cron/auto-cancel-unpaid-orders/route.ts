@@ -5,7 +5,7 @@ import { orders } from "@/db/schema";
 import { getSetting } from "@/lib/settings";
 import { SETTINGS_KEYS } from "@/constants/settings-keys";
 import { applyCancellationSideEffects } from "@/lib/order-cancellation";
-import { resend, FROM_EMAIL } from "@/lib/resend";
+import { resend, FROM_EMAIL, REPLY_TO_EMAIL } from "@/lib/resend";
 import OrderCancelled from "@/emails/order-cancelled";
 
 /**
@@ -41,6 +41,7 @@ export async function GET(request: NextRequest) {
     try {
       await resend.emails.send({
         from: FROM_EMAIL,
+        ...(REPLY_TO_EMAIL ? { replyTo: REPLY_TO_EMAIL } : {}),
         to: order.customerEmail,
         subject: `Order Cancelled — ${order.orderReference}`,
         react: OrderCancelled({
