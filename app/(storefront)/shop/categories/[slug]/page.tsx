@@ -1,3 +1,4 @@
+import { shopCanonical } from "@/lib/shop-origin";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -30,7 +31,7 @@ export async function generateMetadata({
   return {
     title: category.name,
     description: category.description ?? `Shop ${category.name} at Aperionie Adornments.`,
-    alternates: { canonical: `/shop/categories/${category.slug}` },
+    alternates: { canonical: shopCanonical(`/shop/categories/${category.slug}`) },
   };
 }
 

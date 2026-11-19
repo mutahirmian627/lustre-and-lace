@@ -1,13 +1,15 @@
 import type { MetadataRoute } from "next";
+import { headers } from "next/headers";
 import { isNull, eq, and } from "drizzle-orm";
 import { db } from "@/db";
 import { products, categories } from "@/db/schema";
 import { SERVICES } from "@/constants/agency";
 import { BRAND } from "@/constants/brand";
+import { SHOP_HOST, SHOP_ORIGIN, stripShopPrefix } from "@/lib/shop-origin";
 
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL ?? `https://${BRAND.domain}`;
 
-const STATIC_ROUTES = [
+const STUDIO_ROUTES = [
   "",
   "/studio",
   "/studio/services",
@@ -15,6 +17,9 @@ const STATIC_ROUTES = [
   "/studio/work",
   "/studio/about",
   "/studio/get-started",
+];
+
+const SHOP_ROUTES = [
   "/shop",
   "/shop/products",
   "/shop/sale",
@@ -30,12 +35,20 @@ const STATIC_ROUTES = [
   "/shop/register",
 ];
 
+const STATIC_ROUTES = [...STUDIO_ROUTES, ...SHOP_ROUTES];
+
 /**
  * Dynamic routes are generated from the database at request time, not
  * hand-maintained. (account)/(admin)/api are deliberately excluded — belt
  * and suspenders alongside robots.ts already blocking them (specs/15).
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  // With the store on its own address, each address lists its own pages (the store's with clean paths).
+  const host = SHOP_HOST ? ((await headers()).get("host") ?? "").toLowerCase() : "";
+  const shopOnly = !!SHOP_ORIGIN && host === SHOP_HOST;
+  const studioOnly = !!SHOP_ORIGIN && !shopOnly;
+  const shopUrl = (path: string) => (SHOP_ORIGIN ? `${SHOP_ORIGIN}${stripShopPrefix(path) === "/" ? "" : stripShopPrefix(path)}` : `${SITE_URL}${path}`);
+
   const [activeProducts, activeCategories] = await Promise.all([
     db
       .select({ slug: products.slug, updatedAt: products.updatedAt })
@@ -47,18 +60,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .where(and(eq(categories.isActive, true), isNull(categories.deletedAt))),
   ]);
 
-  const staticEntries: MetadataRoute.Sitemap = STATIC_ROUTES.map((path) => ({
-    url: `${SITE_URL}${path}`,
+  const staticEntries: MetadataRoute.Sitemap = (shopOnly ? SHOP_ROUTES : studioOnly ? STUDIO_ROUTES : STATIC_ROUTES).map((path) => ({
+    url: path.startsWith("/shop") ? shopUrl(path) : `${SITE_URL}${path}`,
     lastModified: new Date(),
   }));
+  if (studioOnly) return staticEntries;
 
   const productEntries: MetadataRoute.Sitemap = activeProducts.map((p) => ({
-    url: `${SITE_URL}/shop/products/${p.slug}`,
+    url: shopUrl(`/shop/products/${p.slug}`),
     lastModified: p.updatedAt,
   }));
 
   const categoryEntries: MetadataRoute.Sitemap = activeCategories.map((c) => ({
-    url: `${SITE_URL}/shop/categories/${c.slug}`,
+    url: shopUrl(`/shop/categories/${c.slug}`),
     lastModified: c.updatedAt,
   }));
 

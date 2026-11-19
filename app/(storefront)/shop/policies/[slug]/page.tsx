@@ -1,3 +1,4 @@
+import { shopCanonical } from "@/lib/shop-origin";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -34,7 +35,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title: PAGES[slug].title,
     description: PAGES[slug].intro,
-    alternates: { canonical: `/shop/policies/${slug}` },
+    alternates: { canonical: shopCanonical(`/shop/policies/${slug}`) },
   };
 }
 

@@ -1,3 +1,4 @@
+import { shopCanonical } from "@/lib/shop-origin";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { HeroBanner } from "@/features/home/components/HeroBanner";
@@ -17,7 +18,7 @@ export const metadata: Metadata = {
   title: { absolute: `${STORE_BRAND.name} Demo Store — Artificial Jewellery` },
   description:
     "A live demo store built by Aperionie: elegant, affordable artificial jewellery for wedding, party and everyday wear. Browse the catalogue, add to cart and check out to see what a finished online store feels like.",
-  alternates: { canonical: "/shop" },
+  alternates: { canonical: shopCanonical("/shop") },
 };
 
 function ProductRowSkeleton() {

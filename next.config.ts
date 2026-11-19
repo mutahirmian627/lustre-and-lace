@@ -1,5 +1,10 @@
 import type { NextConfig } from "next";
 
+// The demo store's own address, when it has one (see lib/shop-origin.ts; the same setting, read here because the redirects are
+// worked out when the site is built).
+const SHOP_ORIGIN = process.env.SHOP_ORIGIN?.replace(/\/$/, "") || null;
+const SHOP_HOST = SHOP_ORIGIN ? new URL(SHOP_ORIGIN).host : null;
+
 const nextConfig: NextConfig = {
   // The site's addresses were reorganised: `/` is the 3D homepage, the studio's pages live under /studio and the store's
   // under /shop. Every old address redirects (permanently, keeping the query string) to its new home, so bookmarks,
@@ -10,6 +15,21 @@ const nextConfig: NextConfig = {
         { source: `/${name}`, destination: `/${prefix}/${name}`, permanent: true },
         { source: `/${name}/:path*`, destination: `/${prefix}/${name}/:path*`, permanent: true },
       ]);
+    const shopNames = ["products", "categories", "cart", "checkout", "wishlist", "sale", "search", "track-order", "contact", "policies", "account", "login", "register", "forgot-password", "reset-password", "verify-email"];
+    // The store's old addresses (from before it moved under /shop). With the store on its own address they go straight there,
+    // and are skipped ON that address: its clean paths (/products, /cart...) are the real thing there, and a redirect to /shop/...
+    // would only be sent back again by middleware.ts.
+    const shopMoves = () =>
+      SHOP_ORIGIN && SHOP_HOST
+        ? shopNames.flatMap((name) => {
+            // A host rule is matched against the hostname alone, without any port.
+            const notOnTheStore = [{ type: "host" as const, value: new URL(SHOP_ORIGIN).hostname.replace(/\./g, "\\.") }];
+            return [
+              { source: `/${name}`, missing: notOnTheStore, destination: `${SHOP_ORIGIN}/${name}`, permanent: true },
+              { source: `/${name}/:path*`, missing: notOnTheStore, destination: `${SHOP_ORIGIN}/${name}/:path*`, permanent: true },
+            ];
+          })
+        : moved(shopNames, "shop");
     return [
       // One address for the site: www.aperionie.com and the old lustre-and-lace.vercel.app address both go to aperionie.com
       // (the path and query are kept). The old address skips /api, so the nightly scheduled job and anything calling the
@@ -21,10 +41,7 @@ const nextConfig: NextConfig = {
       // The studio's fourth service was reshaped into "AI & Business Automation" when its list was matched to the homepage's.
       { source: "/studio/services/business-digitalization", destination: "/studio/services/ai-business-automation", permanent: true },
       ...moved(["work", "about", "services", "get-started"], "studio"),
-      ...moved(
-        ["products", "categories", "cart", "checkout", "wishlist", "sale", "search", "track-order", "contact", "policies", "account", "login", "register", "forgot-password", "reset-password", "verify-email"],
-        "shop"
-      ),
+      ...shopMoves(),
     ];
   },
   // The Playwright webServer runs a second, separate `next dev` process

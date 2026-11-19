@@ -1,3 +1,4 @@
+import { shopCanonical } from "@/lib/shop-origin";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -40,7 +41,7 @@ export async function generateMetadata({
   return {
     title: product.name,
     description: product.description?.slice(0, 160),
-    alternates: { canonical: `/shop/products/${product.slug}` },
+    alternates: { canonical: shopCanonical(`/shop/products/${product.slug}`) },
     openGraph: primaryImage ? { images: [primaryImage.url] } : undefined,
   };
 }

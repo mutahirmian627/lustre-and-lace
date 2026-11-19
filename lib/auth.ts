@@ -5,6 +5,7 @@ import * as schema from "@/db/schema";
 import { sendEmail } from "@/lib/send-email";
 import VerifyEmail from "@/emails/verify-email";
 import ResetPassword from "@/emails/reset-password";
+import { SHOP_HOST, SHOP_ORIGIN } from "@/lib/shop-origin";
 
 const ONE_HOUR = 60 * 60;
 const ONE_DAY = ONE_HOUR * 24;
@@ -12,6 +13,10 @@ const ONE_DAY = ONE_HOUR * 24;
 export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET,
   baseURL: process.env.BETTER_AUTH_URL,
+  // The store has its own address (see lib/shop-origin.ts): sign-in requests come from it too, so it must be trusted, and the
+  // session cookie is shared across the studio's and the store's subdomains so the admin panel works on both. (On localhost,
+  // used by tests, the cookie stays on the one host.)
+  trustedOrigins: SHOP_ORIGIN ? [SHOP_ORIGIN] : [],
   database: drizzleAdapter(db, {
     provider: "pg",
     schema,
@@ -21,6 +26,7 @@ export const auth = betterAuth({
   // generate its own ids.
   advanced: {
     database: { generateId: false },
+    ...(SHOP_HOST && !/(^|\.)localhost(:\d+)?$/.test(SHOP_HOST) ? { crossSubDomainCookies: { enabled: true } } : {}),
   },
   user: {
     additionalFields: {

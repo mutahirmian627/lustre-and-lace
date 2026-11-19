@@ -1,3 +1,4 @@
+import { shopCanonical } from "@/lib/shop-origin";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Camera, HelpCircle, MessageCircle, PackageSearch, Phone } from "lucide-react";
@@ -9,7 +10,7 @@ import { buildWhatsAppChatLink, isRealWhatsAppNumber } from "@/services/whatsapp
 export const metadata: Metadata = {
   title: "Contact Us",
   description: "Chat with our team, message us on WhatsApp, or find quick answers.",
-  alternates: { canonical: "/shop/contact" },
+  alternates: { canonical: shopCanonical("/shop/contact") },
 };
 
 interface ContactOption {

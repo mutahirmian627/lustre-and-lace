@@ -1,3 +1,4 @@
+import { shopCanonical } from "@/lib/shop-origin";
 import type { Metadata } from "next";
 import { Tag } from "lucide-react";
 import { getProducts, getFilterFacets } from "@/actions/products.actions";
@@ -11,7 +12,7 @@ import { EmptyState } from "@/components/shared/EmptyState";
 export const metadata: Metadata = {
   title: "Sale",
   description: "Beautiful artificial jewellery at reduced prices: necklaces, earrings, bangles and rings on sale.",
-  alternates: { canonical: "/shop/sale" },
+  alternates: { canonical: shopCanonical("/shop/sale") },
 };
 
 export default async function SalePage({ searchParams }: { searchParams: Promise<RawSearchParams> }) {
