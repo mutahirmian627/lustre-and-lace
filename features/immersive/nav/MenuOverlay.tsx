@@ -3,6 +3,7 @@
 import { useEffect, useRef, type RefObject } from "react";
 import Link from "next/link";
 import { Logo } from "@/components/brand/Logo";
+import { requestChatOpen } from "@/features/studio-chat/chat-store";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   IMMERSIVE_INSTAGRAM_HANDLE,
@@ -146,6 +147,17 @@ export function MenuOverlay({ open, onClose, returnFocusRef }: MenuOverlayProps)
               transition={{ duration: 0.8, delay: reduceMotion ? 0 : 0.7 }}
             >
               <p className="imm-eyebrow">Say hello</p>
+              <button
+                type="button"
+                className="imm-menu-contact imm-menu-contact--button"
+                onClick={() => {
+                  onClose();
+                  requestChatOpen();
+                }}
+              >
+                Ask a question
+                <span>Chat with us</span>
+              </button>
               <a href={whatsappHref} target="_blank" rel="noopener noreferrer" className="imm-menu-contact">
                 WhatsApp
                 <span>{IMMERSIVE_WHATSAPP_DISPLAY}</span>

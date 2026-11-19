@@ -29,6 +29,8 @@ const SCREENS = [
   ["320x568 (small phone)", 320, 568],
   ["360x640", 360, 640],
   ["375x667 (iPhone SE)", 375, 667],
+  ["375x812 (iPhone X)", 375, 812],
+  ["360x780 (common Android)", 360, 780],
   ["390x844", 390, 844],
   ["414x896", 414, 896],
   ["667x375 (phone, landscape)", 667, 375],
@@ -55,6 +57,8 @@ function audit() {
   const header = document.querySelector(".imm-nav-row");
   const headerBottom = header ? header.getBoundingClientRect().bottom : 72;
   const label = document.querySelector(".imm-chrome")?.getBoundingClientRect();
+  // The chat button floats at the bottom right: no words may run under it.
+  const chat = document.querySelector('button[aria-label^="Open chat"]')?.getBoundingClientRect();
   const problems = [];
   const walker = document.createTreeWalker(document.querySelector("main"), NodeFilter.SHOW_TEXT);
   for (let node = walker.nextNode(); node; node = walker.nextNode()) {
@@ -75,6 +79,7 @@ function audit() {
       if (rect.right > innerWidth + 0.5) out.push(`right edge ${Math.round(rect.right - innerWidth)}px past the screen`);
       if (rect.bottom > innerHeight + 0.5) out.push(`bottom ${Math.round(rect.bottom - innerHeight)}px past the screen`);
       if (rect.top < headerBottom - 2) out.push(`top ${Math.round(headerBottom - rect.top)}px under the navigation bar`);
+      if (chat && rect.left < chat.right && rect.right > chat.left && rect.top < chat.bottom && rect.bottom > chat.top) out.push("under the chat button");
       if (label && rect.left < label.right && rect.right > label.left && rect.top < label.bottom && rect.bottom > label.top) out.push("covered by the preview label");
       if (out.length) problems.push(`"${text.slice(0, 36)}": ${out.join(", ")}`);
     }

@@ -43,7 +43,7 @@ export default async function GetStartedPage({ searchParams }: { searchParams: P
                 "If it feels right, we start. If not, no hard feelings.",
               ].map((step, index) => (
                 <li key={step} className="flex gap-3">
-                  <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-semibold text-plum">
+                  <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-semibold text-primary">
                     {index + 1}
                   </span>
                   {step}

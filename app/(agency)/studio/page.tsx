@@ -137,11 +137,11 @@ export default function StudioHomePage() {
               sizes="240px"
               className="absolute inset-x-14 top-2"
             />
-            <span className="absolute left-0 top-6 flex items-center gap-1.5 rounded-full bg-background px-2.5 py-1.5 text-[0.7rem] font-medium text-plum shadow-lg">
+            <span className="absolute left-0 top-6 flex items-center gap-1.5 rounded-full bg-background px-2.5 py-1.5 text-[0.7rem] font-medium text-primary shadow-lg">
               <Shirt className="size-3.5 text-primary" aria-hidden="true" />
               Nine looks, in 3D
             </span>
-            <span className="absolute right-0 top-44 flex items-center gap-1.5 rounded-full bg-background px-2.5 py-1.5 text-[0.7rem] font-medium text-plum shadow-lg">
+            <span className="absolute right-0 top-44 flex items-center gap-1.5 rounded-full bg-background px-2.5 py-1.5 text-[0.7rem] font-medium text-primary shadow-lg">
               <ShoppingBag className="size-3.5 text-primary" aria-hidden="true" />
               Tap to shop
             </span>

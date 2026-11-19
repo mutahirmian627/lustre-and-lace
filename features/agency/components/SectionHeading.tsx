@@ -7,6 +7,7 @@ export function SectionHeading({
   lead,
   align = "center",
   tone = "light",
+  as: Heading = "h2",
   className,
 }: {
   eyebrow: string;
@@ -15,6 +16,8 @@ export function SectionHeading({
   align?: "center" | "left";
   /** "dark" for sections on the plum background. */
   tone?: "light" | "dark";
+  /** "h1" for the one heading that names the page; every other section keeps the default. */
+  as?: "h1" | "h2";
   className?: string;
 }) {
   const dark = tone === "dark";
@@ -28,9 +31,9 @@ export function SectionHeading({
       >
         {eyebrow}
       </p>
-      <h2 className={cn("font-heading text-3xl leading-tight sm:text-4xl", dark ? "text-plum-foreground" : "text-foreground")}>
+      <Heading className={cn("font-heading text-3xl leading-tight sm:text-4xl", dark ? "text-plum-foreground" : "text-foreground")}>
         {title}
-      </h2>
+      </Heading>
       {lead && (
         <p className={cn("text-base leading-relaxed", dark ? "text-plum-foreground/75" : "text-muted-foreground")}>
           {lead}

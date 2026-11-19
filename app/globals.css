@@ -109,6 +109,7 @@
  * on the page's wrapper and, through :has(), on the root too, so dialogs and menus that portal out to the body match.
  */
 .studio-theme,
+.studio-theme-scope,
 :root:has(.studio-theme) {
   --background: #f4efe6; /* ivory */
   --foreground: #211822; /* ink */
@@ -139,6 +140,55 @@
   --chart-3: #b8aacb;
   --chart-4: #d3a5b0;
   --chart-5: #e0d6ea;
+}
+
+/*
+ * Night mode for the studio pages: the same world after dark. Deep ink-plum surfaces, ivory text, lavender for the actions. The
+ * theme is data-theme="dark" on the .studio-theme wrapper (chosen before first paint by the script in the studio layout), and,
+ * through :has(), on the root too, so dialogs and menus that portal out to the body match. The 3D homepage has no wrapper and is
+ * untouched. The deep plum sections (hero, footer) stay plum, a little richer, so they still read as bands.
+ */
+.studio-theme[data-theme="dark"],
+:root:has(.studio-theme[data-theme="dark"]) {
+  color-scheme: dark;
+  --background: #17111a;
+  --foreground: #f1ebe3; /* ivory */
+  --card: #20182a;
+  --card-foreground: #f1ebe3;
+  --popover: #20182a;
+  --popover-foreground: #f1ebe3;
+  --primary: #e0d6ea; /* lavender: CTAs, links, active states */
+  --primary-foreground: #2a1530;
+  --secondary: #3a2a45;
+  --secondary-foreground: #e0d6ea;
+  --muted: #251b2d;
+  --muted-foreground: #bdb2c1;
+  --accent: #2b1f36; /* lavender-dark surface */
+  --accent-foreground: #e0d6ea;
+  --border: #3a2d45;
+  --input: #4a3b57;
+  --ring: #e0d6ea;
+  --plum: #351b3d; /* the deep sections and the footer, richer than the page */
+  --plum-foreground: #f1ebe3;
+  --gold: #a98ec2;
+  --gold-dark: #cdbbe0; /* light enough for small text on the dark page */
+  --gold-light: #d6c8e6;
+  --champagne: #33263f;
+  --blush-light: #2f2239;
+  --chart-1: #e0d6ea;
+  --chart-2: #a98ec2;
+  --chart-3: #6f5a86;
+  --chart-4: #d3a5b0;
+  --chart-5: #3a2a45;
+}
+/* In daylight "secondary" is a light lavender, used for text on the plum bands (headline accents, footer headings, links). At
+   night it is a dark surface colour, so that text takes the light lavender instead. */
+.studio-theme[data-theme="dark"] .text-secondary,
+.studio-theme[data-theme="dark"] .hover\:text-secondary:hover {
+  color: var(--secondary-foreground);
+}
+.studio-theme[data-theme="dark"] .hover\:border-secondary:hover {
+  border-color: var(--secondary-foreground);
 }
 
 .dark {

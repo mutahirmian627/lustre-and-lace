@@ -13,6 +13,7 @@ import {
 } from "@/features/immersive/constants";
 import { PROCESS_STOPS, RUN, THRESHOLD_END, CONTACT_SIGMA, progressForSigma } from "@/features/immersive/lib/timeline";
 import { ImmersiveNav } from "@/features/immersive/nav/ImmersiveNav";
+import { StudioChat } from "@/features/studio-chat/StudioChat";
 import { StageLoader } from "@/features/immersive/scene/StageLoader";
 import { Backdrop } from "@/features/immersive/sections/Backdrop";
 import { ScrollDriver } from "@/features/immersive/sections/ScrollDriver";
@@ -127,6 +128,7 @@ export default function ImmersivePage() {
       </a>
       <Backdrop />
       <ImmersiveNav />
+      <StudioChat variant="home" whatsappHref={WHATSAPP_HREF} instagramHref={IMMERSIVE_INSTAGRAM_URL} />
       {/* Everything marked data-immersive-background is made inert while the full-screen menu is open. */}
       <main id="main" data-immersive-background>
         <div id="run" className="imm-run" style={{ height: `${(1 + RUN.opening + RUN.services) * 100}svh` }}>

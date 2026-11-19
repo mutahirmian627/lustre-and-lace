@@ -7,6 +7,7 @@ import { Menu, ArrowUpRight } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Logo } from "@/components/brand/Logo";
+import { ThemeToggle } from "@/features/agency/components/ThemeToggle";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -60,7 +61,8 @@ export function AgencyHeader() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
+          <ThemeToggle />
           <Link
             href="/studio/get-started"
             className={cn(buttonVariants({ size: "lg" }), "hidden h-10 rounded-full px-5 sm:inline-flex")}

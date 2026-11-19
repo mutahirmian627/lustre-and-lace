@@ -120,7 +120,7 @@ function ProjectSection({ project, index }: { project: Project; index: number })
           )}
         >
           <div className={cn("space-y-5 sm:space-y-6", reverse && "lg:order-2")}>
-            <span className="inline-flex items-center rounded-full bg-champagne px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-plum">
+            <span className="inline-flex items-center rounded-full bg-champagne px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-primary">
               {project.kind}
             </span>
             <h2 id={`project-${index}`} className="font-heading text-3xl text-foreground sm:text-4xl">
@@ -234,6 +234,7 @@ export default function WorkPage() {
       <section className="bg-accent">
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-20 lg:px-8">
           <SectionHeading
+            as="h1"
             eyebrow="Our work"
             title="Three projects you can actually open and use"
             lead="We'd rather show you real software than a slide deck. These are the projects we built to prove what we can deliver: an online store, a 3D food-ordering site and a 3D fashion lookbook. All three are our own demos, and you can open every one."

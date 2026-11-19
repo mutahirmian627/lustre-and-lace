@@ -19,6 +19,7 @@ export default function ServicesPage() {
       <section className="bg-accent">
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-20 lg:px-8">
           <SectionHeading
+            as="h1"
             eyebrow="Services"
             title="Seven ways we help your business grow online"
             lead="Pick the one you need now. Most clients start with a website or a store, then add branding, marketing and automation as the business grows."

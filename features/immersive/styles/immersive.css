@@ -811,6 +811,24 @@ html[data-immersive-poster] nextjs-portal {
 .imm-menu-contact:focus-visible {
   color: var(--rose);
 }
+/* "Ask a question" opens the chat: a button that looks like the links above it. */
+button.imm-menu-contact--button {
+  width: 100%;
+  background: none;
+  border-width: 0 0 1px;
+  border-style: solid;
+  border-color: rgb(244 239 230 / 0.16);
+  text-align: left;
+  cursor: pointer;
+}
+
+/* The chat button floats at the bottom right. On small phones the page's text runs to that corner, so the button steps
+   aside there and the chat opens from the menu ("Ask a question"). */
+@media (max-width: 389px), (max-width: 767px) and (max-height: 699px) {
+  button.studio-chat-launcher--home {
+    display: none;
+  }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .imm-nav,

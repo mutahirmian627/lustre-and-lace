@@ -17,6 +17,17 @@ const SYNONYMS: Record<string, string> = {
   refund: "return",
   exchange: "return",
   cod: "cash",
+  // The studio's side of the site (features/studio-chat): how people ask about prices, brands, software and bots.
+  price: "cost",
+  pricing: "cost",
+  fee: "cost",
+  charge: "cost",
+  branding: "brand",
+  app: "application",
+  software: "application",
+  automate: "automation",
+  chatbot: "assistant",
+  bot: "assistant",
 };
 
 /** Lowercased words with punctuation, stopwords and a trailing plural "s" removed, so "returns" matches "return"; synonyms are folded together. */
