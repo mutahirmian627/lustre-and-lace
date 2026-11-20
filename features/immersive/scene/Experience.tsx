@@ -7,6 +7,7 @@ import { DAY } from "@/features/immersive/lib/night-look";
 import { NightDirector } from "@/features/immersive/scene/NightDirector";
 import { NightFixtures } from "@/features/immersive/scene/NightFixtures";
 import { NightLanterns } from "@/features/immersive/scene/NightLanterns";
+import { Cat } from "@/features/immersive/scene/Cat";
 import { createChromeCube, createRoomCube } from "@/features/immersive/lib/reflection-cubes";
 import { createMaterials, followNightMaterials } from "@/features/immersive/lib/materials";
 import { createGlowTexture, createJaliMask, createTileTexture } from "@/features/immersive/lib/textures";
@@ -132,6 +133,8 @@ export function Experience({ lite, frozen, onCompiled, onReady }: ExperienceProp
       {!lite && <Dust glow={resources.glow} frozen={frozen} />}
 
       <CameraRig frozen={frozen} />
+      {/* After the camera rig, so the cat reads this frame's camera, not the last one's. */}
+      {!frozen && <Cat materials={resources.materials} lite={lite} />}
       {!frozen && <Placards />}
       <FpsProbe />
       <FirstFrames onReady={onReady} />

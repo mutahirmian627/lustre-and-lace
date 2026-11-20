@@ -201,6 +201,25 @@ feature: 0 pixels differ).
   sets `data-night` before the first paint so a returning visitor never sees a flash of daylight. The still-pictures
   fallback (no WebGL, reduced motion, data saver, slow device) is daylight only and shows no switch.
 
+## The cat
+
+A small white cat keeps the visitor company on the live homepage (day and night; not on the studio or demo pages, and not in the
+still-pictures fallback). `lib/cat.ts` is its behaviour as plain numbers (unit-tested); `scene/Cat.tsx` is the model and its
+animation: a chubby glazed-ceramic cat with a brown outline, pink ears and cheeks, built from a dozen primitives (no model file).
+
+- **At the start it hides in the alley**, behind the doorway's left jamb, seen through the lattice: the wall cuts it down the middle,
+  so half its face peeks out, head tilted, leaning out and in a few centimetres. It stays there until the camera has come within
+  its usual distance, then crosses over, comes out and walks off ahead; scrolling back to the top walks it home again.
+- **Then it lives a few metres ahead of the camera, on the floor.** When the camera moves it stands, turns its back and walks (the
+  legs follow the ground it covers, so it is seen from behind with its tail swaying); when the camera has been still for a moment it
+  turns round to face us and sits, blinking. It is placed by view angle (its feet always land at the same place in the frame, so it
+  is whole in the lower part of the picture wherever the camera looks) and kept inside the walls.
+- **At the exhibition the camera makes room for it.** There the camera looks sideways at the wall with no floor in view, so it stands
+  2.1 m further back and looks 0.75 m lower, easing in down the corridor's last metres and out again at the sculpture
+  (`exhibitPull`, applied in `CameraRig`; never in a still, so the fallback pictures are unchanged).
+- It reads the camera's own travel (before the pointer's small nudge), never the scroll, so it can't run ahead of the scene or walk
+  because of a mouse move. After dark its glaze takes a warm lift and its outline deepens, so it stays a light cat in the dim.
+
 ## Useful URLs while testing
 
 - `/?night=1` opens after dark; `/?night=0` opens in daylight whatever was saved.

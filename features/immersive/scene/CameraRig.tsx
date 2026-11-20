@@ -8,6 +8,7 @@ import { HALL_START_SIGMA, THRESHOLD_END_SIGMA, hallSigma } from "@/features/imm
 import { galleryPose } from "@/features/immersive/lib/gallery";
 import { cameraCurve, hallCameraCurve, hallLookCurve, journey, lookCurve, zAt } from "@/features/immersive/lib/world";
 import { pointer } from "@/features/immersive/lib/pointer";
+import { PULL, exhibitPull } from "@/features/immersive/lib/cat";
 import { stageState } from "@/features/immersive/lib/stage-state";
 
 /**
@@ -48,6 +49,24 @@ export function CameraRig({ frozen }: { frozen: boolean }) {
         scratch.target.set(pose.lx, pose.ly, zAt(pose.lsigma));
       }
     }
+
+    // At the exhibition the camera looks sideways at the wall with no floor in view: it stands a little further back and looks a
+    // little lower, only enough for the cat to have the floor in front of the works. (Never in a still: the fallback pictures have no cat.)
+    const pull = frozen ? 0 : exhibitPull(stageState.sigma, progress);
+    stageState.pull = pull;
+    if (pull > 0) {
+      const dx = scratch.target.x - scratch.position.x;
+      const dz = scratch.target.z - scratch.position.z;
+      const length = Math.hypot(dx, dz) || 1;
+      scratch.position.x -= (dx / length) * PULL.back * pull;
+      scratch.position.z -= (dz / length) * PULL.back * pull;
+      scratch.target.y -= PULL.down * pull;
+    }
+    stageState.travel.x = scratch.position.x;
+    stageState.travel.z = scratch.position.z;
+    stageState.look.x = scratch.target.x;
+    stageState.look.y = scratch.target.y;
+    stageState.look.z = scratch.target.z;
 
     scratch.px = MathUtils.damp(scratch.px, frozen ? 0 : pointer.x, 3, dt);
     scratch.py = MathUtils.damp(scratch.py, frozen ? 0 : pointer.y, 3, dt);

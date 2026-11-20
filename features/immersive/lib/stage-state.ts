@@ -14,6 +14,11 @@ export const stageState = {
   sigma: 7.6,
   /** Where the camera is in the world, written by the camera rig. The ribbon uses it for one thing only: to keep clear of the lens. */
   camera: { x: 0, y: 1.5, z: 7.6 },
+  /** Where the camera looks, and where it stands on the ground before the pointer's small nudge: the cat lives by these (lib/cat.ts). */
+  look: { x: 0, y: 1.8, z: -6 },
+  travel: { x: 0, z: 7.6 },
+  /** How far the camera has drawn back and tilted down to make room for the cat at the exhibition (0..1). */
+  pull: 0,
   /** Frames per second over the last second, for the `?debug` readout. */
   fps: 0,
 };
