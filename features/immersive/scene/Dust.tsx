@@ -2,7 +2,11 @@
 
 import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import { AdditiveBlending, BufferAttribute, BufferGeometry, Points, type Texture } from "three";
+import { AdditiveBlending, BufferAttribute, BufferGeometry, Color, Points, type PointsMaterial, type Texture } from "three";
+import { useOnNight } from "@/features/immersive/lib/use-on-night";
+
+const DUST_DAY = new Color("#ffd9cf");
+const DUST_NIGHT = new Color("#ffd08a");
 import { PORTAL, WALL } from "@/features/immersive/lib/world";
 import { POSTER_TIME } from "@/features/immersive/lib/stage-state";
 
@@ -36,6 +40,12 @@ export function Dust({ glow, frozen }: { glow: Texture; frozen: boolean }) {
     return { geometry, base };
   }, []);
 
+  // After dark the motes catch the lamps' gold instead of the doorway's rose, and there are as many of them.
+  const material = useRef<PointsMaterial>(null);
+  useOnNight((c) => {
+    material.current?.color.copy(DUST_DAY).lerp(DUST_NIGHT, c.dark);
+  }, []);
+
   useFrame((state) => {
     const t = frozen ? POSTER_TIME : POSTER_TIME + state.clock.elapsedTime;
     const position = geometry.getAttribute("position") as BufferAttribute;
@@ -53,6 +63,7 @@ export function Dust({ glow, frozen }: { glow: Texture; frozen: boolean }) {
   return (
     <points ref={ref} geometry={geometry} frustumCulled={false}>
       <pointsMaterial
+        ref={material}
         map={glow}
         color="#ffd9cf"
         size={0.075}

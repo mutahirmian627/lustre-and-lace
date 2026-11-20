@@ -8,6 +8,8 @@ import type { Materials } from "@/features/immersive/lib/materials";
 import { DOOR_SIGMA, GATES, WORK_END_SIGMA, WORK_PITCH_SIGMA, WORK_REACH, WORK_STOPS } from "@/features/immersive/lib/timeline";
 import { BIG_DOOR, HALL, IVORY, PORTAL, zAt } from "@/features/immersive/lib/world";
 import { doorwayOutline } from "@/features/immersive/scene/Architecture";
+import { mix } from "@/features/immersive/lib/night";
+import { useOnNight } from "@/features/immersive/lib/use-on-night";
 
 interface IvoryHallProps {
   materials: Materials;
@@ -16,6 +18,16 @@ interface IvoryHallProps {
   glow: Texture;
   lite: boolean;
 }
+
+const WINDOW_DAY = new Color("#fff1dc");
+const WINDOW_NIGHT = new Color("#1d2238");
+const BARS_DAY = new Color("#a98f74");
+const BARS_NIGHT = new Color("#0e0b17");
+const LIGHT_DAY = new Color("#ffe0b8");
+const POOL_DAY = new Color("#ffdcae");
+const MOON = new Color("#9fb2e6");
+const ALCOVE_NIGHT = new Color("#c58747");
+const ALCOVE_LIGHT = new Color("#ffb766");
 
 const TILE = 1.6;
 const doorZ = zAt(DOOR_SIGMA);
@@ -90,8 +102,32 @@ export function IvoryHall({ materials, tileMap, jaliMask, glow, lite }: IvoryHal
     poolPattern.needsUpdate = true;
     poolPattern.repeat.set(4.2 / 0.5, 3.4 / 0.5);
     const poolBars = new MeshBasicMaterial({ color: new Color("#8a7585"), alphaMap: poolPattern, transparent: true, opacity: 0.1, depthWrite: false, fog: false, toneMapped: false });
-    return { shell, rib, frame, inlay, gate, windowShape, windowFrame, endShape, shellMaterial, floorMaterial, ribMaterial, gateMaterial, windowGlass, barMaterial, lightMaterial, poolMaterial, poolBars, bars, poolPattern, floorMap };
+    // The far end's own glass and light: after dark it is a lit alcove, the room's warm heart, not a moonlit window like the others.
+    const endGlass = windowGlass.clone();
+    const endLight = lightMaterial.clone();
+    return { shell, rib, frame, inlay, gate, windowShape, windowFrame, endShape, shellMaterial, floorMaterial, ribMaterial, gateMaterial, windowGlass, endGlass, barMaterial, lightMaterial, endLight, poolMaterial, poolBars, bars, poolPattern, floorMap };
   }, [materials, tileMap, jaliMask, glow, lite]);
+
+  // After dark the windows are dark glass with the faintest cool light through them (the moon), the daytime spill and
+  // floor pools are gone, and the tiled floor and the shell are a little more reflective, for the lamps to show in.
+  useOnNight(
+    (c) => {
+      parts.windowGlass.color.copy(WINDOW_DAY).lerp(WINDOW_NIGHT, c.dark);
+      parts.barMaterial.color.copy(BARS_DAY).lerp(BARS_NIGHT, c.dark);
+      parts.lightMaterial.opacity = 0.55 * c.glow + 0.09 * c.moon;
+      parts.lightMaterial.color.copy(LIGHT_DAY).lerp(MOON, c.moon);
+      parts.poolMaterial.opacity = 0.32 * c.glow + 0.06 * c.moon;
+      parts.poolMaterial.color.copy(POOL_DAY).lerp(MOON, c.moon);
+      parts.poolBars.opacity = 0.1 * c.glow;
+      parts.floorMaterial.reflectivity = mix(0.07, 0.22, c.reflections);
+      parts.floorMaterial.shininess = mix(52, 90, c.reflections);
+      parts.shellMaterial.reflectivity = mix(0.07, 0.12, c.reflections);
+      parts.endGlass.color.copy(WINDOW_DAY).lerp(ALCOVE_NIGHT, c.fixtures);
+      parts.endLight.opacity = 0.55 * c.glow + 0.4 * c.fixtures;
+      parts.endLight.color.copy(LIGHT_DAY).lerp(ALCOVE_LIGHT, c.fixtures);
+    },
+    [parts]
+  );
 
   useEffect(
     () => () => {
@@ -159,9 +195,9 @@ export function IvoryHall({ materials, tileMap, jaliMask, glow, lite }: IvoryHal
 
       {/* The far end: one tall lattice window, the room's brightest place. */}
       <group position={[PORTAL.x, 0, endZ + 0.02]}>
-        <mesh geometry={parts.endShape} material={parts.windowGlass} />
+        <mesh geometry={parts.endShape} material={parts.endGlass} />
         <mesh geometry={parts.endShape} material={parts.barMaterial} position={[0, 0, 0.012]} renderOrder={1} />
-        <mesh position={[0, 3.2, 0.6]} material={parts.lightMaterial} renderOrder={0}>
+        <mesh position={[0, 3.2, 0.6]} material={parts.endLight} renderOrder={0}>
           <planeGeometry args={[9, 10]} />
         </mesh>
       </group>

@@ -30,7 +30,11 @@
   --pr: 0;
   /* Where the services end in the scroll (must equal SERVICES_END in lib/timeline.ts; a unit test checks it). */
   --se: 0.3075;
-  --atmosphere: calc(clamp(0, calc((var(--p) - 0.36) / 0.24), 1) * (1 - var(--flip)));
+  /* After dark (0 = daylight, 1 = after dark). While the 3D scene is live it moves this frame by frame, in step with the lights
+     (scene/NightDirector.tsx); the plain rule below is for the moments before it has loaded. */
+  --dark: 0;
+  /* After dark the whole page is the plum hall, wherever you are on it: the scroll-driven atmosphere can only add to it. */
+  --atmosphere: max(calc(clamp(0, calc((var(--p) - 0.36) / 0.24), 1) * (1 - var(--flip))), var(--dark));
 
   --stage-bg: var(--ivory);
   --stage-fg: var(--ink);
@@ -86,6 +90,13 @@
 }
 .imm-still {
   transition: opacity 0.7s ease;
+}
+/* A visitor who chose after dark sees the plum room while the scene loads, not the daylight pictures. */
+.immersive-root[data-night="1"] {
+  --dark: 1;
+}
+.immersive-root[data-night="1"] .imm-backdrop {
+  opacity: 0;
 }
 .immersive-root[data-stage="live"] .imm-backdrop {
   opacity: 0;
@@ -524,6 +535,44 @@ html[data-immersive-poster] nextjs-portal {
 }
 .imm-nav-right {
   justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ---- The switch between daylight and after dark ---- */
+.imm-night-toggle {
+  gap: 0.5rem;
+  padding: 0 0.85rem;
+}
+@media (max-width: 639px) {
+  /* On phones it is the icon alone (its name is still announced), so the bar keeps its room. */
+  .imm-night-toggle {
+    width: 2.5rem;
+    padding: 0;
+    justify-content: center;
+  }
+  .imm-night-label {
+    display: none;
+  }
+}
+/* A disc (the sun) that becomes a crescent (the moon): the crescent is the same disc with the light moved to one side. */
+.imm-night-icon {
+  flex: none;
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: inset 0 0 0 0 currentColor;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+.imm-night-toggle[aria-checked="true"] .imm-night-icon {
+  background: transparent;
+  box-shadow: inset -0.26rem -0.06rem 0 0 currentColor;
+}
+.imm-night-toggle:focus-visible {
+  outline: 2px solid var(--stage-accent);
+  outline-offset: 2px;
 }
 /* The Menu / Close pill hugs its label instead of stretching across its grid column. */
 .imm-nav-row > :first-child,
@@ -847,7 +896,7 @@ button.imm-menu-contact--button {
   /* Stronger once the services begin (--s > 0), because the hall's far door is bright and sits behind the text on tall screens. */
   --scrim: calc(var(--atmosphere) * (0.66 + min(var(--s) * 20, 1) * 0.24));
   /* In the ivory hall the same help is given in ivory, where the ribbon sweeps behind the words. */
-  --cream: calc(var(--flip) * 0.74);
+  --cream: calc(var(--flip) * 0.74 * (1 - var(--dark)));
   position: absolute;
   inset: 0;
   pointer-events: none;

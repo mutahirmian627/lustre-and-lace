@@ -1,11 +1,13 @@
 import {
   BackSide,
+  Color,
   CubeTexture,
   DoubleSide,
   MeshPhongMaterial,
   MixOperation,
   type Texture,
 } from "three";
+import { mix, onNight } from "@/features/immersive/lib/night";
 
 /**
  * The four materials. They are the whole visual vocabulary of the installation; nothing else is allowed in.
@@ -79,4 +81,26 @@ export function createMaterials(env: CubeTexture, chromeEnv: CubeTexture, jaliMa
   const glassBack = new MeshPhongMaterial({ ...glassBase, opacity: lite ? 0 : 0.5, visible: !lite });
 
   return { chrome, ceramic, lacquer, lacquerInside, glass, glassBack };
+}
+
+const LACQUER_SPECULAR_DAY = new Color(0xf3d6ff);
+const LACQUER_SPECULAR_NIGHT = new Color(0xffd9a0);
+const CERAMIC_SPECULAR_DAY = new Color(0x8f8a84);
+const CERAMIC_SPECULAR_NIGHT = new Color(0xb89868);
+
+/**
+ * How the shared materials change after dark. They are the same materials (nothing is swapped or recompiled): the lacquer
+ * and the glaze are a little more reflective, so the lamps and the gold strips show in them, and their highlights turn
+ * from lilac and grey to gold. Each is computed from the daytime constants above, so at daylight they are exactly as made.
+ * Returns the function that stops following the change.
+ */
+export function followNightMaterials(materials: Materials): () => void {
+  return onNight((c) => {
+    const lit = c.reflections;
+    materials.lacquer.reflectivity = materials.lacquerInside.reflectivity = mix(0.13, 0.26, lit);
+    materials.lacquer.specular.copy(LACQUER_SPECULAR_DAY).lerp(LACQUER_SPECULAR_NIGHT, lit);
+    materials.lacquerInside.specular.copy(materials.lacquer.specular);
+    materials.ceramic.reflectivity = mix(0.07, 0.14, lit);
+    materials.ceramic.specular.copy(CERAMIC_SPECULAR_DAY).lerp(CERAMIC_SPECULAR_NIGHT, lit);
+  });
 }

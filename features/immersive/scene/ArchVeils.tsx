@@ -9,6 +9,11 @@ import { ARCHES, DOOR_SIGMA, GATES, veilAt } from "@/features/immersive/lib/time
 import { BIG_DOOR, HALL, PORTAL, SCREEN_GAP, zAt } from "@/features/immersive/lib/world";
 import { stageState } from "@/features/immersive/lib/stage-state";
 import { SIGNATURES } from "@/features/immersive/scene/HallLights";
+import { NIGHT } from "@/features/immersive/lib/night-look";
+import { useOnNight } from "@/features/immersive/lib/use-on-night";
+
+const GLASS_NIGHT = new Color("#2a1a0c");
+const HALO_NIGHT = new Color(NIGHT.fixtureHalo);
 
 /**
  * The seven service arches as events. Each rib the services stand under holds a lattice veil, the same frosted lattice
@@ -208,6 +213,22 @@ export function ArchVeils({ materials, jaliMask, glow, lite }: ArchVeilsProps) {
   );
 
   const colours = useMemo(() => EVENTS.map((event) => new Color(event.halo)), []);
+  const emissives = useMemo(() => EVENTS.map((event) => new Color(LATTICES[event.lattice].emissive)), []);
+
+  // After dark each arch's light is the lamps' gold rather than its own colour (the colours are for daylight's kaleidoscope),
+  // and the glass glows only faintly, warm, as if lit from behind by the fixtures.
+  const halo = useRef(1);
+  useOnNight(
+    (c) => {
+      halo.current = Math.max(c.glow, c.fixtures * 0.8);
+      EVENTS.forEach((_, i) => {
+        const glass = parts.glasses[i];
+        for (const material of [glass.front, glass.back]) material.emissive.copy(emissives[i]).lerp(GLASS_NIGHT, c.dark);
+        veils.current[i].halo?.color.copy(colours[i]).lerp(HALO_NIGHT, c.dark);
+      });
+    },
+    [parts, colours, emissives]
+  );
 
   useFrame(() => {
     const cameraZ = stageState.camera.z;
@@ -221,7 +242,7 @@ export function ArchVeils({ materials, jaliMask, glow, lite }: ArchVeilsProps) {
       if (refs.halo) {
         // Light spills through as the veil parts: a little while it is closed, most as it opens, and none once it has gone.
         const bell = 4 * open * (1 - open);
-        refs.halo.opacity = fade * (0.06 + 0.5 * bell);
+        refs.halo.opacity = fade * (0.06 + 0.5 * bell) * halo.current;
       }
       if (!visible) continue;
       const glass = parts.glasses[i];

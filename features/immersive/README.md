@@ -160,8 +160,50 @@ scripts/render-immersive-poster.mjs  renders the four fallback pictures from the
   headline is never hidden or clipped on its first frame, because browsers do not count fully clipped text as
   painted, which delays the first paint on slow phones.
 
+## After dark
+
+A switch in the bar ("Daylight" / "After dark", an icon alone on phones) turns the same architecture into a night room:
+midnight-plum surfaces lit by warm champagne-gold lights, with a faint cool moon. It is not a colour invert; the lighting is
+rebuilt. Daylight is the reference: every day value is a constant in `lib/night-look.ts`, and the daytime scene is
+byte-identical to what it was (checked by diffing `?poster=1` frames at eight scroll positions against the code before the
+feature: 0 pixels differ).
+
+- **One number drives it.** `lib/night.ts` keeps `nightState.value` (0 day … 1 night), stepped over 2.6 s (0.2 s with reduced
+  motion), outside React like `stageState`, so a change never re-renders anything. `nightChannels()` turns it into per-part
+  schedules, in the order the brief asks: daylight fades → glow thins → hall darkens → fixtures ignite (a wave from the
+  gallery doorway outwards) → moon arrives → reflections settle. Scroll, camera and the ribbon's own motion are untouched; nothing
+  remounts.
+- **`scene/NightDirector.tsx`** owns the shared lights, background and fog, and cross-fades the two painted reflection cubes
+  (the night worlds are painted lazily, a face per idle moment; the cube's six small canvases are rewritten, so no new
+  textures or shaders). At rest it does nothing per frame.
+- **Everything else follows through a registry** (`onNight` / `useOnNight`): window glass, light spills and pools, the doorway
+  halo, the gallery's picture lights, the veils' glass, the dust, and the shared materials' reflectivity and highlights. Each
+  tween is computed from the day constants, so at 0 it restores them exactly.
+- **The lights** are planned in `lib/night-fixtures.ts` (pure numbers, unit-tested: crown light on each rib, alternating wall
+  lights, floor guide lights, springing lines, pools and washes) and drawn by `scene/NightFixtures.tsx` as a few draw calls
+  (points, one instanced mesh of soft planes, one of thin bars). They are additive, hidden in daylight, and breathe by about
+  3 % (no flicker; still under reduced motion). The real lights: the three `HallLights` lamps turn gold, plus one more
+  (`companion`, full tier only) that hangs before the gallery doorway and then walks with the visitor in the ivory hall.
+- **Arabian-nights lanterns** (`scene/NightLanterns.tsx`, planned in the same file as the fixtures): hanging brass fanous, an
+  onion-shaped lathe body pierced with the scene's own lattice pattern, a glowing core inside, on a chain, swaying a few
+  milliradians, with a lattice of light on the floor beneath. A pair on brackets either side of the gallery doorway, one on each
+  plain rib of the corridor (off to the sides, clear of the ribbon and the camera), a pair just inside the big doorway, one for
+  every second rib or gate down the left of the work hall (the ribbon runs on the right), and a pair either side of the
+  sculpture. A few instanced draw calls, hidden in daylight.
+- **The work hall and the contact room are lit like the opening.** Just inside the big doorway: lanterns, wall washes and a
+  floor pool, as at the gallery's doorway; small floor lights along both walls; at the far end the alcove is a warm lit lattice
+  (gold, not moonlit like the side windows), with a wash on the wall, a wide pool under the sculpture and a lamp that stops
+  walking with the visitor and hangs over it, so the chrome catches gold.
+- **Not done, on purpose.** No real shadow maps (dozens of shadow-casting lights would cost far more than the page can spare;
+  the existing soft contact shadows remain), no planar floor reflection (the floor's sheen is the specular of the real lamps
+  plus the painted reflections), and no bloom pass (there is no postprocessing in this scene; the halos are additive sprites).
+- **Remembered** in `localStorage` (`aperionie-after-dark`); `?night=1` / `?night=0` override it. A small script in the layout
+  sets `data-night` before the first paint so a returning visitor never sees a flash of daylight. The still-pictures
+  fallback (no WebGL, reduced motion, data saver, slow device) is daylight only and shows no switch.
+
 ## Useful URLs while testing
 
+- `/?night=1` opens after dark; `/?night=0` opens in daylight whatever was saved.
 - `/?debug` shows the tier the device was given and why, which layer is showing, and the live frame rate.
 - `/?poster=1&p=0.95` strips the page to just the scene, frozen, at scroll position `p` (used to make
   the fallback pictures).

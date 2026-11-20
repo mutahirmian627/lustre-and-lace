@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import {
   AdditiveBlending,
+  Color,
   DoubleSide,
   ExtrudeGeometry,
   MeshBasicMaterial,
@@ -19,9 +20,20 @@ import { archRing, archShape } from "@/features/immersive/lib/arch";
 import { WALL_X } from "@/features/immersive/lib/gallery";
 import type { Materials } from "@/features/immersive/lib/materials";
 import { stageState } from "@/features/immersive/lib/stage-state";
+import { mix } from "@/features/immersive/lib/night";
+import { useOnNight } from "@/features/immersive/lib/use-on-night";
 import { WORK_REACH, WORK_STOPS } from "@/features/immersive/lib/timeline";
 import { zAt } from "@/features/immersive/lib/world";
 import { WORK_STOPS_DATA } from "@/features/immersive/work";
+
+/** How bright the pictures are after dark, against 1 by day: legible, but a step back from the warm lights that wash them. */
+const PICTURE_NIGHT_LEVEL = 0.78;
+const WASH_DAY = new Color("#ffe7c8");
+const WASH_NIGHT = new Color("#ffc98c");
+const NICHE_DAY = new Color("#fff0d8");
+const NICHE_NIGHT = new Color("#c9945a");
+const NICHE_BARS_DAY = new Color("#b79f84");
+const NICHE_BARS_NIGHT = new Color("#3a2412");
 
 /**
  * The exhibition: the studio's work hung on the ivory hall's right wall as real screenshots in ivory frames, a stop at a
@@ -149,6 +161,25 @@ export function Gallery({ materials, jaliMask, glow, lite, frozen }: GalleryProp
     return { frameFor, planeFor, frames, planes, frameMaterial, pictures, washMaterial, nicheShape, nicheFrame, nicheGlass, nicheBars, bars };
   }, [materials, jaliMask, glow, lite]);
 
+  // After dark the pictures stay legible (they are the point of the room) but sit a little back, and the wash of light on the
+  // wall round each becomes a warm picture-light; the niche's window goes dark and warm.
+  const dim = useRef(1);
+  const paintPicture = (i: number) => {
+    const material = parts.pictures[i];
+    material.color.set(material.map ? "#ffffff" : "#e8e0d2").multiplyScalar(dim.current);
+  };
+  useOnNight(
+    (c) => {
+      dim.current = mix(1, PICTURE_NIGHT_LEVEL, c.dark);
+      parts.pictures.forEach((_, i) => paintPicture(i));
+      parts.washMaterial.opacity = 0.4 * c.glow + 0.24 * c.fixtures;
+      parts.washMaterial.color.copy(WASH_DAY).lerp(WASH_NIGHT, c.dark);
+      parts.nicheGlass.color.copy(NICHE_DAY).lerp(NICHE_NIGHT, c.fixtures);
+      parts.nicheBars.color.copy(NICHE_BARS_DAY).lerp(NICHE_BARS_NIGHT, c.fixtures);
+    },
+    [parts]
+  );
+
   // Fetch each picture once the visitor is well down the hall towards it (or all at once, for a still).
   const loader = useMemo(() => new TextureLoader(), []);
   useFrame(() => {
@@ -162,7 +193,7 @@ export function Gallery({ materials, jaliMask, glow, lite, frozen }: GalleryProp
         texture.anisotropy = lite ? 4 : 8;
         const material = parts.pictures[i];
         material.map = texture;
-        material.color.set("#ffffff");
+        paintPicture(i);
         material.needsUpdate = true;
       });
     });

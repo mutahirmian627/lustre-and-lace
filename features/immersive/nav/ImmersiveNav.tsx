@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { Logo } from "@/components/brand/Logo";
+import { NightToggle } from "@/features/immersive/nav/NightToggle";
 import { setMenuOpen, useMenuOpen } from "@/features/immersive/lib/menu-store";
 import { whenNeeded } from "@/features/immersive/lib/when-needed";
 import { cn } from "@/lib/utils";
@@ -82,6 +83,7 @@ export function ImmersiveNav() {
           </Link>
 
           <div className="imm-nav-right imm-nav-item" style={{ "--d": 2 } as React.CSSProperties}>
+            <NightToggle />
             <Link href="/studio/get-started" className="imm-pill imm-pill--solid">
               <span className="sm:hidden">Start</span>
               <span className="hidden sm:inline">Start a project</span>

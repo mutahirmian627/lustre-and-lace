@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
-import { AdditiveBlending, CatmullRomCurve3, ExtrudeGeometry, MeshBasicMaterial, Texture, TubeGeometry, Vector3 } from "three";
+import { useMemo, useRef } from "react";
+import { AdditiveBlending, CatmullRomCurve3, Color, ExtrudeGeometry, MeshBasicMaterial, Texture, TubeGeometry, Vector3 } from "three";
 import { toCreasedNormals } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { archRing, archShape, wallWithArch } from "@/features/immersive/lib/arch";
 import { createContactShadeTexture } from "@/features/immersive/lib/textures";
@@ -14,6 +14,13 @@ interface ArchitectureProps {
   glow: Texture;
   lite: boolean;
 }
+
+import { mix } from "@/features/immersive/lib/night";
+import { NIGHT } from "@/features/immersive/lib/night-look";
+import { useOnNight } from "@/features/immersive/lib/use-on-night";
+
+const POOL_DAY = new Color("#e7b1b4");
+const POOL_NIGHT = new Color(NIGHT.fixtureHalo);
 
 const hallStartZ = WALL.z - WALL.depth;
 const TILE = 1.6;
@@ -89,6 +96,22 @@ export function Architecture({ materials, tileMap, glow, lite }: ArchitecturePro
 
   const ribCount = Math.floor((HALL.length - 1) / HALL.ribEvery);
 
+  // After dark the hall's light still spills out of the doorway, but it is the lamps' warm gold, not the rose of the day,
+  // and the tiled floor is a little more reflective, so the pool of light has a sheen in it.
+  const pool = useRef<MeshBasicMaterial>(null);
+  useOnNight(
+    (c) => {
+      const material = pool.current;
+      if (material) {
+        material.opacity = 0.3 * Math.max(c.glow, c.fixtures * 0.75);
+        material.color.copy(POOL_DAY).lerp(POOL_NIGHT, c.dark);
+      }
+      parts.floorMaterial.reflectivity = mix(0.07, 0.2, c.reflections);
+      parts.floorMaterial.shininess = mix(52, 90, c.reflections);
+    },
+    [parts]
+  );
+
   return (
     <group>
       {/* Gallery floor: from the wall towards the viewer and out to the sides, fading into the room's colour with distance. */}
@@ -137,6 +160,7 @@ export function Architecture({ materials, tileMap, glow, lite }: ArchitecturePro
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[PORTAL.x, 0.012, WALL.z + 1.4]}>
         <planeGeometry args={[4.6, 6.4]} />
         <meshBasicMaterial
+          ref={pool}
           map={glow}
           color="#e7b1b4"
           opacity={0.3}

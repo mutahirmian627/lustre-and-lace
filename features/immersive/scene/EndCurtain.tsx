@@ -7,10 +7,17 @@ import { archShape } from "@/features/immersive/lib/arch";
 import { DOOR_SIGMA, smoothstep } from "@/features/immersive/lib/timeline";
 import { HALL, PORTAL, zAt } from "@/features/immersive/lib/world";
 import { stageState } from "@/features/immersive/lib/stage-state";
+import { NIGHT } from "@/features/immersive/lib/night-look";
+import { useOnNight } from "@/features/immersive/lib/use-on-night";
 
 /** The door of light that has always stood at the far end of the hall. */
 const DOOR = { width: 2.6, straight: 1.9 } as const;
 const endZ = zAt(DOOR_SIGMA);
+
+const DOOR_DAY = new Color("#ffffff");
+const DOOR_NIGHT = new Color("#f2bd80");
+const HALO_DAY = new Color("#f2b9a8");
+const HALO_NIGHT = new Color(NIGHT.fixtureHalo);
 
 /** How far (metres) the camera is from the end of the corridor while the curtain is fully there, and while it has gone. */
 const THERE = 46;
@@ -55,6 +62,17 @@ export function EndCurtain({ glow, lite }: { glow: Texture; lite: boolean }) {
     return { endWall, door, wallMaterial, doorMaterial, haloMaterial };
   }, [glow, lite]);
 
+  // After dark the door of light is the hall's one bright thing: warmer, gold rather than rose, its halo kept (it is a light).
+  const halo = useRef(1);
+  useOnNight(
+    (c) => {
+      halo.current = Math.max(c.glow, c.fixtures * 0.85);
+      parts.doorMaterial.color.copy(DOOR_DAY).lerp(DOOR_NIGHT, c.dark);
+      parts.haloMaterial.color.copy(HALO_DAY).lerp(HALO_NIGHT, c.dark);
+    },
+    [parts]
+  );
+
   useFrame(() => {
     const away = stageState.camera.z - endZ;
     const there = smoothstep(GONE, THERE, away);
@@ -63,7 +81,7 @@ export function EndCurtain({ glow, lite }: { glow: Texture; lite: boolean }) {
     const solid = there > 0.999;
     parts.wallMaterial.transparent = parts.doorMaterial.transparent = !solid;
     parts.wallMaterial.opacity = parts.doorMaterial.opacity = there;
-    parts.haloMaterial.opacity = 0.5 * there;
+    parts.haloMaterial.opacity = 0.5 * there * halo.current;
   });
 
   return (

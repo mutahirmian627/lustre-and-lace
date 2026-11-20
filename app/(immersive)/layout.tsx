@@ -28,12 +28,21 @@ const mono = DM_Mono({
  * footer: this route draws its own navigation. Styles are scoped to .immersive-root.
  * `data-phase` starts as "opening" so the opening text is readable before any script has run.
  */
+/**
+ * Before the first paint, notes whether the visitor chose "after dark" (the address, ?night=1 or ?night=0, then what they chose
+ * last time) so that the page's colours start right and the daylight pictures don't flash. The key matches NIGHT_KEY in
+ * features/immersive/lib/night.ts. It only sets an attribute; the scene takes over once it is running.
+ */
+const EARLY_NIGHT = `(function(){try{var q=new URLSearchParams(location.search).get("night");var on=q==="1"||(q!=="0"&&localStorage.getItem("aperionie-after-dark")==="1");if(on)document.currentScript.parentElement.setAttribute("data-night","1")}catch(e){}})()`;
+
 export default function ImmersiveLayout({ children }: { children: React.ReactNode }) {
   return (
     <div
       className={`immersive-root min-h-svh ${serif.variable} ${sans.variable} ${mono.variable}`}
       data-phase="opening"
+      suppressHydrationWarning
     >
+      <script dangerouslySetInnerHTML={{ __html: EARLY_NIGHT }} />
       {children}
     </div>
   );

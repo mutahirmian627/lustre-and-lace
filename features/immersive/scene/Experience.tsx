@@ -2,9 +2,13 @@
 
 import { useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
-import { Color, Fog } from "three";
+import { Color, Fog, type AmbientLight, type DirectionalLight } from "three";
+import { DAY } from "@/features/immersive/lib/night-look";
+import { NightDirector } from "@/features/immersive/scene/NightDirector";
+import { NightFixtures } from "@/features/immersive/scene/NightFixtures";
+import { NightLanterns } from "@/features/immersive/scene/NightLanterns";
 import { createChromeCube, createRoomCube } from "@/features/immersive/lib/reflection-cubes";
-import { createMaterials } from "@/features/immersive/lib/materials";
+import { createMaterials, followNightMaterials } from "@/features/immersive/lib/materials";
 import { createGlowTexture, createJaliMask, createTileTexture } from "@/features/immersive/lib/textures";
 import { stageState } from "@/features/immersive/lib/stage-state";
 import { Architecture } from "@/features/immersive/scene/Architecture";
@@ -19,8 +23,6 @@ import { JaliScreen } from "@/features/immersive/scene/JaliScreen";
 import { Ribbon } from "@/features/immersive/scene/Ribbon";
 import { ribbonSegments } from "@/features/immersive/lib/world";
 import { Placards } from "@/features/immersive/scene/Placards";
-
-const IVORY = "#f1ebdf";
 
 interface ExperienceProps {
   lite: boolean;
@@ -77,8 +79,14 @@ export function Experience({ lite, frozen, onCompiled, onReady }: ExperienceProp
     const jaliMask = createJaliMask();
     const glow = createGlowTexture();
     const materials = createMaterials(env, chromeEnv, jaliMask, lite);
-    return { tileMap, jaliMask, glow, materials };
+    return { env, chromeEnv, tileMap, jaliMask, glow, materials };
   }, [lite]);
+
+  useEffect(() => followNightMaterials(resources.materials), [resources]);
+
+  const ambient = useRef<AmbientLight>(null);
+  const sun = useRef<DirectionalLight>(null);
+  const fill = useRef<DirectionalLight>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -95,20 +103,24 @@ export function Experience({ lite, frozen, onCompiled, onReady }: ExperienceProp
     };
   }, [gl, scene, camera, onCompiled]);
 
-  const background = useMemo(() => new Color(IVORY), []);
-  const fog = useMemo(() => new Fog(IVORY, 18, 52), []);
+  const background = useMemo(() => new Color(DAY.ivory), []);
+  const fog = useMemo(() => new Fog(DAY.ivory, DAY.fog.near, DAY.fog.far), []);
 
   return (
     <>
       <primitive object={background} attach="background" />
       <primitive object={fog} attach="fog" />
 
-      {/* The gallery: warm daylight from the upper left, a cool bounce from the right. */}
-      <ambientLight intensity={1.9} color="#fffdfa" />
-      <directionalLight position={[-4, 7, 6]} intensity={2.2} color="#fff9f0" />
-      <directionalLight position={[7, 3, 2]} intensity={0.65} color="#cfc2e8" />
+      {/* The gallery: warm daylight from the upper left, a cool bounce from the right (after dark: the moon). */}
+      <ambientLight ref={ambient} intensity={DAY.ambient.intensity} color={DAY.ambient.color} />
+      <directionalLight ref={sun} position={[...DAY.sun.position]} intensity={DAY.sun.intensity} color={DAY.sun.color} />
+      <directionalLight ref={fill} position={[...DAY.fill.position]} intensity={DAY.fill.intensity} color={DAY.fill.color} />
+      {!frozen && <NightDirector ambient={ambient} sun={sun} fill={fill} background={background} fog={fog} env={resources.env} chromeEnv={resources.chromeEnv} />}
       {/* The hall: soft lights high up its length, travelling with the camera once it is inside. */}
-      <HallLights />
+      <HallLights lite={lite} />
+
+      {!frozen && <NightFixtures glow={resources.glow} lite={lite} frozen={frozen} />}
+      {!frozen && <NightLanterns jaliMask={resources.jaliMask} glow={resources.glow} frozen={frozen} />}
 
       <Architecture materials={resources.materials} tileMap={resources.tileMap} glow={resources.glow} lite={lite} />
       <EndCurtain glow={resources.glow} lite={lite} />

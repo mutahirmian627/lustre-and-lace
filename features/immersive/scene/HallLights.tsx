@@ -3,11 +3,17 @@
 import { useMemo, useRef } from "react";
 import { Color, type PointLight } from "three";
 import { useFrame } from "@react-three/fiber";
-import { ARCHES, smoothstep } from "@/features/immersive/lib/timeline";
+import { ARCHES, smoothstep, WORK_END_SIGMA } from "@/features/immersive/lib/timeline";
 import { PORTAL, WALL, zAt } from "@/features/immersive/lib/world";
 import { stageState } from "@/features/immersive/lib/stage-state";
+import { nightChannels, nightState } from "@/features/immersive/lib/night";
+import { NIGHT } from "@/features/immersive/lib/night-look";
 
 const ROSE = new Color("#ff9db8");
+const GOLD = new Color(NIGHT.lamp);
+/** The lamps' strength after dark, against 1 by day: the pools are warm and soft, not a second sun. */
+const LAMP_NIGHT_LEVEL = 0.8;
+const COMPANION_PEAK = 8;
 const LAMPS = 3;
 
 /** Where each lamp hangs while the camera is still in the gallery (the approved opening). */
@@ -50,13 +56,18 @@ export const SIGNATURES: readonly Signature[] = [
  * While the camera is in the gallery the lamps hold the approved opening's places and colour exactly; they hand over
  * to the arches' lights as the camera goes through the doorway.
  */
-export function HallLights() {
+export function HallLights({ lite = false }: { lite?: boolean }) {
   const lamps = useRef<(PointLight | null)[]>([]);
+  const companion = useRef<PointLight>(null);
   const colours = useMemo(() => SIGNATURES.map((signature) => new Color(signature.colour)), []);
 
   useFrame(() => {
     const handover = smoothstep(0.95, 1.12, stageState.value);
     const sigma = stageState.sigma;
+    // After dark the same three lamps become warm gold pools of light: the daytime colours and their strength give way as the
+    // daylight goes (a brief dip as the hall darkens), then come back, softer and golden, as the decorative lights ignite.
+    const c = nightChannels(nightState.value);
+    const scale = Math.max(c.daylight, c.fixtures * LAMP_NIGHT_LEVEL);
 
     for (let j = 0; j < LAMPS; j++) {
       const lamp = lamps.current[j];
@@ -80,8 +91,27 @@ export function HallLights() {
         5 + (signature.height - 5) * handover,
         OPENING[j].z + (zAt(ARCHES[arch] + signature.beyond) - OPENING[j].z) * handover
       );
-      lamp.intensity = 9 + (strength - 9) * handover;
-      lamp.color.copy(ROSE).lerp(colours[arch], handover);
+      lamp.intensity = (9 + (strength - 9) * handover) * scale;
+      lamp.color.copy(ROSE).lerp(colours[arch], handover).lerp(GOLD, c.dark * 0.85);
+    }
+
+    // After dark only: one more warm lamp, for the two places the three above don't reach. While the camera is in the gallery it
+    // hangs before the doorway, so the floor takes a sheen from it; once the camera is in the ivory hall it travels a few metres
+    // ahead of the visitor, so the polished floor and the pictures catch it as they walk. In between (the corridor) it is off.
+    const lamp = companion.current;
+    if (lamp) {
+      const inGallery = 1 - handover;
+      const inIvory = smoothstep(60, 72, sigma);
+      // Near the sculpture the lamp stops walking with the visitor and hangs over it, so the chrome catches gold.
+      const atSculpture = smoothstep(WORK_END_SIGMA + 24, WORK_END_SIGMA + 40, sigma);
+      const weight = c.fixtures * Math.max(inGallery, inIvory);
+      lamp.intensity = COMPANION_PEAK * weight * (1 + 0.5 * atSculpture);
+      if (weight > 0) {
+        if (inGallery >= inIvory) lamp.position.set(PORTAL.x, 2.8, WALL.z + 2.4);
+        else {
+          lamp.position.set(PORTAL.x + 0.8 + 0.4 * atSculpture, 4.4 + 0.8 * atSculpture, stageState.camera.z - 5 - 5 * atSculpture);
+        }
+      }
     }
   });
 
@@ -100,6 +130,8 @@ export function HallLights() {
           color="#ff9db8"
         />
       ))}
+      {/* Off (strength 0) in daylight, where it adds nothing; not on the lighter tier, which keeps its light count down. */}
+      {!lite && <pointLight ref={companion} position={[PORTAL.x, 2.8, WALL.z + 2.4]} intensity={0} distance={11} decay={1.5} color={NIGHT.lamp} />}
     </>
   );
 }
